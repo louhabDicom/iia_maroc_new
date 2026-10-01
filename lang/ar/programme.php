@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'all_days'           => 'كل الأيام',
+    'day'                => 'اليوم :day',
+    'format'             => 'النوع',
+    'no_sessions'        => 'البرنامج العلمي قيد الإعداد.',
+    'provisional_notice' => 'البرنامج مبدئي وقد يتغير.',
+    'room'               => 'القاعة',
+    'speakers_of'        => 'المتحدثون',
+    'time'               => 'التوقيت',
+    'title'              => 'البرنامج العلمي',
+    'track'              => 'المحور',
+];

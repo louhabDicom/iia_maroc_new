@@ -1,0 +1,773 @@
+/* ==========================================================================
+   ARABCIA — application layer
+   --------------------------------------------------------------------------
+   Loaded AFTER assets/css/style.css, so everything here wins on equal
+   specificity. The template's own stylesheet carries the design; this file
+   carries the three things the template could not know about:
+
+     1. the brand palette, taken from the 2024 build's _variables.scss
+        (primary #fc097c, gold #f9d464, cyan #00acee, deep purple #250449);
+     2. Bootstrap 5's `.btn-*`/`.form-control` re-skinned to that palette, so
+        the pages that are still server-rendered forms look like the rest of
+        the site rather than default blue;
+     3. the handful of rules the 2024 pages carried in inline <style> blocks,
+        moved here so they are cacheable and overridable.
+
+   The Google Fonts import lives in style.css, which is why Ubuntu and Roboto
+   resolve. AvenirArabic / THESANSARABIC are bundled under assets/fonts for the
+   Arabic pages; .font-arabic applies them.
+   ========================================================================== */
+
+:root {
+    --arab-primary: #fc097c;
+    --arab-primary-dark: #d82e7b;
+    --arab-gold: #f9d464;
+    --arab-cyan: #00acee;
+    --arab-lime: #a1c514;
+    --arab-purple: #250449;
+    --arab-purple-deep: #09033b;
+    --arab-navy: #0063c6;
+    --arab-body: #4c4d56;
+    --arab-heading: #1a0a1e;
+    --arab-footer-bg: #13181c;
+    --arab-muted: #666;
+    --arab-gold-rgb: 161, 197, 20;
+}
+
+/* --- Typography ---------------------------------------------------------- */
+
+body {
+    font-family: 'Roboto', 'AvenirArabic', sans-serif;
+    color: var(--arab-body);
+}
+
+h1, h2, h3, h4, h5, h6,
+.header-menu .main-menu > li > a,
+.section-title .title,
+.btn,
+button {
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+}
+
+/* Arabic gets the bundled faces rather than the Latin webfonts. */
+body.rtl,
+body.rtl h1, body.rtl h2, body.rtl h3, body.rtl h4, body.rtl h5, body.rtl h6 {
+    font-family: 'AvenirArabic', 'THESANSARABIC', 'Roboto', sans-serif;
+}
+
+.font-display {
+    font-family: 'Permanent Marker', 'Ubuntu', cursive;
+}
+
+/* --- Buttons ------------------------------------------------------------- */
+
+.btn {
+    border-radius: 30px;
+    font-weight: 500;
+    transition: all .3s linear;
+}
+
+.btn-primary,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--arab-primary);
+    border-color: var(--arab-primary);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: var(--arab-primary-dark);
+    border-color: var(--arab-primary-dark);
+    color: #fff;
+}
+
+/* The 2024 "JE PARTICIPE!" call to action. */
+.btn-join {
+    background: linear-gradient(240deg, rgba(137, 254, 85, 1) 0%, rgba(0, 92, 201, 1) 100%);
+    border: none;
+    border-radius: 30px;
+    color: #fff;
+    display: inline-block;
+    font-size: 17px;
+    font-family: 'Permanent Marker', cursive;
+    font-weight: 700;
+    letter-spacing: .5px;
+    padding: 12px 34px;
+    text-shadow: 1px 1px 1px rgba(161, 197, 20, .8);
+    transition: all .3s linear;
+}
+
+.btn-join:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .18);
+}
+
+/* --- Forms --------------------------------------------------------------- */
+
+.form-control,
+.form-select {
+    border: 2px solid #8b92ca;
+    border-radius: 30px;
+    padding: 10px 20px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--arab-primary);
+    box-shadow: 0 0 0 .2rem rgba(252, 9, 124, .15);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--arab-heading);
+}
+
+label {
+    color: var(--arab-heading);
+    font-weight: 500;
+}
+
+/* --- Alerts -------------------------------------------------------------- */
+
+.alert-warning {
+    background-color: #e8e8e8;
+    border: none;
+    border-radius: 0;
+    color: #000;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.alert-warning a,
+.alert-warning a:hover {
+    color: var(--arab-primary-dark);
+}
+
+.alert-success {
+    background-color: rgba(161, 197, 20, .15);
+    border: 1px solid rgba(161, 197, 20, .5);
+    color: #3d5200;
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, .1);
+    border: 1px solid rgba(220, 53, 69, .35);
+    color: #842029;
+}
+
+/* --- Header links from the 2024 build ------------------------------------ */
+
+.link-log-insc {
+    color: var(--arab-body);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.link-log-insc:hover {
+    color: var(--arab-lime);
+}
+
+.btn-logout {
+    background-color: transparent;
+    border: none;
+    color: var(--arab-body);
+    display: block;
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+    position: relative;
+    text-transform: capitalize;
+    z-index: 1;
+}
+
+.btn-logout:hover {
+    color: var(--arab-lime);
+}
+
+/* Login / register modal, ported from includes/header.php. */
+.btn-log-inscr {
+    background: linear-gradient(240deg, rgba(137, 254, 85, 1) 0%, rgba(0, 92, 201, 1) 100%);
+    border: none;
+    border-radius: 30px;
+    color: #fff;
+    outline: none;
+    padding: 13px;
+    width: 50%;
+}
+
+#staticBackdrop .modal-content,
+#staticBackdrop .modal-content * {
+    color: #000;
+}
+
+#staticBackdrop .modal-content h3 {
+    color: var(--arab-navy);
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+
+#staticBackdrop .nav-tabs {
+    border: none;
+    display: flex;
+    justify-content: center;
+}
+
+#staticBackdrop .nav-tabs .nav-link {
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #000;
+    width: 50%;
+}
+
+#staticBackdrop .nav-tabs .nav-link.active {
+    background: var(--arab-lime);
+    border-radius: revert;
+    color: #000;
+    font-size: 17px;
+    padding: 15px;
+}
+
+#staticBackdrop .modal-content .hero-form {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    padding: 0 30px 40px;
+}
+
+#staticBackdrop .form-control {
+    border: 2.5px solid #8b92ca;
+}
+
+.error_span {
+    color: #d00;
+    display: block;
+    font-size: 14px;
+    padding: 2px 10px;
+}
+
+.invalid-feedback,
+.field-error {
+    color: #d00;
+    display: block;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.modal-content {
+    background: #fff;
+    border: none;
+}
+
+.btn-close {
+    cursor: pointer;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
+.rtl .btn-close {
+    left: 23px;
+    right: unset;
+    top: 17px;
+}
+
+/* --- Pricing cards from the 2024 build ----------------------------------- */
+
+.alrd-member {
+    border: 2px solid #fff;
+    border-radius: 18px;
+    margin-bottom: 40px;
+    padding: 20px 30px;
+}
+
+.alrd-member p {
+    color: #fff;
+    font-size: 19px;
+}
+
+.alrd-member a {
+    color: #b53489;
+    font-size: 19px;
+}
+
+.btn-resereve {
+    align-items: center;
+    background-color: aliceblue;
+    cursor: pointer;
+    display: flex;
+    font-size: 20px;
+    justify-content: space-around;
+    margin: 10px auto;
+    padding: 4px;
+    text-align: left;
+    width: 96%;
+}
+
+.btn-resereve__icon {
+    align-items: center;
+    border-radius: 50%;
+    display: flex;
+    height: 42px;
+    justify-content: center;
+    padding: 11px;
+    width: 42px;
+}
+
+.btn-resereve__icon img {
+    max-height: 20px;
+}
+
+/* --- Speaker / session cards --------------------------------------------- */
+
+.speaker-card-link {
+    display: block;
+    height: 100%;
+}
+
+.speaker-card__empty {
+    align-items: center;
+    background: var(--arab-grey, #f1f3ff);
+    color: var(--arab-muted);
+    display: flex;
+    justify-content: center;
+    min-height: 220px;
+    text-align: center;
+    padding: 20px;
+}
+
+.session-empty {
+    color: var(--arab-muted);
+    font-style: italic;
+    padding: 30px 0;
+    text-align: center;
+}
+
+/* --- Inner page header ---------------------------------------------------- */
+/* The template shipped a `.page-title` rule but no page ever used it, so the
+   inner-page band is built here on top of the template's own hero section. It
+   reuses .exvent-hero-section's padding scale and .section-title, so a page
+   heading is the same object as a home-page heading, just shorter. */
+
+.page-hero {
+    background-position: center;
+    background-size: cover;
+    padding: 90px 0 70px;
+    position: relative;
+}
+
+.page-hero::before {
+    background: linear-gradient(90deg, rgba(37, 4, 73, .82) 0%, rgba(9, 3, 59, .62) 100%);
+    content: '';
+    inset: 0;
+    position: absolute;
+}
+
+.rtl .page-hero::before {
+    background: linear-gradient(270deg, rgba(37, 4, 73, .82) 0%, rgba(9, 3, 59, .62) 100%);
+}
+
+.page-hero > .container {
+    position: relative;
+    z-index: 1;
+}
+
+.page-hero .section-title .title {
+    font-size: 42px;
+    line-height: 50px;
+}
+
+.page-hero .breadcrumb-area {
+    margin-top: 12px;
+}
+
+.page-hero .breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.page-hero .breadcrumb li {
+    color: rgba(255, 255, 255, .75);
+    font-size: 15px;
+}
+
+.page-hero .breadcrumb li + li::before {
+    color: rgba(255, 255, 255, .5);
+    content: '/';
+    margin-inline-end: 8px;
+}
+
+.page-hero .breadcrumb a {
+    color: rgba(255, 255, 255, .85);
+    text-decoration: none;
+}
+
+.page-hero .breadcrumb a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.page-hero .breadcrumb [aria-current='page'] {
+    color: #fff;
+    font-weight: 500;
+}
+
+/* --- Generic content sections -------------------------------------------- */
+
+.section-padding-02 { padding: 90px 0; }
+.section-padding-03 { padding: 110px 0; }
+.section-padding-04 { padding: 100px 0; }
+.section-padding-05 { padding: 70px 0; }
+
+.grey-bg { background-color: #f7f8f8; }
+
+/* A provisional-data notice, used wherever the brief says content is not yet
+   final. Amber on white rather than a modal or a badge: it is information, and
+   it should read as part of the page. */
+.notice-provisional {
+    background: #fff8e6;
+    border-inline-start: 4px solid #ffae4a;
+    color: #7a4b00;
+    margin-top: 24px;
+    padding: 14px 18px;
+}
+
+.empty-state {
+    background: #f7f8f8;
+    color: var(--arab-muted);
+    padding: 60px 24px;
+    text-align: center;
+}
+
+/* --- Brand item ----------------------------------------------------------- */
+
+.brand-item {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-height: 90px;
+    padding: 10px;
+}
+
+.brand-item__logo {
+    max-height: 70px;
+    max-width: 100%;
+    opacity: .85;
+    transition: opacity .3s linear;
+    width: auto;
+}
+
+.brand-item__logo:hover { opacity: 1; }
+
+.brand-item__name {
+    color: #4c4d56;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* --- Speaker card (partials.speaker-card) --------------------------------- */
+
+.single-speaker {
+    background: #fff;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    transition: all .3s linear;
+}
+
+.single-speaker:hover { box-shadow: 0 20px 40px rgba(0, 0, 0, .1); }
+
+.single-speaker .speaker-thumb {
+    overflow: hidden;
+    position: relative;
+}
+
+.single-speaker .speaker-thumb img {
+    height: 100%;
+    object-fit: cover;
+    transition: transform .5s linear;
+    width: 100%;
+}
+
+.single-speaker:hover .speaker-thumb img { transform: scale(1.06); }
+
+.single-speaker .speaker-thumb__initials {
+    align-items: center;
+    background: #f1f3ff;
+    color: #6b6f8d;
+    display: flex;
+    font-size: 32px;
+    font-weight: 700;
+    height: 220px;
+    justify-content: center;
+    width: 100%;
+}
+
+.single-speaker .speaker-content { padding: 22px 24px 26px; }
+
+.single-speaker .speaker-name {
+    color: var(--arab-heading);
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 4px;
+}
+
+.single-speaker .speaker-role {
+    color: #666;
+    font-size: 15px;
+    margin: 0;
+}
+
+.single-speaker .speaker-bio {
+    color: #4c4d56;
+    font-size: 15px;
+    margin: 12px 0 0;
+}
+
+.single-speaker .speaker-sessions {
+    color: #959595;
+    font-size: 13px;
+    margin: 10px 0 0;
+}
+
+.single-speaker .speaker-shape {
+    bottom: -1px;
+    left: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.single-speaker .speaker-shape img { display: block; }
+
+.single-speaker--large {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+}
+
+.single-speaker--large .speaker-thumb { flex: 0 0 200px; }
+.single-speaker--large .speaker-content { padding: 0; }
+
+/* --- Programme schedule --------------------------------------------------- */
+
+.programme-day-nav .nav-link {
+    border-radius: 30px;
+    color: #4c4d56;
+    cursor: pointer;
+    display: block;
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    padding: 12px 20px;
+    text-align: center;
+    transition: all .3s linear;
+}
+
+.programme-day-nav .nav-link:hover { background: #f1f3ff; }
+
+.programme-day-nav .nav-link.active {
+    background: var(--arab-lime);
+    color: #000;
+}
+
+.schedule-wrapper {
+    border: 1px solid #e5e5e5;
+    max-height: 70vh;
+    overflow: auto;
+    padding: 10px 30px;
+}
+
+.schedule-row { padding: 22px 0; }
+
+.schedule-row + .schedule-row { border-top: 1px dashed #d6d5d7; }
+
+.schedule-time {
+    color: var(--arab-navy);
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.schedule-card {
+    background: #fff;
+    border-inline-start: 4px solid var(--arab-cyan);
+    height: 100%;
+    padding: 14px 18px;
+    transition: all .3s linear;
+}
+
+.schedule-card:hover {
+    border-inline-start-color: var(--arab-primary);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+}
+
+.schedule-card__meta {
+    color: #959595;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.schedule-card__title {
+    color: var(--arab-heading);
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 6px 0;
+}
+
+.schedule-card__track { color: #666; font-size: 14px; }
+.schedule-card__speakers { color: #4c4d56; font-size: 15px; margin: 6px 0 0; }
+
+/* --- Pricing cards ------------------------------------------------------- */
+
+.price-card {
+    background: #fff;
+    height: 100%;
+    overflow: hidden;
+}
+
+.price-card .price-header {
+    align-items: center;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 90px;
+    padding: 18px;
+    text-align: center;
+}
+
+.price-card .price-plan { font-size: 19px; }
+.price-card .price-plan strong { font-size: 22px; }
+
+.price-card .price-body { padding: 20px; }
+
+.price-card .price-desc {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.price-card .price-desc li {
+    border-bottom: 1px dashed #e5e5e5;
+    padding: 8px 0;
+}
+
+.price-card .price-desc li:last-child { border-bottom: 0; }
+
+.price-amount {
+    color: #000;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* --- Venue rooms ---------------------------------------------------------- */
+
+.room-row {
+    align-items: baseline;
+    border-bottom: 1px dashed #d6d5d7;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    padding: 14px 0;
+}
+
+.room-row__name {
+    color: var(--arab-heading);
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.room-row__meta { color: #666; font-size: 15px; }
+
+/* --- Header top links ---------------------------------------------------- */
+
+.header-toplinks {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 6px 0;
+}
+
+.header-toplinks-sep { color: #d6d5d7; }
+
+/* The 2024 header had these two links on a row that was forced to LTR, because
+   they sit in the top-right corner. That is layout, not language: the labels
+   themselves still have to read in the page's direction. */
+.rtl .header-toplinks { direction: ltr; }
+.rtl .header-toplinks a,
+.rtl .header-toplinks button { direction: rtl; }
+
+.header-menu .sub-menu .locale-switcher-item { padding: 10px 16px; }
+
+.locale-switcher--menu .form-select {
+    border: 1px solid #e5e5e5;
+    font-size: 15px;
+    padding: 6px 12px;
+}
+
+.locale-switcher__select { max-width: 180px; }
+
+/* --- Offcanvas ----------------------------------------------------------- */
+
+.offcanvas-body .main-menu { list-style: none; margin: 0; padding: 0; }
+.offcanvas-body .main-menu > li { border-bottom: 1px solid #eee; }
+.offcanvas-body .main-menu > li > a {
+    color: #1a0a1e;
+    display: block;
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    padding: 12px 0;
+    text-decoration: none;
+}
+
+.offcanvas-body .main-menu > li.active-menu > a { color: var(--arab-primary); }
+
+/* --- Utilities the 2024 pages used inline -------------------------------- */
+
+.cont-video {
+    background-image: url('../images/fond-iia-video.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    padding: 120px 50px;
+}
+
+.cont-video video {
+    box-shadow: rgb(0 0 0 / 51%) 0 20px 25px -5px, rgba(0, 0, 0 / 4%) 0 10px 10px -5px;
+    width: 100%;
+}
+
+/* Reveal-on-scroll: AOS drives these, but if the script is blocked the content
+   must still be visible rather than stuck at opacity 0. */
+[data-aos] {
+    pointer-events: auto;
+}
+
+.aos-init.aos-animate {
+    opacity: 1;
+}
+
+/* --- Print --------------------------------------------------------------- */
+
+@media print {
+    .header-section,
+    .footer-section,
+    .progress-wrap,
+    .header-toggle {
+        display: none !important;
+    }
+}

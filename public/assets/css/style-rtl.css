@@ -1,0 +1,84 @@
+@font-face {
+    font-family: "THESANSARABIC";
+    src: url("../fonts/THESANSARABIC-PLAIN.ttf");
+}
+@font-face {
+    font-family: "AvenirArabic";
+    src: url("../fonts/AvenirArabic.ttf");
+}
+
+.rtl .h1, .rtl .h2, .rtl .h3, .rtl h1, .rtl h2, .rtl h3, .rtl h4, .rtl h5, .rtl h6 {
+    font-family: 'THESANSARABIC' !important;
+}
+
+.rtl *{
+    direction: rtl;
+}
+
+.rtl .exvent-hero-section .hero-content .title {
+    font-size: 34px;
+}
+
+.rtl .exvent-hero-section .hero-content .sub-title, .exvent-hero-section .hero-content .sub-title2 {
+    font-size: 27px;
+}
+
+
+.exvent-hero-section > *,.exvent-hero-row {
+    direction: ltr;
+}
+.social-list{
+    direction: ltr;
+}
+.rtl .exvent-hero-section .hero-content .shape-3 {
+    transform: rotate(180deg);
+}
+.rtl .exvent-hero-section .hero-content {
+    position: relative;
+    z-index: 1;
+    padding-right: 185px;
+    padding-top: 67px;
+}
+.rtl #slide-page  .hero-images {
+    position: absolute;
+    bottom: 0;
+    left: 380px;
+    width: 50%;
+    z-index: 2;
+    right: auto;
+}
+.rtl .header-menu .main-menu li {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 18px 15px;
+    flex-direction: row-reverse;
+}
+.rtl .schedule-area .sticky-col .schedule-side-nav .nav-link.active::after { 
+    left: 105px; 
+    transform: rotate(180deg);
+}
+.rtl .header-menu .main-menu li a {
+    font-size: 18px;
+}
+.rtl .about-section .about-content-wrap .section-paragraph {
+    padding-right: unset;
+}
+.rtl  p , .rtl  li{
+    font-size: 20px !important;
+    font-family: "AvenirArabic";
+    
+}
+.pricing-area .price-card .price-body .price-desc li {
+        direction: ltr;
+}
+.rtl .header-btn a {
+    font-weight: bolder;
+    font-size: 21px !important;
+    font-family: "AvenirArabic";
+}
+@media only screen and (max-width: 767px) {
+ .rtl .exvent-hero-section .hero-content {
+    padding-right: 85px;
+}
+}
