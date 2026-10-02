@@ -2659,14 +2659,20 @@ body.drawer-open {
    like a flat rectangle of colour. */
 .h-hero {
     background-color: var(--h-deep);
-    background-image:
-        radial-gradient(120% 95% at 76% 16%, rgb(115 132 255 / 34%) 0%, transparent 58%),
-        radial-gradient(85% 70% at 14% 104%, rgb(115 132 255 / 22%) 0%, transparent 62%),
-        linear-gradient(132deg, #2c1181 0%, #26116e 46%, var(--h-deep-2) 100%);
+    background-image: url('/assets/brand/ban_hero_home.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
     color: #fff;
     overflow: hidden;
     padding-block: calc(var(--header-h) + var(--sp-8)) var(--sp-9);
     position: relative;
+}
+
+/* Arabic */
+html[dir="rtl"] .h-hero {
+    background-image: url('/assets/brand/ban_hero_home_ar.png');
 }
 
 /* The copy column is first and takes the start side; the artwork is absolutely
@@ -2695,7 +2701,7 @@ body.drawer-open {
 .h-hero__logos img {
     filter: brightness(0) invert(1);
     height: auto;
-    max-height: 42px;
+    max-height: 59px;
     width: auto;
 }
 
@@ -3145,17 +3151,25 @@ body.drawer-open {
    -------------------------------------------------------------------------- */
 
 .h-inscription {
-    background: var(--h-mist);
-    padding-block: clamp(3.25rem, 7vw, 5.5rem);
+    --ins-ink: #2a1f6e;      /* figures */
+    --ins-blue: #2338a0;     /* labels + button text (as in the mock-up) */
+    --ins-shadow: 0 10px 28px rgba(32, 16, 98, .16), 0 2px 6px rgba(32, 16, 98, .08);
+
+    background-image: url('/assets/brand/ban_inscription.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    padding-block: clamp(4rem, 9vw, 7rem);
 }
 
 .h-inscription__title {
     color: var(--d-indigo-dark);
+    font-family: "Archivo", "Aptos", sans-serif;
     font-size: var(--t-3xl);
-    font-weight: 800;
-    letter-spacing: .02em;
+    font-weight: 500;              /* lighter, like the mock-up */
+    letter-spacing: .01em;
     line-height: 1.1;
-    margin: 0 0 var(--sp-7);
+    margin: 0 0 clamp(2.5rem, 6vw, 4.5rem);
     text-align: center;
     text-transform: uppercase;
 }
@@ -3164,64 +3178,109 @@ body.drawer-open {
     line-height: 1.4;
 }
 
-/* Capped and centred rather than full-bleed: four cards stretched across 1240px
-   leave the figure and its label marooned in the middle of a very wide box. */
+/* Cards ------------------------------------------------------------------ */
 .h-tariffs {
     display: grid;
-    gap: var(--sp-4);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
     list-style: none;
-    margin: 0 auto var(--sp-7);
-    max-width: 62rem;
+    margin: 0 auto 1.5rem;
+    max-width: 51rem;
     padding: 0;
 }
 
 .h-tariff {
+    align-items: center;           /* centred content */
     background: #fff;
-    border-radius: var(--r-md);
-    box-shadow: var(--sh-1);
+    border-radius: 14px;
+    box-shadow: var(--ins-shadow);
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: var(--sp-5);
+    padding: 1.5rem 1rem 1.25rem;
+    text-align: center;
 }
 
 .h-tariff__amount {
-    align-items: baseline;
-    color: var(--d-indigo-dark);
+    align-items: flex-start;       /* currency sits at the top, like a superscript */
+    color: var(--ins-ink);
     display: flex;
-    font-weight: 800;
-    gap: .35rem;
+    font-family: "Archivo", "Aptos", sans-serif;
+    font-weight: 700;
+    gap: .3rem;
+    justify-content: center;
+    margin-bottom: .6rem;
 }
 
 .h-tariff__figure {
-    font-size: var(--t-xl);
+    font-size: clamp(1.5rem, 2.4vw, 1.9rem);
     font-variant-numeric: tabular-nums;
-    line-height: 1.15;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .h-tariff__currency {
-    color: var(--d-lilac);
-    font-size: var(--t-sm);
-    letter-spacing: .04em;
+    color: var(--ins-ink);         /* same ink as the figure, not lilac */
+    font-size: .6rem;
+    letter-spacing: .02em;
+    line-height: 1;
+    margin-top: .1rem;
 }
 
-.h-tariff__kind {
-    color: var(--d-ink-soft);
-    font-size: var(--t-sm);
-    font-weight: 600;
-}
-
+.h-tariff__kind,
 .h-tariff__audience {
-    color: var(--d-muted);
-    font-size: var(--t-sm);
+    color: var(--ins-blue);        /* both lines in the same blue */
+    font-size: .9rem;
+    font-weight: 600;
+    line-height: 1.35;
 }
 
+/* Buttons ---------------------------------------------------------------- */
+/* Two equal buttons, as wide as the cards above them. */
 .h-inscription__actions {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    margin-inline: auto;
+    max-width: 51rem;
+}
+
+.h-inscription__actions .h-btn {
+    align-items: center;
+    background: #fff;
+    border: 0;
+    border-radius: 12px;
+    box-shadow: var(--ins-shadow);
+    color: var(--ins-blue);
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--sp-4);
+    font-size: .95rem;
+    font-weight: 600;
     justify-content: center;
+    letter-spacing: 0;
+    min-height: 3.25rem;
+    padding: .75rem 1.25rem;
+    text-align: center;
+    text-transform: none;          /* normal case, not uppercase */
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.h-inscription__actions .h-btn:hover,
+.h-inscription__actions .h-btn:focus-visible {
+    background: #fff;
+    box-shadow: 0 14px 32px rgba(32, 16, 98, .22), 0 3px 8px rgba(32, 16, 98, .1);
+    color: var(--ins-ink);
+    transform: translateY(-2px);
+}
+
+.h-inscription__actions .h-btn:focus-visible {
+    outline: 2px solid #e39374;
+    outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+    .h-inscription__actions {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* --------------------------------------------------------------------------

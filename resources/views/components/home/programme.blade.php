@@ -194,3 +194,10 @@
         </div>
     </section>
 @endif
+<style>
+    /* Arabic: the time column is on the right, so align the time to its right edge,
+   which leaves the gap before the dot that the French layout has. */
+[dir="rtl"] .h-slot__time {
+    text-align: right;
+}
+</style>

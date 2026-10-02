@@ -27,11 +27,13 @@
 
     {{-- Three panels of the brand pattern at falling opacity over a radial
          bloom, so they read as lit objects rather than as flat rectangles. --}}
-    <div class="h-hero__art" aria-hidden="true">
+    <!-- <div class="h-hero__art" aria-hidden="true">
         <span class="h-cube h-cube--back"></span>
         <span class="h-cube h-cube--mid"></span>
         <span class="h-cube h-cube--front"></span>
-    </div>
+
+    
+    </div> -->
 
     <span class="h-hero__bloom" aria-hidden="true"></span>
     <span class="h-hero__sparks" aria-hidden="true"></span>
@@ -44,12 +46,21 @@
                  `brightness(0) invert(1)` maps every pixel of it to white
                  without touching the file on disk. --}}
             <div class="h-hero__logos">
-                <img src="{{ asset((string) config('brand.emblem')) }}"
-                     width="180"
-                     height="250"
-                     alt="{{ __('site.host_institute') }}"
+             
+             
+                       <img src="{{ \App\Support\Brand::logoUrl() }}"
+                     width="{{ $lockup['width'] }}"
+                     height="{{ $lockup['height'] }}"
+                     alt="{{ __('site.site_name') }}"
+                     fetchpriority="high"
                      decoding="async">
-                <img src="{{ \App\Support\Brand::logoUrl() }}"
+                        <img src="{{asset('assets/brand/arabic_itihad_logo.png')}}"
+                     width="{{ $lockup['width'] }}"
+                     height="{{ $lockup['height'] }}"
+                     alt="{{ __('site.site_name') }}"
+                     fetchpriority="high"
+                     decoding="async">
+                       <img src="{{asset('assets/brand/arabcia_logo.png')}}"
                      width="{{ $lockup['width'] }}"
                      height="{{ $lockup['height'] }}"
                      alt="{{ __('site.site_name') }}"

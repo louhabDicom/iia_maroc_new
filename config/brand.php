@@ -87,7 +87,7 @@ return [
         // The large photograph of the "why this conference" band: delegates
         // talking to each other on the exhibition floor.
         'about_main' => [
-            'src' => 'assets/images/about_img1.jpg',
+            'src' => 'assets/images/about_img1.png',
             'width' => 654,
             'height' => 546,
         ],
@@ -96,7 +96,7 @@ return [
         // screen lit. It carries the ARABCIA caption strip, which is why it is
         // shot wide enough for the text to sit inside it.
         'about_inset' => [
-            'src' => 'assets/images/about_img2.jpg',
+            'src' => 'assets/images/about_img2.png',
             'width' => 360,
             'height' => 270,
         ],
