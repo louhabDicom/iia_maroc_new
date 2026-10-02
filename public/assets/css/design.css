@@ -2659,7 +2659,7 @@ body.drawer-open {
    like a flat rectangle of colour. */
 .h-hero {
     background-color: var(--h-deep);
-    background-image: url('/assets/brand/ban_hero_home.png');
+    background-image: url('../brand/ban_hero_home.png');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -2672,7 +2672,7 @@ body.drawer-open {
 
 /* Arabic */
 html[dir="rtl"] .h-hero {
-    background-image: url('/assets/brand/ban_hero_home_ar.png');
+    background-image: url('../brand/ban_hero_home_ar.png');
 }
 
 /* The copy column is first and takes the start side; the artwork is absolutely
@@ -3155,7 +3155,7 @@ html[dir="rtl"] .h-hero {
     --ins-blue: #2338a0;     /* labels + button text (as in the mock-up) */
     --ins-shadow: 0 10px 28px rgba(32, 16, 98, .16), 0 2px 6px rgba(32, 16, 98, .08);
 
-    background-image: url('/assets/brand/ban_inscription.png');
+    background-image: url('../brand/ban_inscription.png');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
