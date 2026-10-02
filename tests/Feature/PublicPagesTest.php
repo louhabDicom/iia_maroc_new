@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enums\MembershipStatus;
-use App\Enums\OtpPurpose;
 use App\Mail\ContactMessage;
 use App\Models\ContactMessage as ContactMessageRecord;
 use App\Models\ContactRoute;
 use App\Models\Country;
 use App\Models\Edition;
-use App\Models\Membership;
 use App\Models\Organisation;
 use App\Models\Room;
 use App\Models\TicketType;
 use App\Models\Track;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -177,25 +173,38 @@ class PublicPagesTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('publicRoutes')]
+    /**
+     * Arabic is the site's default language, so an unprefixed URL is Arabic.
+     *
+     * Asserted rather than assumed, because the failure mode is invisible: the
+     * page still renders, still looks branded, and is simply in the wrong
+     * language. `dir="rtl"` is asserted alongside `lang` because an Arabic page
+     * that is not marked right-to-left is the exact defect the brief calls out.
+     */
+    #[DataProvider('publicRoutes')]
+    public function test_public_pages_render_in_arabic(string $path): void
+    {
+        $this->seedEdition();
+
+        $response = $this->get($path);
+
+        $response->assertOk();
+        $response->assertSee('lang="ar"', escape: false);
+        $response->assertSee('dir="rtl"', escape: false);
+    }
+
+    #[DataProvider('publicRoutes')]
     public function test_public_pages_render_in_french(string $path): void
     {
         $this->seedEdition();
 
-        $response = $this->withHeader('Accept-Language', 'fr')->get($path);
+        $response = $this->get('/fr'.$path);
 
         $response->assertOk();
-
-        // `SetLocale` resolves the prefix, then `?lang=`, then the session, then
-        // the user, then `Accept-Language`, and only then the configured default.
-        // Symfony's `Request::create()` — which backs the test client — always
-        // sends `Accept-Language: en-us,en;q=0.5`, so an unprefixed request is an
-        // *English* request unless the header is pinned. Asserting `lang` here is
-        // what makes this test French rather than merely non-erroring.
         $response->assertSee('lang="fr"', escape: false);
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('publicRoutes')]
+    #[DataProvider('publicRoutes')]
     public function test_public_pages_render_in_english(string $path): void
     {
         $this->seedEdition();
@@ -206,18 +215,25 @@ class PublicPagesTest extends TestCase
         $response->assertSee('lang="en"', escape: false);
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('publicRoutes')]
-    public function test_public_pages_render_in_arabic(string $path): void
+    /**
+     * An unprefixed request must resolve to Arabic even when the browser asks
+     * for something else.
+     *
+     * This is the behaviour change that makes "Arabic is the default" true
+     * rather than aspirational. `Accept-Language` is not consulted: the site's
+     * primary audience is Arabic-speaking, and a delegate whose operating system
+     * is set to English should still reach the Arabic site first and choose to
+     * switch. Pinning the header here is what makes the assertion meaningful —
+     * the test client sends `en-us,en;q=0.5` by default.
+     */
+    public function test_the_browser_language_does_not_override_the_arabic_default(): void
     {
         $this->seedEdition();
 
-        $response = $this->get('/ar'.$path);
+        $response = $this->withHeader('Accept-Language', 'fr-FR,fr;q=0.9,en;q=0.8')
+            ->get('/programme')
+            ->assertOk();
 
-        $response->assertOk();
-
-        // The Arabic pages must actually be marked right-to-left, not merely
-        // contain Arabic text. `dir` is what makes the layout mirror.
-        $response->assertSee('dir="rtl"', escape: false);
         $response->assertSee('lang="ar"', escape: false);
     }
 
@@ -261,14 +277,12 @@ class PublicPagesTest extends TestCase
         ]);
 
         // Pinned to French so the assertion below tests the French rendering of
-        // the stored title. `/programme` is unprefixed, so the request language
-        // falls through to `Accept-Language`, which the test client sets to
-        // English by default (Symfony's Request::create()).
+        // the stored title. `/fr/programme` is the prefixed address, so the
+        // request language comes from the URL rather than from any default.
         //
         // Escaping is left on deliberately: the title contains an apostrophe, so
         // this also asserts that Blade emitted it as an entity rather than raw.
-        $this->withHeader('Accept-Language', 'fr')
-            ->get('/programme')
+        $this->get('/fr/programme')
             ->assertOk()
             ->assertSee('Atelier d\'audit');
     }
@@ -277,9 +291,10 @@ class PublicPagesTest extends TestCase
     {
         $this->seedEdition();
 
-        // The prefix is constrained to en|ar on purpose: a request for /fr/... or
-        // /xx/... must not be treated as a localised page.
-        $this->get('/fr/programme')->assertNotFound();
+        // The prefix is constrained to en|fr on purpose: a request for /ar/... or
+        // /xx/... must not be treated as a localised page. Arabic is the default
+        // and is served unprefixed, so /ar/... has no route at all.
+        $this->get('/ar/programme')->assertNotFound();
         $this->get('/xx/programme')->assertNotFound();
     }
 
@@ -304,7 +319,7 @@ class PublicPagesTest extends TestCase
         foreach ($paths as $path) {
             $this->get('/'.$path)->assertOk("unprefixed /{$path} must render");
             $this->get('/en/'.$path)->assertOk("prefixed /en/{$path} must render");
-            $this->get('/ar/'.$path)->assertOk("prefixed /ar/{$path} must render");
+            $this->get('/fr/'.$path)->assertOk("prefixed /fr/{$path} must render");
         }
     }
 
@@ -315,7 +330,7 @@ class PublicPagesTest extends TestCase
         $english = $this->get('/en/pricing')->assertOk();
 
         // `URL::defaults()` in LocalizeUrls is what makes a `route()` call inside
-        // a view emit /en/... while the French page emits /....
+        // a view emit /en/... while the Arabic page emits /....
         //
         // The full absolute href is asserted rather than a bare `href="/contact"`:
         // `route()` returns an absolute URL, so a root-relative needle would never
@@ -325,29 +340,83 @@ class PublicPagesTest extends TestCase
         $english->assertDontSee('href="'.url('/contact').'"', escape: false);
     }
 
-    public function test_french_is_unprefixed_and_canonical(): void
+    public function test_arabic_is_unprefixed_and_canonical(): void
     {
         $this->seedEdition();
 
-        // The header is pinned for the same reason as in the render test above:
-        // this is about URL generation, not about header negotiation.
-        $response = $this->withHeader('Accept-Language', 'fr')
-            ->get('/tarifs')
-            ->assertOk();
+        $response = $this->get('/tarifs')->assertOk();
 
-        $response->assertSee('lang="fr"', escape: false);
+        $response->assertSee('lang="ar"', escape: false);
         $response->assertSee('href="'.url('/contact').'"', escape: false);
         $response->assertDontSee('href="'.url('/en/contact').'"', escape: false);
+        $response->assertDontSee('href="'.url('/fr/contact').'"', escape: false);
+    }
+
+    /**
+     * The alternates a page advertises have to be real, fetchable addresses.
+     *
+     * This is where the default language is easy to get wrong: building the
+     * Arabic alternate as `route($name, ['locale' => 'ar'])` emits /ar/contact,
+     * which does not exist on this site. The assertion is on the rendered href,
+     * not on the generator, because the href is what a crawler follows.
+     */
+    public function test_the_hreflang_alternates_resolve_to_real_addresses(): void
+    {
+        $this->seedEdition();
+
+        // Read from the French page, not the Arabic one: on a prefixed page
+        // `URL::defaults()` is set, and an empty `locale` parameter loses to it,
+        // which is exactly how an hreflang ends up claiming the French page is
+        // the Arabic one.
+        $response = $this->get('/fr/contact')->assertOk();
+
+        $response->assertSee('hreflang="ar" href="'.url('/contact').'"', escape: false);
+        $response->assertSee('hreflang="en" href="'.url('/en/contact').'"', escape: false);
+        $response->assertDontSee('href="'.url('/ar/contact').'"', escape: false);
     }
 
     public function test_the_locale_switcher_writes_the_session(): void
     {
         $this->seedEdition();
 
-        $this->post('/locale', ['switch_to' => 'ar'])
+        // English rather than Arabic: Arabic is already the default, so switching
+        // to it would pass even if the endpoint did nothing at all.
+        $this->post('/locale', ['switch_to' => 'en'])
             ->assertRedirect();
 
-        $this->assertSame('ar', session('locale'));
+        $this->assertSame('en', session('locale'));
+    }
+
+    /**
+     * Switching to the default language must drop the prefix, and switching to a
+     * non-default one must add it.
+     *
+     * Both directions, because the bug is asymmetric: a switcher that always adds
+     * the prefix produces /ar/contact, which 404s, and one that never adds it
+     * leaves an English visitor on an Arabic page with no way back.
+     */
+    public function test_switching_language_rewrites_the_prefix(): void
+    {
+        $this->seedEdition();
+
+        $this->post('/locale', ['switch_to' => 'fr'])
+            ->assertRedirect('/fr/contact');
+
+        $this->post('/locale', ['switch_to' => 'ar'])
+            ->assertRedirect('/contact');
+    }
+
+    /**
+     * The switcher marks the language being read, so a visitor can see which of
+     * the three they are on without opening the menu.
+     */
+    public function test_the_switcher_marks_the_current_language(): void
+    {
+        $this->seedEdition();
+
+        $this->get('/fr/contact')
+            ->assertOk()
+            ->assertSee('value="fr" class="ux-lang__option" lang="fr" dir="ltr" aria-current="true"', escape: false);
     }
 
     public function test_the_locale_switcher_does_not_accept_an_arbitrary_value(): void

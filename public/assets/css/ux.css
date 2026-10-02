@@ -1725,6 +1725,1167 @@ html:not(.no-js) .ux-reveal.is-revealed {
 .ux-header.is-scrolled {
     backdrop-filter: blur(14px) saturate(160%);
     background-color: rgb(255 255 255 / 92%);
+/* ==========================================================================
+   Language switcher
+   ==========================================================================
+   A <details> disclosure around a POST form. Native disclosure means the panel
+   opens and closes with scripting off, and the only option in it is a real
+   submit button, so "switch language" is a form post either way.
+
+   The panel is anchored with logical properties (`inset-inline-start`) rather
+   than left/right, because Arabic is now the default language and this control
+   is on the front door of an RTL page as often as an LTR one. A hardcoded
+   `right: 0` would throw the panel off the edge of the viewport there.
+
+   Colours are all from the brand palette in app.css: the panel is the white
+   surface, the active option is the indigo wash, and the check is the indigo.
+   Nothing here introduces a colour the brand does not have.
+   ========================================================================== */
+
+.ux-lang {
+    position: relative;
+}
+
+.ux-lang__toggle {
+    align-items: center;
+    /* Light treatment, because it sits on the header's white bar. The earlier
+       translucent-white version was styled for a bar over a dark photograph and
+       disappeared against it. */
+    background: var(--ux-surface-alt);
+    border: 1px solid var(--arab-border);
+    border-radius: 999px;
+    color: var(--arab-primary);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: inherit;
+    font-size: .88rem;
+    font-weight: 600;
+    gap: .45rem;
+    list-style: none;
+    padding: .5rem .9rem;
+    transition: background-color var(--ux-dur-fast) var(--ux-ease-out),
+        border-color var(--ux-dur-fast) var(--ux-ease-out),
+        color var(--ux-dur-fast) var(--ux-ease-out);
+    white-space: nowrap;
+}
+
+/* The disclosure triangle is the browser's, and it sits on the wrong side in
+   Arabic. Removed, and replaced by the chevron glyph below. */
+.ux-lang__toggle::-webkit-details-marker {
+    display: none;
+}
+
+.ux-lang__toggle::marker {
+    content: '';
+}
+
+.ux-lang__toggle:hover,
+.ux-lang[open] > .ux-lang__toggle {
+    background: var(--arab-primary);
+    border-color: var(--arab-primary);
+    color: #fff;
+}
+
+/* Rotates to point up when the panel is open. The transform is on the glyph
+   only, so the label beside it does not move. */
+.ux-lang__chevron {
+    font-size: .7em;
+    transition: transform var(--ux-dur-fast) var(--ux-ease-out);
+}
+
+.ux-lang[open] .ux-lang__chevron {
+    transform: rotate(180deg);
+}
+
+.ux-lang__menu {
+    background: var(--ux-surface);
+    border: 1px solid var(--ux-hairline);
+    border-radius: var(--ux-radius-sm);
+    box-shadow: var(--ux-shadow-3);
+    display: none;
+    flex-direction: column;
+    gap: .15rem;
+    inset-block-start: calc(100% + .6rem);
+    inset-inline-end: 0;
+    min-width: 12rem;
+    overflow: hidden;
+    padding: .5rem;
+    position: absolute;
+    z-index: 40;
+}
+
+/* The panel is hidden by default rather than relying on the browser's own
+   `<details>` hiding.
+
+   That is not a stylistic preference. The UA stylesheet hides a closed
+   `<details>`'s children, but any author `display` declaration on the child
+   outranks it — so declaring `display: flex` here (which the panel needs, to
+   stack its options) left the panel permanently open, over the navigation, on
+   every page. Owning the hidden state explicitly is what makes the control
+   behave, and it works identically whether or not the browser implements
+   `<details>` natively. */
+.ux-lang[open] .ux-lang__menu {
+    display: flex;
+}
+/* ==========================================================================
+   Header
+   ==========================================================================
+   The template lays this out as three things in a row — logo, menu, meta —
+   with `justify-content: space-between`, and physical `margin-left` between
+   the pieces. Both are wrong now that Arabic is the default language: the
+   margins pushed the actions the wrong way on every RTL page, and a
+   space-between row with eight menu items and three actions put a visible gap
+   in the middle of the navigation and let the last item wrap onto two lines.
+
+   So the row is rebuilt here as three flex regions with real gaps, every
+   margin is logical, and the menu is given the one thing it was missing:
+   `white-space: nowrap`, so an item can never break across two lines.
+   ========================================================================== */
+
+/* --- The utility strip above the bar ------------------------------------ */
+
+.header-toplinks {
+    align-items: center;
+    border-block-end: 1px solid var(--ux-hairline);
+    display: flex;
+    font-size: .82rem;
+    gap: .5rem;
+    justify-content: flex-end;
+    min-height: 40px;
+}
+
+/* The strip is a utility row, not a second navigation. It is set quieter than
+   the bar below it so the eye lands on the menu, not on a login link. */
+.header-toplinks .link-log-insc,
+.header-toplinks .btn-logout {
+    color: var(--arab-muted);
+    font-family: 'Roboto', 'Ubuntu', sans-serif;
+    font-size: .82rem;
+    text-decoration: none;
+    transition: color var(--ux-dur-fast) var(--ux-ease-out);
+}
+
+.header-toplinks .link-log-insc:hover,
+.header-toplinks .btn-logout:hover {
+    color: var(--arab-primary);
+}
+
+.header-toplinks .btn-logout {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 0;
+}
+
+.header-toplinks-sep {
+    color: rgb(34 31 31 / 25%);
+}
+
+/* --- The bar itself ------------------------------------------------------ */
+
+.exvent-header-section .header-wrap {
+    align-items: center;
+    background: #fff;
+    display: flex;
+    gap: 1.5rem;
+    justify-content: flex-start;
+    min-height: 78px;
+    padding: 0;
+}
+
+/* The logo is the one thing that must never be squeezed: it is the brand
+   mark, and a squashed lockup is worse than a smaller one. */
+.header-logo {
+    flex: 0 0 auto;
+}
+
+.header-logo a {
+    display: block;
+    line-height: 0;
+}
+
+.header-logo img {
+    /* The Arabic lockup is roughly three times as wide as the Latin pair, so
+       the height is the capped dimension and the width follows from it. */
+    height: auto;
+    max-height: 52px;
+    max-width: min(260px, 40vw);
+    transition: opacity var(--ux-dur-fast) var(--ux-ease-out);
+    width: auto;
+}
+
+.header-logo a:hover img {
+    opacity: .82;
+}
+
+/* --- The menu ------------------------------------------------------------ */
+
+.header-menu {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.header-menu .main-menu {
+    align-items: center;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: .15rem;
+    justify-content: center;
+}
+
+.header-menu .main-menu li {
+    position: relative;
+}
+
+/* The one property whose absence caused the visible defect: without it a long
+   label in a narrow slot wraps, and "اتصل بنا" became two lines while its
+   neighbours stayed on one. */
+.header-menu .main-menu li a {
+    color: var(--ux-ink);
+
+/* --- The action cluster -------------------------------------------------- */
+
+.header-meta {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: .9rem;
+    white-space: nowrap;
+}
+
+/* Physical margins became logical ones: on the Arabic page — the default —
+   `margin-left` pushed the cart, the CTA and the burger in the wrong
+   direction, which is most of what made the bar look assembled rather than
+   designed. */
+.header-cart,
+.header-toggle,
+.header-btn {
+    margin-inline-start: 0;
+}
+
+.header-cart .cart-btn {
+    align-items: center;
+    background: var(--ux-surface-alt);
+    border-radius: 50%;
+    color: var(--arab-primary);
+    display: flex;
+    height: 40px;
+    justify-content: center;
+    position: relative;
+    transition: background-color var(--ux-dur-fast) var(--ux-ease-out);
+    width: 40px;
+}
+
+.header-cart .cart-btn:hover {
+    background: var(--arab-brand-wash);
+}
+
+.header-cart .count {
+    background: var(--arab-gold);
+    border-radius: 999px;
+    color: #fff;
+    font-size: .66rem;
+    font-weight: 700;
+    inset-block-start: 2px;
+    inset-inline-end: 2px;
+    line-height: 1;
+    min-width: 18px;
+    padding: 3px 5px;
+    position: absolute;
+    text-align: center;
+}
+
+/* The call to action is a button. On the 2024 build it was a bare display
+   face with no background, which is why it read as another piece of body text
+   sitting in the bar rather than as the one thing the header is asking for. */
+.header-btn a {
+    align-items: center;
+    background: var(--ux-grad-brand);
+    border-radius: 999px;
+    color: #fff;
+    display: inline-flex;
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: .9rem;
+    font-weight: 700;
+    justify-content: center;
+    letter-spacing: .01em;
+    padding: .7rem 1.5rem;
+    text-decoration: none;
+    transition: box-shadow var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+}
+
+.header-btn a:hover {
+    box-shadow: 0 10px 26px rgb(44 48 139 / 32%);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.header-toggle button {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: center;
+    padding: .5rem 0;
+    width: 32px;
+}
+
+/* --- Widths -------------------------------------------------------------- */
+
+/* Between the large desktop bar and the drawer there is a band where eight
+   menu items and three actions genuinely do not both fit. Below xl the CTA is
+   dropped rather than allowed to wrap the menu onto two lines. */
+@media (max-width: 1399.98px) {
+    .header-btn {
+        display: none;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .header-menu .main-menu li a {
+        font-size: .88rem;
+        padding: .5rem .5rem;
+    }
+
+    .header-menu .main-menu li a::after {
+        inset-inline: .5rem;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .exvent-header-section .header-wrap {
+        gap: 1rem;
+        min-height: 70px;
+    }
+
+    .header-logo img {
+        max-height: 44px;
+        max-width: 60vw;
+    }
+
+    .header-meta {
+        margin-inline-start: auto;
+    }
+}
+
+/* Below the drawer breakpoint the top strip has no room for a login link and
+   a logout button side by side; the drawer carries both. */
+@media (max-width: 575.98px) {
+    .header-toplinks {
+        justify-content: center;
+    }
+}
+
+    display: block;
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: .95rem;
+    font-weight: 500;
+    padding: .55rem .7rem;
+    position: relative;
+    white-space: nowrap;
+    transition: color var(--ux-dur-fast) var(--ux-ease-out);
+}
+
+.header-menu .main-menu li a::after {
+    background: var(--arab-lime);
+    border-radius: 2px;
+    bottom: 0;
+    content: '';
+    height: 2px;
+    inset-inline: .7rem;
+    opacity: 0;
+    position: absolute;
+    transform: scaleX(.4);
+    transition: opacity var(--ux-dur-fast) var(--ux-ease-out),
+        transform var(--ux-dur-fast) var(--ux-ease-out);
+}
+
+.header-menu .main-menu li a:hover {
+    color: var(--arab-primary);
+}
+
+.header-menu .main-menu li a:hover::after,
+.header-menu .main-menu li.active-menu > a {
+    color: var(--arab-primary);
+}
+
+/* The current page is marked with a rule rather than a background. A filled
+   pill behind every visited item turns the bar into a row of chips and
+   competes with the primary call to action. */
+.header-menu .main-menu li.active-menu > a::after {
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+/* The template's own active state is a background; remove it so only the rule
+   above shows. */
+.header-menu .main-menu li.active-menu > a {
+    background: none;
+}
+
+/* The stray triangle the template hangs off every item would now sit on top of
+   the underline rule, so it is suppressed in favour of that one rule. */
+.header-menu .main-menu li .menu-icon::after {
+    display: none;
+}
+
+
+/* In the mobile drawer the panel is not floating over anything, so it is laid
+   out in the flow instead of absolutely — an absolutely positioned panel inside
+   a scrollable drawer is the classic way to produce a control you can scroll
+   past and cannot reach. */
+.ux-lang--menu .ux-lang__menu {
+    background: var(--ux-surface-alt);
+    inset-block-start: auto;
+    inset-inline-end: auto;
+    margin-block-start: .75rem;
+    position: static;
+    width: 100%;
+}
+
+.ux-lang__title {
+    color: var(--arab-muted);
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    margin: 0;
+    padding: .35rem .6rem .5rem;
+    text-transform: uppercase;
+}
+
+.ux-lang__option {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: 9px;
+    color: var(--ux-ink);
+    cursor: pointer;
+    display: flex;
+    font-family: inherit;
+    font-size: .95rem;
+    gap: .6rem;
+    padding: .55rem .6rem;
+    text-align: start;
+    transition: background-color var(--ux-dur-fast) var(--ux-ease-out),
+        color var(--ux-dur-fast) var(--ux-ease-out);
+    width: 100%;
+}
+
+.ux-lang__option:hover,
+.ux-lang__option:focus-visible {
+    background: var(--arab-brand-wash);
+    color: var(--arab-primary);
+}
+
+/* The active language. `aria-current="true"` in the markup is what a screen
+   reader announces; this is the same fact, said visually. */
+.ux-lang__option[aria-current="true"] {
+    background: var(--arab-brand-wash);
+    color: var(--arab-primary);
+    font-weight: 600;
+}
+
+.ux-lang__name {
+    flex: 1 1 auto;
+}
+
+/* The two-letter tag. Decorative, and marked aria-hidden in the markup: it is a
+   second way of saying the same thing as the name, not new information. */
+.ux-lang__code {
+    background: var(--arab-brand-wash);
+    border-radius: 5px;
+    color: var(--arab-primary);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    padding: .12rem .38rem;
+}
+
+.ux-lang__option[aria-current="true"] .ux-lang__code {
+    background: var(--arab-primary);
+    color: #fff;
+}
+
+.ux-lang__check {
+    font-size: .78rem;
+    width: 1em;
+/* ==========================================================================
+   Previous editions gallery
+   ==========================================================================
+   A six-tile mosaic on the dark surface. Two tile widths, assigned by position
+   rather than by a class per tile, so the rhythm is one rule instead of six
+   `nth-child` selectors in a template.
+
+   Tiles keep the source 3:2 ratio and fill their cell with `object-fit: cover`,
+   so a photograph is never letterboxed inside a tile — which is what makes a
+   grid of differently-composed photographs read as one band.
+   ========================================================================== */
+
+.editions-gallery {
+    overflow: hidden;
+}
+
+.editions-gallery__grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Every third tile spans the full width and takes the cinematic 21:9 crop, so
+   the grid has one dominant image per row rather than six equal cells. The
+   first tile leads, which is where the eye lands on a right-to-left page too —
+   `direction` does not change grid column order. */
+.editions-gallery__item:nth-child(3n + 1) {
+    aspect-ratio: 21 / 9;
+    grid-column: 1 / -1;
+}
+
+.editions-gallery__item:not(:nth-child(3n + 1)) {
+    aspect-ratio: 3 / 2;
+}
+
+.editions-gallery__item a {
+    background: rgb(255 255 255 / 6%);
+    border-radius: var(--ux-radius);
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+/* A hairline that catches the brand periwinkle on hover, matching every other
+   card edge on the site. */
+.editions-gallery__item a::after {
+    border: 1px solid transparent;
+    border-radius: inherit;
+    content: '';
+    inset: 0;
+    position: absolute;
+    transition: border-color var(--ux-dur) var(--ux-ease-out);
+}
+
+.editions-gallery__item a:hover::after,
+.editions-gallery__item a:focus-visible::after {
+    border-color: var(--arab-lime);
+}
+
+.editions-gallery__item img {
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--ux-dur-slow) var(--ux-ease-out);
+    width: 100%;
+}
+
+.editions-gallery__item a:hover img,
+.editions-gallery__item a:focus-visible img {
+    transform: scale(1.06);
+}
+
+/* The zoom affordance. Hidden until hover, and hidden from assistive technology
+   permanently — the <a> is the control and its own accessible name already
+   describes it. */
+.editions-gallery__zoom {
+    align-items: center;
+    background: rgb(34 31 31 / 62%);
+    border-radius: 50%;
+    bottom: .85rem;
+    color: #fff;
+    display: flex;
+    height: 2.4rem;
+    inset-inline-end: .85rem;
+    justify-content: center;
+    opacity: 0;
+    position: absolute;
+    transform: scale(.8);
+    transition: opacity var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+    width: 2.4rem;
+}
+
+.editions-gallery__item a:hover .editions-gallery__zoom,
+.editions-gallery__item a:focus-visible .editions-gallery__zoom {
+    opacity: 1;
+    transform: none;
+}
+
+@media (max-width: 575.98px) {
+    .editions-gallery__grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* On a phone the full-bleed tile stops being a rhythm and starts being an
+       interruption, so every tile drops to the same ratio. */
+    .editions-gallery__item:nth-child(3n + 1) {
+        aspect-ratio: 3 / 2;
+        grid-column: auto;
+    }
+}
+
+/* ==========================================================================
+   Contact — direct details and the organising committee
+   ==========================================================================
+   Two card families. Both build on the existing `ux-card` surface rather than
+   the template's `.single-contact`, so they pick up the hover lift and the
+   brand edge that every other card on the site already has.
+
+   Physical left/right is avoided throughout. Arabic is the default language,
+   so these blocks are the common case rather than the exception, and the arrow
+   on the card action has to point the right way in both.
+   ========================================================================== */
+
+}
+/* ==========================================================================
+   Contact — direct details and the organising committee
+   ==========================================================================
+   Two card families. Both build on the existing `ux-card` surface rather than
+   the template's `.single-contact`, so they pick up the hover lift and the
+   brand edge that every other card on the site already has.
+
+   Physical left/right is avoided throughout. Arabic is the default language,
+   so these blocks are the common case rather than the exception, and the arrow
+   on the card action has to point the right way in both.
+   ========================================================================== */
+
+.ux-contact-card {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.ux-contact-card .ux-tile__icon {
+    background: var(--arab-brand-wash);
+    color: var(--arab-primary);
+    margin-bottom: .6rem;
+}
+
+.ux-contact-card__label {
+    color: var(--ux-ink);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.ux-contact-card__value {
+    color: var(--ux-ink-soft);
+    display: flex;
+    flex-direction: column;
+    font-size: .95rem;
+    line-height: 1.5;
+    margin: 0 0 .5rem;
+    overflow-wrap: anywhere;
+}
+
+.ux-contact-card__action {
+    align-items: center;
+    color: var(--arab-primary);
+    display: inline-flex;
+    font-size: .88rem;
+    font-weight: 600;
+    gap: .4rem;
+    margin-block-start: auto;
+    text-decoration: none;
+}
+
+.ux-contact-card__action:hover {
+    color: var(--arab-primary-dark);
+    text-decoration: underline;
+}
+
+/* The arrow nudges along the reading direction rather than sliding sideways,
+   so it travels to the left on the Arabic page without a separate rule. */
+.ux-contact-card__arrow {
+    transition: transform var(--ux-dur-fast) var(--ux-ease-out);
+}
+/* ==========================================================================
+   Document plates
+   ==========================================================================
+   A full-bleed graphic from the organisers' own deck, shown as a framed plate
+   with a caption. Used by the sponsorship page (the package overview, the
+   activations, the timeline).
+
+   The frame does real work: these are very wide documents, and floating one
+   raw on a tinted section makes the section look like it failed to load.
+   ========================================================================== */
+
+.ux-plate {
+    background: var(--ux-surface);
+    border-radius: var(--ux-radius);
+    box-shadow: var(--ux-shadow-1);
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    overflow: hidden;
+    transition: box-shadow var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+}
+
+.ux-plate:hover {
+    box-shadow: var(--ux-shadow-3);
+    transform: translateY(-3px);
+}
+
+.ux-plate__media {
+    background: var(--ux-surface-alt);
+    display: block;
+    overflow: hidden;
+    position: relative;
+}
+
+/* The documents are wildly different aspect ratios (the timeline is 2138x442,
+   the overview 2133x1224). A fixed media height with `object-fit: contain`
+   letterboxes the short one and crops nothing, so every plate in the row reads
+   as the same object. */
+.ux-plate__media img {
+    aspect-ratio: 16 / 9;
+    display: block;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    padding: .75rem;
+    transition: transform var(--ux-dur-slow) var(--ux-ease-out);
+    width: 100%;
+}
+
+.ux-plate:hover .ux-plate__media img {
+    transform: scale(1.03);
+}
+
+.ux-plate__zoom {
+    align-items: center;
+    background: var(--arab-primary);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    height: 2.2rem;
+    inset-block-start: .85rem;
+    inset-inline-end: .85rem;
+    justify-content: center;
+    opacity: 0;
+    position: absolute;
+    transform: scale(.8);
+    transition: opacity var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+    width: 2.2rem;
+}
+
+.ux-plate:hover .ux-plate__zoom,
+.ux-plate__media:focus-visible .ux-plate__zoom {
+    opacity: 1;
+    transform: none;
+}
+
+.ux-plate__body {
+    border-block-start: 1px solid var(--ux-hairline);
+    padding: 1.1rem 1.25rem 1.35rem;
+}
+
+.ux-plate__title {
+    color: var(--ux-ink);
+    font-size: 1rem;
+/* ==========================================================================
+   Programme day sheets
+   ==========================================================================
+   The organisers' own day artwork: very tall sheets (2571x2098 and 2576x2190)
+   shown side by side. The crop is the whole reason for these rules — a
+   document this shape has to be letterboxed into a card, not cropped, or the
+   timetable header that identifies the day is exactly what gets cut off.
+   ========================================================================== */
+
+.ux-sheet {
+    background: var(--ux-surface);
+    border-radius: var(--ux-radius);
+    box-shadow: var(--ux-shadow-1);
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    overflow: hidden;
+    transition: box-shadow var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+}
+
+.ux-sheet:hover {
+    box-shadow: var(--ux-shadow-3);
+    transform: translateY(-3px);
+}
+
+.ux-sheet__media {
+    background: var(--ux-surface-alt);
+    display: block;
+    position: relative;
+}
+
+.ux-sheet__media img {
+    display: block;
+    height: 100%;
+    /* `contain`, not `cover`: the day label lives at the top of the sheet and
+       covering would remove it. */
+    object-fit: contain;
+    transition: transform var(--ux-dur-slow) var(--ux-ease-out);
+    width: 100%;
+}
+
+/* A tall sheet in a half-width column is mostly whitespace at natural size, so
+   the media box is capped rather than allowed to run the full page height. */
+.ux-sheet__media {
+    max-height: 30rem;
+    overflow: hidden;
+}
+
+.ux-sheet:hover .ux-sheet__media img {
+    transform: scale(1.02);
+}
+
+.ux-sheet__zoom {
+    align-items: center;
+    background: var(--arab-primary);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    height: 2.2rem;
+    inset-block-start: .85rem;
+    inset-inline-end: .85rem;
+    justify-content: center;
+    opacity: 0;
+    position: absolute;
+    transform: scale(.8);
+    transition: opacity var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+    width: 2.2rem;
+}
+
+.ux-sheet:hover .ux-sheet__zoom,
+.ux-sheet__media:focus-visible .ux-sheet__zoom {
+    opacity: 1;
+    transform: none;
+}
+
+.ux-sheet__caption {
+    align-items: center;
+    border-block-start: 1px solid var(--ux-hairline);
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    justify-content: space-between;
+    padding: .9rem 1.1rem;
+}
+
+.ux-sheet__hint {
+    color: var(--arab-muted);
+    font-size: .84rem;
+}
+
+/* ==========================================================================
+   Contact — direct details and the organising committee
+   ==========================================================================
+   Two card families. Both build on the existing `ux-card` surface rather than
+   the template's `.single-contact`, so they pick up the hover lift and the
+   brand edge that every other card on the site already has.
+
+   Physical left/right is avoided throughout. Arabic is the default language,
+   so these blocks are the common case rather than the exception, and the arrow
+/* ==========================================================================
+   Footer contact band
+   ==========================================================================
+   A four-column strip of practical details sitting between the navigation and
+   the copyright bar.
+
+   It lives on the footer's own dark surface, so the palette inverts here: the
+   label is the terracotta accent (the only colour with enough contrast against
+   near-black to read at this size) and the value is white. The links get a
+   visible underline offset rather than relying on colour alone, because on a
+   dark surface a colour-only affordance fails for anyone who cannot separate
+   the periwinkle from the near-black.
+   ========================================================================== */
+
+.footer-contact {
+    border-block-start: 1px solid rgb(255 255 255 / 10%);
+    padding-block: 2.25rem;
+}
+
+.footer-contact__row {
+    display: grid;
+    gap: 1.5rem 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.footer-contact__label {
+    color: var(--arab-gold);
+    display: block;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    margin-bottom: .35rem;
+    text-transform: uppercase;
+}
+
+.footer-contact__value {
+    color: rgb(255 255 255 / 88%);
+    display: block;
+    font-size: .95rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.footer-contact__value a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.footer-contact__value a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* Below the tablet breakpoint the auto-fit grid is already one column, so the
+   only thing left is to stop the items reading as a run-on list. */
+@media (max-width: 575.98px) {
+    .footer-contact__row > li + li {
+        border-block-start: 1px solid rgb(255 255 255 / 8%);
+        padding-block-start: 1.25rem;
+    }
+}
+
+/* ==========================================================================
+   Contact — direct details and the organising committee
+   ==========================================================================
+   Two card families. Both build on the existing `ux-card` surface rather than
+   the template's `.single-contact`, so they pick up the hover lift and the
+   brand edge that every other card on the site already has.
+
+   Physical left/right is avoided throughout. Arabic is the default language,
+   so these blocks are the common case rather than the exception, and the arrow
+   on the card action has to point the right way in both.
+   ========================================================================== */
+
+   on the card action has to point the right way in both.
+   ========================================================================== */
+
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0 0 .3rem;
+}
+
+.ux-plate__lede {
+    color: var(--arab-muted);
+    font-size: .88rem;
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* ==========================================================================
+   Contact — direct details and the organising committee
+   ==========================================================================
+   Two card families. Both build on the existing `ux-card` surface rather than
+   the template's `.single-contact`, so they pick up the hover lift and the
+   brand edge that every other card on the site already has.
+
+   Physical left/right is avoided throughout. Arabic is the default language,
+   so these blocks are the common case rather than the exception, and the arrow
+   on the card action has to point the right way in both.
+/* ==========================================================================
+   Organisers
+   ==========================================================================
+   Two cards — ARABCIA and the host institute — with the role carried as a gold
+   tag above the name.
+
+   The card is a two-column flex on wide viewports: the mark sits beside the
+   text rather than above it, because the two marks are the same shape and
+   stacking them puts a decorative element between the heading and the
+   paragraph a reader is about to start. Below the tablet breakpoint the flex
+   collapses and the mark goes above, which is the natural reading order there.
+   ========================================================================== */
+
+.ux-organisation {
+    align-items: flex-start;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.ux-organisation__mark {
+    flex: 0 0 auto;
+    width: 8.5rem;
+}
+
+.ux-organisation__mark img {
+    display: block;
+    height: auto;
+    max-height: 4.5rem;
+    object-fit: contain;
+    width: 100%;
+}
+
+/* Organisation marks are line art on transparent, so a white plate behind them
+   is what keeps a dark-ink logo from disappearing on a white card. */
+.ux-organisation__mark {
+    background: var(--ux-surface-alt);
+    border: 1px solid var(--ux-hairline);
+    border-radius: var(--ux-radius-sm);
+    padding: 1rem;
+}
+
+.ux-organisation__body {
+    min-width: 0;
+}
+
+.ux-organisation__name {
+    color: var(--ux-ink);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: .6rem 0 .5rem;
+}
+
+.ux-organisation__lede {
+    color: var(--ux-ink-soft);
+    font-size: .95rem;
+    line-height: 1.65;
+    margin: 0;
+}
+
+@media (max-width: 991.98px) {
+    .ux-organisation {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .ux-organisation__mark {
+        width: 7rem;
+    }
+}
+
+/* ==========================================================================
+   Contact — direct details and the organising committee
+   ==========================================================================
+   Two card families. Both build on the existing `ux-card` surface rather than
+   the template's `.single-contact`, so they pick up the hover lift and the
+   brand edge that every other card on the site already has.
+
+   Physical left/right is avoided throughout. Arabic is the default language,
+   so these blocks are the common case rather than the exception, and the arrow
+   on the card action has to point the right way in both.
+   ========================================================================== */
+
+   ========================================================================== */
+
+
+.ux-contact-card__action:hover .ux-contact-card__arrow {
+    transform: translateX(4px);
+}
+
+.rtl .ux-contact-card__action:hover .ux-contact-card__arrow {
+    transform: translateX(-4px);
+}
+
+/* --- The committee ------------------------------------------------------- */
+
+.ux-officer {
+    display: flex;
+    flex-direction: column;
+}
+
+.ux-officer__head {
+    align-items: center;
+    display: flex;
+    gap: .9rem;
+    margin-bottom: .9rem;
+}
+
+/* Initials in a brand-gradient disc. Sized in `em` so it scales with the card
+   rather than needing a size per breakpoint. */
+.ux-officer__avatar {
+    align-items: center;
+    background: var(--ux-grad-brand);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    flex: 0 0 auto;
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    height: 3rem;
+    justify-content: center;
+    letter-spacing: .02em;
+    width: 3rem;
+}
+
+.ux-officer__id {
+    min-width: 0;
+}
+
+.ux-officer__name {
+    color: var(--ux-ink);
+    font-size: 1.02rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.ux-officer__role {
+    color: var(--arab-primary);
+    font-size: .88rem;
+    font-weight: 600;
+    margin: .15rem 0 0;
+}
+
+/* The organisation is secondary: it is the same string on all six cards, so it
+   is set quieter than the role to keep the eye on the name. */
+.ux-officer__org {
+    color: var(--arab-muted);
+    font-size: .8rem;
+    margin: .1rem 0 0;
+}
+
+.ux-officer__lines {
+    border-block-start: 1px solid var(--ux-hairline);
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    margin: auto 0 0;
+    padding-block-start: .8rem;
+}
+
+.ux-officer__lines a {
+    align-items: center;
+    color: var(--ux-ink-soft);
+    display: flex;
+    font-size: .87rem;
+    gap: .55rem;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+}
+
+.ux-officer__lines a:hover {
+    color: var(--arab-primary);
+}
+
+.ux-officer__lines i {
+    color: var(--arab-lime);
+    flex: 0 0 auto;
+    font-size: .8rem;
+    width: 1em;
+}
+
+/* --- The form ------------------------------------------------------------ */
+
+.contact-form-wrap {
+    background: var(--ux-surface);
+}
+
+/* The template's own .contact-form-area rules centre a very wide block and
+   print a duplicate heading above the fields; the heading is now in the
+   section header above, so the legacy wrapper only supplies spacing. */
+.ux-section-lede {
+    color: var(--arab-muted);
+    font-size: 1rem;
+    margin: .6rem auto 0;
+    max-width: 46rem;
+}
+
+
     box-shadow: var(--ux-shadow-2);
 }
 

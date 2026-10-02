@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Casts\TranslatedString;
+use Database\Factories\OrganisationFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Organisation extends Model
 {
-    /** @use HasFactory<\Database\Factories\OrganisationFactory> */
+    /** @use HasFactory<OrganisationFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -39,5 +41,19 @@ class Organisation extends Model
     public function edition(): BelongsTo
     {
         return $this->belongsTo(Edition::class);
+    }
+
+    /**
+     * Only the organisations a visitor may see.
+     *
+     * Present on every other content model in the app. Its absence here meant
+     * the home page could not filter, which is why that page had no organisers
+     * band at all: the query that would have produced one could not be written.
+     *
+     * @param  Builder<Organisation>  $query
+     */
+    public function scopePublished(Builder $query): void
+    {
+        $query->where('is_published', true);
     }
 }

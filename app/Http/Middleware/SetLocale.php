@@ -6,6 +6,7 @@ use App\Enums\Locale;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -17,12 +18,21 @@ use Symfony\Component\HttpFoundation\Response;
  *  2. an explicit query   (?lang=ar)         — the language switcher
  *  3. the session                                   — a returning visitor
  *  4. the signed-in user's stored preference
- *  5. Accept-Language                                — a first-time visitor
- *  6. the configured default
+ *  5. the configured default — Arabic
+ *
+ * `Accept-Language` is deliberately NOT consulted. The site is Arabic first: an
+ * Arab confederation's annual conference, hosted in Morocco, whose primary
+ * audience reads Arabic. Auto-negotiating from the browser header meant a
+ * visitor whose operating system happened to be set to French or English landed
+ * on a translated page before ever seeing the default — which is precisely the
+ * outcome the site's language policy is meant to prevent. The browser header is
+ * also a poor signal for this audience: a delegate in Riyadh or Dakar using an
+ * English Windows install should still reach the Arabic site first and choose to
+ * switch. Choosing is a click; being silently switched is a bug.
  *
  * The prefix is stripped from the generated URLs but the resolved locale is
- * pushed into the session, so a visitor who lands on /ar/... and then clicks a
- * link without a prefix keeps reading Arabic.
+ * pushed into the session, so a visitor who lands on /en/... and then clicks a
+ * link without a prefix keeps reading English.
  *
  * Arabic is not a variant of English: it needs `dir="rtl"` on <html> and
  * `app()->setLocale('ar')` for the correct month names. Both happen here rather
@@ -38,7 +48,7 @@ class SetLocale
         app()->setLocale($locale->value);
 
         // Carbon follows the app locale for translatedFormat().
-        \Illuminate\Support\Carbon::setLocale($locale->value);
+        Carbon::setLocale($locale->value);
 
         // `locale_explicit` is a top-level key, not `locale.explicit`: session
         // writes are dot-notation array paths, so a dotted write would clobber
@@ -92,59 +102,7 @@ class SetLocale
             return Locale::parse($user->locale);
         }
 
-        return $this->fromAcceptHeader($request);
-    }
-
-    /**
-     * Match Accept-Language against the available locales.
-     *
-     * Quality values are honoured, because a browser sending
-     * "fr-FR,fr;q=0.9,en;q=0.8,ar;q=0.7" should not end up on English just
-     * because `ar` appears earlier in the configured list.
-     */
-    private function fromAcceptHeader(Request $request): Locale
-    {
-        $header = (string) $request->header('Accept-Language', '');
-
-        if ($header === '') {
-            return Locale::default();
-        }
-
-        $available = array_keys($this->available());
-        $best = null;
-        $bestQuality = -1.0;
-
-        foreach (explode(',', $header) as $part) {
-            $bits = explode(';', trim($part));
-            $tag = strtolower(trim($bits[0]));
-
-            if ($tag === '' || $tag === '*') {
-                continue;
-            }
-
-            $quality = 1.0;
-
-            foreach (array_slice($bits, 1) as $parameter) {
-                if (preg_match('/^q=([0-9.]+)$/', trim($parameter), $m)) {
-                    $quality = (float) $m[1];
-                }
-            }
-
-            $primary = substr($tag, 0, 2);
-
-            if (! in_array($primary, $available, true)) {
-                continue;
-            }
-
-            if ($quality > $bestQuality) {
-                $bestQuality = $quality;
-                $best = $primary;
-            }
-        }
-
-        return $best !== null
-            ? Locale::parse($best)
-            : Locale::default();
+        return Locale::default();
     }
 
     /** @return array<string, string> */

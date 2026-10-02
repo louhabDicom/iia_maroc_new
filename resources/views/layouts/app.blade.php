@@ -34,30 +34,51 @@
     <title>@yield('title', $currentEdition?->titleIn($currentLocale) ?? __('site.site_name'))</title>
     <meta name="description" content="@yield('description', __('meta.description', ['year' => $currentEdition?->year ?? date('Y')]))">
 
-    {{-- The three language variants are the same page, and French — the
-         unprefixed form — is the canonical one.
+    {{-- The three language variants are the same page, and the default language —
+         Arabic — is the unprefixed, canonical one.
 
          The alternates are generated from the current route's canonical name
          rather than from url()->current(), because the current URL is by
-         definition the wrong language for two of the three entries. The `.fr`
+         definition the wrong language for two of the three entries. The `.ar`
          suffix is stripped: it is there only to keep route:list readable, and
          passing it to route() would ask for a URL that does not exist.
+
+         The default language's alternate has to name the *unprefixed* route
+         explicitly. `route('contact', ['locale' => 'ar'])` would emit
+         /ar/contact, which is not an address on this site — and worse, on a
+         prefixed page `URL::defaults()` would win over an empty value and
+         produce /fr/contact, i.e. the hreflang would claim the French page is
+         the Arabic one. Naming the unprefixed route sidesteps both.
 
          Skipped on POST, where there is no GET address for the page and a
          referer-derived URL would be a guess. --}}
     @php
         $currentRouteName = request()->route()?->getName();
-        $canonicalRouteName = $currentRouteName ? str_ends_with($currentRouteName, '.fr')
-            ? substr($currentRouteName, 0, -3)
+        $defaultSuffix = '.'.\App\Enums\Locale::default()->value;
+        $canonicalRouteName = $currentRouteName ? str_ends_with($currentRouteName, $defaultSuffix)
+            ? substr($currentRouteName, 0, -\strlen($defaultSuffix))
             : $currentRouteName
             : null;
+        $unprefixedRouteName = $canonicalRouteName ? $canonicalRouteName.$defaultSuffix : null;
     @endphp
     @if ($currentEdition && $canonicalRouteName && request()->isMethod('GET'))
         <link rel="canonical" href="{{ url()->current() }}">
+
+        {{-- `x-default` points at the unprefixed address: the language-neutral
+             entry search engines fall back to when a visitor's language matches
+             none of the alternatives. --}}
+        @if (Route::has($unprefixedRouteName))
+            <link rel="alternate" hreflang="x-default" href="{{ route($unprefixedRouteName) }}">
+        @endif
+
         @foreach (array_keys($availableLocales ?? []) as $code)
-            @if ($code !== $currentLocale->value && Route::has($canonicalRouteName))
+            @php
+                $isDefaultLocale = $code === \App\Enums\Locale::default()->value;
+                $alternateRoute = $isDefaultLocale ? $unprefixedRouteName : $canonicalRouteName;
+            @endphp
+            @if ($code !== $currentLocale->value && Route::has($alternateRoute))
                 <link rel="alternate" hreflang="{{ $code }}"
-                      href="{{ route($canonicalRouteName, ['locale' => $code]) }}">
+                      href="{{ route($alternateRoute, $isDefaultLocale ? [] : ['locale' => $code]) }}">
             @endif
         @endforeach
     @endif
@@ -67,6 +88,36 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/images/favicon/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/images/favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/images/favicon/favicon-16x16.png') }}">
+
+    {{-- ------------------------------------------------------------------
+        Web fonts.
+
+        Cairo for Arabic, Inter for Latin. Cairo is loaded rather than one of
+        the bundled faces because the bundled Arabic faces are licensed for
+        display use and are weak below 20px: at body size their stroke weight
+        gives way and a paragraph reads as grey. Cairo was designed for exactly
+        this range. AvenirArabic and THESANSARABIC stay in the stack as local
+        fallbacks, so the page is still readable if the CDN is blocked — which
+        matters on a slow connection, not only an offline one.
+
+        Only the Arabic face is requested on Arabic pages and only the Latin
+        face on Latin pages. Requesting both on every page would be ~60KB of
+        font the page cannot use, blocking first paint for an Arabic visitor.
+
+        `display=swap` means text paints immediately in the fallback and swaps
+        when the face arrives, rather than showing an invisible page for the
+        length of the request.
+    ------------------------------------------------------------------ --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    @if ($isRtl ?? false)
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
+    @else
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap">
+    @endif
 
     {{-- Icon fonts: Font Awesome 5 and the template's own flaticon set. --}}
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/all.min.css') }}">
@@ -91,9 +142,36 @@
          something respects prefers-reduced-motion. --}}
     <link rel="stylesheet" href="{{ asset('assets/css/ux.css') }}">
 
+    {{-- The design system, after everything.
+
+         Order is the whole architecture here: style.css is the 2024 template,
+         app.css and ux.css are the layers built on it, and design.css is the
+         layer that decides how the site looks. It goes last so its tokens and
+         its component rules win on equal specificity without needing `!important`
+         anywhere — which is what makes the site restyle from one file, and what
+         keeps a template rule from quietly winning again after a later edit. --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/design.css') }}">
+
+    {{-- The one value the stylesheet cannot know for itself.
+
+         The landing page's geometric motif is a file on disk whose path lives
+         in config/brand.php. Printing it once as a custom property means every
+         rule in design.css can reach it with `var(--h-pattern)` and none of the
+         templates has to inline a background-image; changing the artwork is a
+         config edit, not a find-and-replace across the views. --}}
+    <style>
+        :root { --h-pattern: url('{{ \App\Support\Brand::pattern('modules') }}'); }
+    </style>
+
     @stack('head')
 </head>
 <body class="{{ ($isRtl ?? false) ? 'rtl' : '' }}">
+
+{{-- Skip link. The first focusable thing on the page, so a keyboard user can
+     jump the navigation and the header in one keystroke. It is visually hidden
+     until focused — `visually-hidden-focusable` rather than `display: none`,
+     because an element with `display: none` cannot be focused at all. --}}
+<a href="#main" class="skip-link visually-hidden-focusable">@lang('nav.skip_to_content')</a>
 
 {{-- Scroll progress. Sits above everything, including the header, and is driven
      by ux.js through a custom property. It has no content of its own, so it is
@@ -104,7 +182,7 @@
 
     @include('partials.header')
 
-    <main id="main">
+    <main id="main" tabindex="-1">
         @include('partials.flash')
 
         @yield('content')
@@ -112,13 +190,18 @@
 
     @include('partials.footer')
 
-    {{-- Back to top. The 2024 build shipped this after the footer rather than
-         inside it, so it is positioned against the page, not the footer. --}}
-    <div class="progress-wrap">
-        <svg class="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
-            <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98"/>
+    {{-- Back to top. Fixed to the viewport corner, mirrored by
+         `inset-inline-end` in design.css, and given a real name here — an
+         unlabelled circle around a ring is announced as "graphic" and tells a
+         screen reader user nothing about what pressing it does. --}}
+    <button type="button" class="progress-wrap" data-back-to-top>
+        <svg class="progress-circle" width="22" height="22" viewBox="0 0 100 100" aria-hidden="true">
+            <path d="M50,10 a40,40 0 1,1 -0.01,0" transform="rotate(-90 50 50)"/>
         </svg>
-    </div>
+        <span class="visually-hidden">@lang('action.back_to_top')</span>
+    </button>
+
+    <x-cookie-banner />
 
 </div>
 
@@ -143,6 +226,12 @@
      final DOM and so nothing it adds is removed by a plugin that assumes it
      owns the page. --}}
 <script src="{{ asset('assets/js/ux.js') }}" defer></script>
+
+{{-- The interaction layer for the rebuilt shell and landing page: sticky
+     header, mobile drawer, countdown, count-up, video button. Deferred and
+     after ux.js so the two initialise in order. Each feature is wrapped
+     independently, so one failure cannot take the rest with it. --}}
+<script src="{{ asset('assets/js/design.js') }}" defer></script>
 
 @stack('scripts')
 </body>

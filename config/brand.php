@@ -66,4 +66,49 @@ return [
 
     'pattern_modules' => 'assets/brand/pattern-modules.png',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Landing page imagery
+    |--------------------------------------------------------------------------
+    |
+    | Placeholders — and the single place the real photographs get swapped in.
+    | `src` is a path under `public/`, and each entry travels with the file's
+    | intrinsic `width`/`height` so the markup can reserve the correct box
+    | before the bytes arrive. A collage that reflows as its photographs land
+    | is the most visible jank on the whole page.
+    |
+    | Swapping one in is two edits: drop the file in `public/assets/images/`
+    | and point this entry at it. Nothing else in the templates names a path.
+    |
+    */
+
+    'homepage' => [
+
+        // The large photograph of the "why this conference" band: delegates
+        // talking to each other on the exhibition floor.
+        'about_main' => [
+            'src' => 'assets/images/about_img1.jpg',
+            'width' => 654,
+            'height' => 546,
+        ],
+
+        // The smaller card that overlaps it: a plenary hall with the session
+        // screen lit. It carries the ARABCIA caption strip, which is why it is
+        // shot wide enough for the text to sit inside it.
+        'about_inset' => [
+            'src' => 'assets/images/about_img2.jpg',
+            'width' => 360,
+            'height' => 270,
+        ],
+
+        // Shown in the partners band when no sponsor row carries a logo yet.
+        // One designed mark reads as a wall of one; an empty dark block reads
+        // as a page that failed to load.
+        'partners_fallback' => [
+            'src' => 'assets/images/logo/cih-logo.png',
+            'width' => 349,
+            'height' => 800,
+        ],
+    ],
+
 ];

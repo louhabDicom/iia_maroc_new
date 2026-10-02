@@ -7,211 +7,271 @@
 
     <x-page-hero
         :title="__('contact.title')"
+        :eyebrow="$edition?->identityLabel()"
         :crumbs="[__('nav.contact') => null]"
+        :facts="$edition ? [
+            ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
+            ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
+        ] : []"
         image="assets/images/bg/map_bg.png" />
 
+    {{-- ---------------------------------------------------------------------
+        Reach us directly.
+
+        Four cards, because a delegate arriving in Rabat has four different
+        questions and the 2024 page answered them in one undifferentiated block:
+        where is it, how do I phone, who do I email, and who is running this.
+        Each card carries an answer a person can act on — a `tel:` link and a
+        `mailto:` link, not a string of digits to re-type.
+
+        The cards themselves are built in the controller. Deciding that a card is
+        worth printing is a data question, and answering it here is what keeps the
+        template free of the `@if` tower the 2024 build needed.
+    --------------------------------------------------------------------- --}}
+    @if ($directCards !== [])
+        <section class="ux-section section-padding-03" aria-labelledby="reach-heading">
+            <div class="container">
+
+                <x-section-head
+                    id="reach-heading"
+                    :eyebrow="__('contact.direct')"
+                    :title="__('contact.reach_us')"
+                    :lede="__('contact.reach_lede')"
+                    :level="2"
+                    align="center"
+                    class="mb-5" />
+
+                <div class="row g-4" data-ux-stagger="80">
+                    @foreach ($directCards as $card)
+                        <div class="col-lg-3 col-md-6 ux-reveal">
+                            <div class="ux-card ux-card--edge ux-card--lift h-100 p-4 ux-contact-card">
+
+                                <span class="ux-tile__icon" aria-hidden="true">
+                                    <i class="fas {{ $card['icon'] }}"></i>
+                                </span>
+
+                                <h3 class="ux-contact-card__label">{{ $card['label'] }}</h3>
+
+                                {{-- `dir="ltr"`: an address, a mailbox and a
+                                     telephone number are all reordered by the bidi
+                                     algorithm when they sit inside Arabic text
+                                     without it. --}}
+                                <p class="ux-contact-card__value" dir="ltr">
+                                    @foreach ($card['lines'] as $line)
+                                        <span>{{ $line }}</span>
+                                    @endforeach
+                                </p>
+
+                                @if ($card['action'])
+                                    {{-- Kept on one line on purpose: a multi-line
+                                         `@if` inside a tag's attribute list is
+                                         compiled as PHP and the whole page dies
+                                         with a parse error. --}}
+                                    <a href="{{ $card['action']['href'] }}" class="ux-contact-card__action" @if ($card['action']['external']) rel="noopener noreferrer" target="_blank" @endif>
+                                        {{ $card['action']['label'] }}
+                                        <i class="fas fa-arrow-right ux-contact-card__arrow" aria-hidden="true"></i>
+                                    </a>
+                                @endif
+
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+    {{-- ---------------------------------------------------------------------
+        The organising committee.
+
+        The six named officers of IIA Maroc, with the direct line and mailbox the
+        organisers themselves publish on their own documents. This is the part of
+        the page that used to be missing entirely: the 2024 build asked a visitor
+        to write to a form and then gave them nobody to write to.
+    --------------------------------------------------------------------- --}}
+    @if ($team->isNotEmpty())
+        <section class="ux-section section-padding-03 ux-section--tint"
+                 aria-labelledby="committee-heading">
+            <div class="container">
+
+                <x-section-head
+                    id="committee-heading"
+                    :eyebrow="__('site.host_institute')"
+                    :title="__('contact.committee')"
+                    :lede="__('contact.committee_lede')"
+                    :level="2"
+                    align="center"
+                    class="mb-5" />
+
+                <ul class="row g-4 list-unstyled" data-ux-stagger="70">
+                    @foreach ($team as $member)
+                        <li class="col-lg-4 col-md-6 ux-reveal">
+                            <div class="ux-card ux-card--edge ux-card--lift h-100 p-4 ux-officer">
+
+                                <div class="ux-officer__head">
+                                    {{-- Initials rather than a silhouette: there is
+                                         no photograph of these officers on file, and
+                                         a stock avatar would put a stranger's face
+                                         under a real person's name. --}}
+                                    <span class="ux-officer__avatar" aria-hidden="true">
+                                        {{ $member->initials() }}
+                                    </span>
+
+                                    <div class="ux-officer__id">
+                                        <h3 class="ux-officer__name">{{ $member->name }}</h3>
+
+                                        @if ($member->role)
+                                            <p class="ux-officer__role">{{ $member->role }}</p>
+                                        @endif
+
+                                        @if ($member->organisation)
+                                            <p class="ux-officer__org">{{ $member->organisation }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <ul class="ux-officer__lines list-unstyled">
+                                    @if ($member->phone)
+                                        <li>
+                                            <a href="tel:{{ preg_replace('/[^0-9+]/', '', $member->phone) }}" dir="ltr">
+                                                <i class="fas fa-phone" aria-hidden="true"></i>
+                                                <span>{{ $member->phone }}</span>
+                                            </a>
+                                        </li>
+                                    @endif
+
+                                    @if ($member->email)
+                                        <li>
+                                            <a href="mailto:{{ $member->email }}" dir="ltr">
+                                                <i class="fas fa-envelope" aria-hidden="true"></i>
+                                                <span>{{ $member->email }}</span>
+                                            </a>
+                                        </li>
+                                    @endif
+                                </ul>
+
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </section>
+    @endif
+
+        </section>
+    @endif
+
+    {{-- ---------------------------------------------------------------------
+        The form. Deliberately on the same page as the people above: a visitor
+        who has just read who to email and then meets a form has been told to do
+        the harder thing.
+    --------------------------------------------------------------------- --}}
     <div class="contact-form-section section-padding-03">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-md-10 text-center">
-                    <h5 class="sub-title orange">@lang('contact.intro')</h5>
-                    <h3 class="title mt-2">@lang('contact.title')</h3>
+                <div class="col-md-10 text-center mb-5">
+                    <span class="ux-eyebrow">@lang('contact.form_eyebrow')</span>
+                    <h2 class="title mt-2">@lang('contact.form_title')</h2>
+                    <p class="ux-section-lede">@lang('contact.form_lede')</p>
                 </div>
             </div>
 
-            <div class="row g-5 justify-content-between mt-1">
-                <div class="section-title-wrap">
-                    <div class="section-title">
-                        <h2>@lang('contact.direct')</h2>
-                    </div>
-                </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-9">
+                    <div class="contact-form-wrap ux-card ux-card--edge p-4 p-md-5">
+                        <form method="POST" action="{{ route('contact.store') }}" class="contact-form">
+                            @csrf
 
-                <div class="col-lg-5">
-                    {{-- Direct details, from the edition row. Shown inside an
-                         address element so a screen reader announces the block
-                         correctly rather than as three loose strings. --}}
-                    @if ($edition?->contact_email || $edition?->contact_phone || $edition?->venue_address)
-                        <div class="single-contact">
-                            <span class="contact-icon">
-                                <img src="{{ asset('assets/images/icons/contact/localisation.png') }}"
-                                     alt="" aria-hidden="true">
-                            </span>
-                            <div class="contact-info w-75">
-                                <h4 class="contact-label">@lang('contact.office')</h4>
-                                <p class="address">
-                                    @if ($edition?->venue_address)
-                                        {!! nl2br(e($edition->venue_address)) !!}
-                                    @endif
-                                    @if ($edition?->contact_phone)
-                                        {{-- dir="ltr" so a number is not bidi-reordered on the
-                                             Arabic page. --}}
-                                        <span class="d-block mt-1" dir="ltr">{{ $edition->contact_phone }}</span>
-                                    @endif
-                                </p>
-                            </div>
-                        </div>
-                    @endif
+                            <div class="row g-4">
+                                <div class="col-lg-6">
+                                    <x-form.field name="name" :label="__('contact.name')" required>
+                                        <input type="text" name="name" id="name" required
+                                               autocomplete="name"
+                                               value="{{ old('name') }}"
+                                               @class(['comment-form-input', 'is-invalid' => $errors->has('name')])>
+                                        @error('name') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
+                                    </x-form.field>
+                                </div>
 
-                    <div class="single-contact">
-                        <span class="contact-icon orange-color">
-                            <img src="{{ asset('assets/images/icons/contact/phone.png') }}"
-                                 alt="" aria-hidden="true">
-                        </span>
-                        <div class="contact-info w-75">
-                            <h4 class="contact-label">@lang('contact.phone')</h4>
-                            <p class="address" dir="ltr">
-                                @if ($edition?->contact_phone)
-                                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', $edition->contact_phone) }}">
-                                        {{ $edition->contact_phone }}
-                                    </a>
-                                @else
-                                    <span class="text-muted">@lang('state.not_available')</span>
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                                <div class="col-lg-6">
+                                    <x-form.field name="email" :label="__('contact.email')" required>
+                                        <input type="email" name="email" id="email" required
+                                               autocomplete="email"
+                                               dir="ltr"
+                                               value="{{ old('email') }}"
+                                               @class(['comment-form-input', 'is-invalid' => $errors->has('email')])>
+                                        @error('email') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
+                                    </x-form.field>
+                                </div>
 
-                <div class="col-lg-5">
-                    <div class="single-contact">
-                        <span class="contact-icon blue-color">
-                            <img src="{{ asset('assets/images/icons/contact/email.png') }}"
-                                 alt="" aria-hidden="true">
-                        </span>
-                        <div class="contact-info w-75">
-                            <h4 class="contact-label">@lang('contact.email')</h4>
-                            <p class="address" dir="ltr">
-                                @if ($edition?->contact_email)
-                                    <a href="mailto:{{ $edition->contact_email }}">{{ $edition->contact_email }}</a>
-                                @else
-                                    <span class="text-muted">@lang('state.not_available')</span>
-                                @endif
-                            </p>
-                        </div>
-                    </div>
+                                <div class="col-lg-6">
+                                    <x-form.field name="phone" :label="__('contact.phone')">
+                                        <input type="tel" name="phone" id="phone"
+                                               autocomplete="tel"
+                                               dir="ltr"
+                                               value="{{ old('phone') }}"
+                                               class="comment-form-input text-start">
+                                    </x-form.field>
+                                </div>
 
-                    <div class="single-contact">
-                        <span class="contact-icon blue-color">
-                            <img src="{{ asset('assets/images/icons/contact/internet.png') }}"
-                                 alt="" aria-hidden="true">
-                        </span>
-                        <div class="contact-info w-75">
-                            <h4 class="contact-label">@lang('contact.website')</h4>
-                            <p class="address" dir="ltr">
-                                <a href="{{ route('home') }}">{{ parse_url(config('app.url'), PHP_URL_HOST) ?? 'www.arabcia.com' }}</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                                <div class="col-lg-6">
+                                    <x-form.field name="organisation" :label="__('contact.organisation')">
+                                        <input type="text" name="organisation" id="organisation"
+                                               autocomplete="organization"
+                                               value="{{ old('organisation') }}"
 
-            {{-- The topic decides the delivery route, so it is a required
-                 select rather than free text. The options are the active
-                 `contact_routes` rows. --}}
-            <div class="contact-form-wrap mt-4">
-                <form method="POST" action="{{ route('contact.store') }}" class="contact-form">
-                    @csrf
+                                <div class="col-lg-6">
+                                    <x-form.field name="subject_type" :label="__('contact.topic')"
+                                                  :help="__('contact.topic_hint')" required>
+                                        <select name="subject_type" id="subject_type" required
+                                                @class(['comment-form-input', 'is-invalid' => $errors->has('subject_type')])>
+                                            <option value="" disabled @selected(old('subject_type') === null)>
+                                                @lang('contact.choose_topic')
+                                            </option>
+                                            @foreach ($topics as $topic)
+                                                <option value="{{ $topic['value'] }}"
+                                                    @selected(old('subject_type') === $topic['value'])>
+                                                    {{ $topic['label'] }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('subject_type') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
+                                    </x-form.field>
+                                </div>
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="section-title-wrap text-center">
-                                <div class="section-title">
-                                    <h2 class="title">@lang('contact.topic')</h2>
+                                <div class="col-lg-6">
+                                    <x-form.field name="subject" :label="__('contact.subject')">
+                                        <input type="text" name="subject" id="subject"
+                                               value="{{ old('subject') }}"
+                                               class="comment-form-input">
+                                    </x-form.field>
+                                </div>
+
+                                <div class="col-12">
+                                    <x-form.field name="message" :label="__('contact.message')" required>
+                                        {{-- `maxlength` matches the server-side `max:5000`, so the
+                                             visitor is told before submitting rather than after. --}}
+                                        <textarea name="message" id="message" rows="6" required
+                                                  maxlength="5000"
+                                                  @class(['comment-form-input', 'is-invalid' => $errors->has('message')])>{{ old('message') }}</textarea>
+                                        @error('message') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
+                                    </x-form.field>
+                                </div>
+
+                                <div class="col-12 d-flex justify-content-center">
+                                    <button type="submit" class="ux-btn ux-btn--primary" data-ux-magnetic="0.18">
+                                        <span>@lang('contact.submit')</span>
+                                    </button>
                                 </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
-
-                    <div class="row g-4 justify-content-center">
-                        <div class="col-lg-6">
-                            <x-form.field name="name" :label="__('contact.name')" required>
-                                <input type="text" name="name" id="name" required
-                                       autocomplete="name"
-                                       value="{{ old('name') }}"
-                                       @class(['comment-form-input', 'is-invalid' => $errors->has('name')])>
-                                @error('name') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
-                            </x-form.field>
-                        </div>
-
-                        <div class="col-lg-6">
-                            <x-form.field name="email" :label="__('contact.email')" required>
-                                <input type="email" name="email" id="email" required
-                                       autocomplete="email"
-                                       dir="ltr"
-                                       value="{{ old('email') }}"
-                                       @class(['comment-form-input', 'text-start', 'is-invalid' => $errors->has('email')])>
-                                @error('email') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
-                            </x-form.field>
-                        </div>
-
-                        <div class="col-lg-6">
-                            <x-form.field name="phone" :label="__('contact.phone')">
-                                {{-- dir="ltr" so a number typed into the Arabic form is not
-                                     bidi-reordered. Validation keeps it optional and free of
-                                     format assumptions: it is a courtesy field for a callback,
-                                     not the verified identity the OTP flow uses. --}}
-                                <input type="tel" name="phone" id="phone"
-                                       autocomplete="tel"
-                                       dir="ltr"
-                                       value="{{ old('phone') }}"
-                                       class="comment-form-input text-start">
-                            </x-form.field>
-                        </div>
-
-                        <div class="col-lg-6">
-                            <x-form.field name="organisation" :label="__('contact.organisation')">
-                                <input type="text" name="organisation" id="organisation"
-                                       autocomplete="organization"
-                                       value="{{ old('organisation') }}"
-                                       class="comment-form-input">
-                            </x-form.field>
-                        </div>
-
-                        <div class="col-lg-6">
-                            <x-form.field name="subject_type" :label="__('contact.topic')"
-                                          :help="__('contact.topic_hint')" required>
-                                <select name="subject_type" id="subject_type" required
-                                        @class(['comment-form-input', 'is-invalid' => $errors->has('subject_type')])>
-                                    <option value="" disabled @selected(old('subject_type') === null)>
-                                        @lang('contact.choose_topic')
-                                    </option>
-                                    @foreach ($topics as $topic)
-                                        <option value="{{ $topic['value'] }}"
-                                            @selected(old('subject_type') === $topic['value'])>
-                                            {{ $topic['label'] }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('subject_type') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
-                            </x-form.field>
-                        </div>
-
-                        <div class="col-lg-6">
-                            <x-form.field name="subject" :label="__('contact.subject')">
-                                <input type="text" name="subject" id="subject"
-                                       value="{{ old('subject') }}"
-                                       class="comment-form-input">
-                            </x-form.field>
-                        </div>
-
-                        <div class="col-12">
-                            <x-form.field name="message" :label="__('contact.message')" required>
-                                {{-- `maxlength` matches the server-side `max:5000` so the
-                                     visitor is told before submitting rather than after. --}}
-                                <textarea name="message" id="message" rows="6" required
-                                          maxlength="5000"
-                                          @class(['comment-form-input', 'is-invalid' => $errors->has('message')])>{{ old('message') }}</textarea>
-                                @error('message') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
-                            </x-form.field>
-                        </div>
-
-                        <div class="col-lg-3 d-flex justify-content-center">
-                            <button type="submit" class="btn-cirle">@lang('contact.submit')</button>
-                        </div>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 
 @endsection
+
+                                               class="comment-form-input">
+                                    </x-form.field>
+                                </div>
+

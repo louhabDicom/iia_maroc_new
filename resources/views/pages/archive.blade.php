@@ -95,5 +95,58 @@
                 @endif
             </section>
         @endif
+
+    {{-- The editions, as photographs.
+
+         The archive is otherwise a list of dates and figures, which is exactly
+         what a table is for and exactly what does not make anyone want to come
+         back next year. These are the organisers' own photographs of the
+         conferences that came before. --}}
+    @php
+        $archivePhotos = array_values(array_filter(array_map(
+            static fn (int $index): ?string => file_exists(public_path("assets/images/conference/previous-editions-0{$index}.jpg"))
+                ? "assets/images/conference/previous-editions-0{$index}.jpg"
+                : null,
+            range(1, 6),
+        )));
+    @endphp
+
+    @if ($archivePhotos !== [])
+        <section class="ux-section section-padding-03" aria-labelledby="archive-gallery-heading">
+            <div class="container">
+
+                <x-section-head
+                    id="archive-gallery-heading"
+                    :eyebrow="__('nav.archive')"
+                    :title="__('archive.gallery_title')"
+                    :lede="__('archive.gallery_lede')"
+                    :level="2"
+                    align="center"
+                    class="mb-5" />
+
+                <ul class="editions-gallery__grid list-unstyled" data-ux-stagger="60">
+                    @foreach ($archivePhotos as $index => $photo)
+                        <li class="editions-gallery__item ux-reveal ux-reveal-scale"
+                            style="--ux-reveal-delay: {{ $index * 60 }}ms">
+                            <a href="{{ asset($photo) }}"
+                               data-lightbox="archive"
+                               data-caption="{{ __('home.editions_caption', ['number' => $index + 1]) }}">
+                                <img src="{{ asset($photo) }}"
+                                     alt="{{ __('home.editions_alt', ['number' => $index + 1]) }}"
+                                     width="613"
+                                     height="408"
+                                     loading="lazy"
+                                     decoding="async">
+                                <span class="editions-gallery__zoom" aria-hidden="true">
+                                    <i class="fas fa-expand"></i>
+                                </span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </section>
+    @endif
+
     </div>
 @endsection

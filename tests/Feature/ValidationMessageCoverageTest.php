@@ -94,7 +94,11 @@ class ValidationMessageCoverageTest extends TestCase
     public function test_a_failed_registration_never_shows_a_translation_key(): void
     {
         foreach (['fr', 'en', 'ar'] as $locale) {
-            $prefix = $locale === 'fr' ? '' : $locale.'/';
+            // Arabic is the default language and is served unprefixed; French
+            // and English both carry their code. Derived from the default rather
+            // than hardcoded to 'fr', so it cannot silently invert when the
+            // default language changes again.
+            $prefix = $locale === config('app.default_locale') ? '' : $locale.'/';
 
             $response = $this->withHeaders([
                 'Referer' => url($prefix.'register'),

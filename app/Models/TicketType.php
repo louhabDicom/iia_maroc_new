@@ -102,6 +102,16 @@ class TicketType extends Model
         return Money::format($minorUnits, $this->currency);
     }
 
+    /**
+     * The figure and the currency code separately, e.g. "7 500" and "MAD".
+     *
+     * @return array{amount: string, currency: string}
+     */
+    public function amountParts(int $minorUnits): array
+    {
+        return Money::parts($minorUnits, $this->currency);
+    }
+
     public function priceForLabel(bool $isMember): string
     {
         return $this->formatAmount($this->priceFor($isMember));

@@ -7,10 +7,13 @@ use App\Casts\TranslatedString;
 use App\Casts\TranslationPayload;
 use App\Enums\EditionStatus;
 use App\Enums\Locale;
+use Database\Factories\EditionFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * One edition of the conference.
@@ -31,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Edition extends Model
 {
-    /** @use HasFactory<\Database\Factories\EditionFactory> */
+    /** @use HasFactory<EditionFactory> */
     use HasFactory;
 
     /**
@@ -131,6 +134,7 @@ class Edition extends Model
     {
         return $this->hasMany(Document::class);
     }
+
     // --- Scopes ----------------------------------------------------------
     /** @param  Builder<Edition>  $query */
     public function scopeCurrent(Builder $query): void
@@ -173,8 +177,11 @@ class Edition extends Model
      * Deliberately built from the date columns rather than a hardcoded string,
      * because the 2024 site carried the literal string "juin 2024 - Casablanca"
      * in the language files.
+     *
+     * The default is the site's default language rather than a literal, so a
+     * caller that forgets to pass one gets the same language the page is in.
      */
-    public function dateLine(Locale|string $locale = 'fr'): string
+    public function dateLine(Locale|string|null $locale = null): string
     {
         $locale = $locale instanceof Locale ? $locale : Locale::parse($locale);
 
@@ -196,7 +203,7 @@ class Edition extends Model
         return "{$start} & {$end}";
     }
 
-    public function venueLine(Locale|string $locale = 'fr'): string
+    public function venueLine(Locale|string|null $locale = null): string
     {
         $locale = $locale instanceof Locale ? $locale : Locale::parse($locale);
 
@@ -204,10 +211,30 @@ class Edition extends Model
     }
 
     /**
+     * A map link for the venue, derived from the stored coordinates.
+     *
+     * Derived rather than seeded so there is exactly one source of truth for
+     * where the venue is: a hand-typed map URL and a lat/lng pair drift apart,
+     * and the map is the one thing on the site a delegate will actually act on.
+     *
+     * Returns null when either coordinate is missing, which is what the venue
+     * page checks before rendering a "open the map" call to action.
+     */
+    public function mapUrl(): ?string
+    {
+        if (! filled($this->venue_lat) || ! filled($this->venue_lng)) {
+            return null;
+        }
+
+        return 'https://www.google.com/maps/search/?api=1'
+            .'&query='.rawurlencode($this->venue_lat.','.$this->venue_lng);
+    }
+
+    /**
      * Month names come from the app locale, so Arabic renders a real Arabic
      * month rather than the English one with an Arabic page around it.
      */
-    private function localisedDate(\Illuminate\Support\Carbon $date, Locale $locale, string $format): string
+    private function localisedDate(Carbon $date, Locale $locale, string $format): string
     {
         $previous = app()->getLocale();
         app()->setLocale($locale->value);
@@ -248,7 +275,7 @@ class Edition extends Model
     }
 
     /** Every edition except the current one, newest first: powers the archive. */
-    public static function archive(): \Illuminate\Database\Eloquent\Collection
+    public static function archive(): Collection
     {
         return static::query()
             ->whereKeyNot(static::current()?->getKey() ?? 0)

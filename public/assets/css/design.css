@@ -1,0 +1,3611 @@
+/* ==========================================================================
+   ARABCIA 2026 — design system
+   ==========================================================================
+   Loaded LAST, after style.css, app.css and ux.css, so it wins on equal
+   specificity. It is the layer that decides how the site *looks*; the files
+   before it decide how it behaves.
+
+   Everything is a token. A component never names a colour, a radius or a
+   spacing step directly — which is what makes the whole page restyle from one
+   block at the top of this file, and what stops a "quick fix" in one section
+   from quietly disagreeing with another.
+
+   DIRECTION
+   Every rule below uses logical properties (`margin-inline`,
+   `inset-inline`, `padding-inline`) and never `left`/`right`. Arabic is the
+   default language of this site, so RTL is the common case and LTR is the
+   special one. `left`/`right` are correct in exactly one direction and wrong
+   in the other; logical properties are correct in both.
+
+   LOAD ORDER NOTE
+   This file assumes style.css/app.css/ux.css are already applied, so anything
+   declared here wins. Where a rule is a deliberate override of the template,
+   that is said in a comment rather than left to be rediscovered.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Tokens
+   -------------------------------------------------------------------------- */
+
+:root {
+    /* --- Palette ---------------------------------------------------------
+       The brand colours, unchanged from the 2026 guidelines
+       (#2a206f #2c308b #586be1 #df8663 #7384ff #221f1f #424143). The three
+       tints below are derived from those, not invented: each is the accent
+       at a low alpha, so they read as a wash of the same hue.
+
+       `--d-navy` is the one genuinely new value. The brand's darkest surface
+       (#221f1f) is a warm near-black, which is right for body copy but too
+       neutral to carry a footer. It is a desaturated, slightly bluer relative
+       of #2a206f so the footer belongs to the same brand. */
+    --d-navy: #1c1940;
+    --d-navy-deep: #151232;
+    --d-indigo: #2c308b;
+    --d-indigo-dark: #2a206f;
+    --d-periwinkle: #7384ff;
+    --d-lilac: #586be1;
+    --d-clay: #df8663;
+    --d-clay-dark: #c56a45;
+
+    /* "Mint" is reserved for a single job: saying something is available or
+       open. Using it for decoration would put a green next to the indigo and
+       the periwinkle and make both look like status colours. */
+    --d-mint: #2fbf9f;
+    --d-mint-wash: #e8f8f4;
+
+    --d-ink: #221f1f;
+    --d-ink-soft: #424143;
+    --d-muted: #6b6b6f;
+
+    --d-surface: #ffffff;
+    --d-surface-alt: #f6f5fb;
+    --d-surface-sunk: #efeef7;
+    --d-line: #e5e3ef;
+    --d-line-strong: #cbc7de;
+
+    --d-white: #fff;
+
+    /* --- Spacing: 8px base ------------------------------------------------
+       One scale, named by step rather than by pixel value, so a rule says
+       what it means ("this is a section gap") instead of how big it is. */
+    --sp-1: 0.25rem;   /*  4px */
+    --sp-2: 0.5rem;    /*  8px */
+    --sp-3: 0.75rem;   /* 12px */
+    --sp-4: 1rem;      /* 16px */
+    --sp-5: 1.5rem;    /* 24px */
+    --sp-6: 2rem;      /* 32px */
+    --sp-7: 3rem;      /* 48px */
+    --sp-8: 4rem;      /* 64px */
+    --sp-9: 6rem;      /* 96px */
+
+    /* The section rhythm. 96px desktop, 56px mobile — the two numbers the
+       brief asks for, expressed once so every section obeys them. */
+    --section-y: 6rem;
+    --section-y-sm: 3.5rem;
+
+    /* --- Radius ----------------------------------------------------------- */
+    --r-sm: 8px;
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-xl: 28px;
+    --r-pill: 999px;
+
+    /* --- Shadows ----------------------------------------------------------
+       Named by what they are for, not by how dark they are. */
+    --sh-1: 0 1px 2px rgb(28 25 64 / 6%), 0 2px 8px rgb(28 25 64 / 4%);
+    --sh-2: 0 4px 14px rgb(28 25 64 / 8%), 0 12px 32px rgb(28 25 64 / 6%);
+    --sh-3: 0 12px 32px rgb(28 25 64 / 10%), 0 32px 64px rgb(28 25 64 / 8%);
+    --sh-brand: 0 10px 30px rgb(44 48 139 / 28%);
+
+    /* --- Type scale -------------------------------------------------------
+       Fluid, clamped, and anchored so nothing renders below 16px. The
+       minimum is the floor of the whole scale: `clamp()` never goes under its
+       first argument, so the smallest step is already readable. */
+    --t-xs: clamp(0.8125rem, 0.78rem + 0.16vw, 0.875rem);   /* 13 → 14 */
+    --t-sm: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);        /* 15 → 16 */
+    --t-base: clamp(1rem, 0.97rem + 0.18vw, 1.0625rem);    /* 16 → 17 */
+    --t-lg: clamp(1.125rem, 1.05rem + 0.38vw, 1.3125rem);  /* 18 → 21 */
+    --t-xl: clamp(1.375rem, 1.2rem + 0.88vw, 1.75rem);     /* 22 → 28 */
+    --t-2xl: clamp(1.75rem, 1.35rem + 2vw, 2.75rem);       /* 28 → 44 */
+    --t-3xl: clamp(2.25rem, 1.5rem + 3.75vw, 4rem);        /* 36 → 64 */
+
+    /* Arabic needs a taller line-height than Latin at the same size: the
+       script has more descenders and diacritics, and 1.7 is where mixed
+       Arabic/Latin text stops looking cramped. Latin stays at 1.65. */
+    --lh-body: 1.75;
+    --lh-body-latin: 1.65;
+    --lh-heading: 1.22;
+    --lh-tight: 1.1;
+
+    /* --- Layout ----------------------------------------------------------- */
+    --header-h: 72px;
+    --container: 1240px;
+
+    /* --- Motion -----------------------------------------------------------
+       One duration scale and two easings. Every animated rule in this file
+       uses them, so the whole page accelerates and settles together. */
+    --dur-1: 160ms;
+    --dur-2: 260ms;
+    --dur-3: 420ms;
+    --ease: cubic-bezier(.22, 1, .36, 1);
+    --ease-out-back: cubic-bezier(.34, 1.36, .64, 1);
+}
+
+
+/* --------------------------------------------------------------------------
+   2. Base
+   -------------------------------------------------------------------------- */
+
+/* Scroll-padding is what stops an anchor target from landing under the sticky
+   header. Without it every in-page jump hides its own heading behind 72px of
+   chrome and the visitor lands mid-section with no idea where they are.
+
+   88px rather than 72px: the header is 72px tall, and landing a heading
+   flush against the bar reads as "broken" even when it is technically clear. */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 88px;
+}
+
+body {
+    background: var(--d-surface);
+    color: var(--d-ink-soft);
+    /* 16px floor. The template sets `body { font-size: 14px }`, which is below
+       the WCAG legibility floor for body copy and the reason long paragraphs
+       read as cramped. This wins because design.css loads last. */
+    font-size: var(--t-base);
+    line-height: var(--lh-body-latin);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* Arabic: the bundled faces are the fallback, Cairo is the primary (loaded in
+   the layout). The heavier weights matter more in Arabic than in Latin because
+   the script has fewer distinguishing strokes at small sizes, so a heading set
+   at 400 reads as body copy. */
+body.rtl {
+    font-family: 'Cairo', 'AvenirArabic', 'THESANSARABIC', system-ui, sans-serif;
+    line-height: var(--lh-body);
+}
+
+body:not(.rtl) {
+    font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6,
+.section-title .title,
+.page-hero .title {
+    color: var(--d-ink);
+    font-family: inherit;
+    font-weight: 800;
+    letter-spacing: -.015em;
+    line-height: var(--lh-heading);
+    text-wrap: balance;
+}
+
+/* --------------------------------------------------------------------------
+   1b. The shared container
+
+   THE ROOT CAUSE OF THE NARROW PAGE.
+
+   Every view on this site uses Bootstrap's `.container`, and Bootstrap's
+   max-width ladder steps DOWN as the viewport gets narrower:
+
+       ≥1400px -> 1320px      992–1199px -> 960px
+       1200–1399px -> 1140px  768–991px  -> 720px
+       ≥576px -> 540px
+
+   So a 1024px laptop renders the whole page in a 960px column with 32px of
+   dead margin either side, and a tablet renders it in 720px. That is exactly
+   the "narrow centred column on desktop" — and it is also why the grids read
+   as collapsed: they are not collapsed, they are being squeezed into a box
+   two-thirds of the screen, and `auto-fit` then drops a column because the
+   *available* width is smaller than the breakpoint assumed.
+
+   One container, everywhere, declared once:
+
+       width: min(1200px, 100% - 48px)
+       margin-inline: auto
+
+   `min(…)` rather than a fixed width plus a media query, because it needs no
+   breakpoint to be correct — the gutter is 48px on a phone and the content
+   simply takes whatever is left, growing to 1200px and stopping.
+
+   `margin-inline` rather than `margin: auto` because `auto` on a block is
+   physical under the hood and resolves to the wrong side in a document whose
+   direction changes.
+
+   `max-width: none` is required: Bootstrap sets `max-width` on `.container` at
+   every breakpoint, and without this the 720px/960px caps above survive.
+
+   The gutter lives in the width subtraction rather than in padding, so a
+   full-bleed child can still escape with a negative margin if it ever needs to
+   without fighting a padding box.
+   -------------------------------------------------------------------------- */
+
+.container {
+    margin-inline: auto;
+    max-width: none;
+    padding-inline: 0;
+    width: min(1200px, 100% - 48px);
+}
+
+/* Below the phone breakpoint the gutter tightens to 20px, which is what makes a
+   360px screen usable rather than merely scrollable. */
+@media (max-width: 575.98px) {
+    .container {
+        width: min(1200px, 100% - 32px);
+    }
+}
+
+body.rtl h1,
+body.rtl h2,
+body.rtl h3,
+body.rtl h4,
+body.rtl h5,
+body.rtl h6 {
+    /* Arabic has no letter-spacing to exploit — the letters are already joined —
+       and a negative value actively damages the joins. */
+    letter-spacing: 0;
+    line-height: 1.4;
+}
+
+p {
+    line-height: inherit;
+    margin-block-end: var(--sp-4);
+}
+
+a {
+    color: var(--d-indigo);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+img {
+    height: auto;
+    max-width: 100%;
+}
+
+/* One focus treatment for the whole site.
+
+   `:focus-visible` rather than `:focus`, so a mouse click does not leave a ring
+   behind but a keyboard tab always does — the ring is the only thing telling a
+   keyboard user where they are. The offset keeps it off the element so it is
+   never clipped by an `overflow: hidden` ancestor. */
+:focus-visible {
+    border-radius: var(--r-sm);
+    outline: 3px solid var(--d-periwinkle);
+    outline-offset: 3px;
+}
+
+/* Latin runs inside Arabic text keep the Latin face and their own direction, so
+   "ARABCIA 2026" inside an Arabic sentence is not reshaped into Arabic
+   letterforms. */
+[lang="en"],
+[lang="fr"],
+.latin {
+    font-family: 'Inter', 'Roboto', system-ui, sans-serif;
+    unicode-bidi: isolate;
+}
+
+.visually-hidden-focusable:not(:focus):not(:focus-within) {
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+/* Skip link. Hidden until focused, then pinned to the top of the viewport
+   (inset-inline-start, not left, so it is correct in RTL). */
+.skip-link {
+    background: var(--d-indigo);
+    border-radius: 0 0 var(--r-md) var(--r-md);
+    color: #fff;
+    font-weight: 700;
+    inset-block-start: 0;
+    inset-inline-start: 1rem;
+    padding: var(--sp-3) var(--sp-5);
+    position: fixed;
+    z-index: 2000;
+}
+
+.skip-link:focus {
+    color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   3. Section rhythm
+   -------------------------------------------------------------------------- */
+
+.d-section {
+    padding-block: var(--section-y);
+}
+
+.d-section--tight {
+    padding-block: var(--sp-8);
+}
+
+.d-section--alt {
+    background: var(--d-surface-alt);
+}
+
+.d-section--dark {
+    background: var(--d-navy);
+    color: rgb(255 255 255 / 82%);
+}
+
+.d-section--dark h1,
+.d-section--dark h2,
+
+/* --------------------------------------------------------------------------
+   4. Shared primitives
+   -------------------------------------------------------------------------- */
+
+.d-btn {
+    align-items: center;
+    border: 2px solid transparent;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: inherit;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    gap: var(--sp-2);
+    justify-content: center;
+    line-height: 1.2;
+    padding: 0.85rem 1.75rem;
+    text-decoration: none;
+    transition: background-color var(--dur-2) var(--ease),
+        border-color var(--dur-2) var(--ease),
+        color var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease),
+        transform var(--dur-2) var(--ease);
+}
+
+.d-btn--primary {
+    background: var(--d-indigo);
+    border-color: var(--d-indigo);
+    color: #fff;
+}
+
+.d-btn--primary:hover {
+    background: var(--d-indigo-dark);
+    border-color: var(--d-indigo-dark);
+    box-shadow: var(--sh-brand);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* Warm accent for the single most important action on a section, so two primary
+   buttons never sit side by side competing. */
+.d-btn--accent {
+    background: var(--d-clay);
+    border-color: var(--d-clay);
+    color: #fff;
+}
+
+.d-btn--accent:hover {
+    background: var(--d-clay-dark);
+    border-color: var(--d-clay-dark);
+    box-shadow: 0 10px 30px rgb(223 134 99 / 32%);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.d-btn--outline {
+    background: transparent;
+    border-color: currentColor;
+    color: var(--d-indigo);
+}
+
+.d-btn--outline:hover {
+    background: var(--d-indigo);
+    border-color: var(--d-indigo);
+    color: #fff;
+}
+
+.d-btn--on-dark {
+    border-color: rgb(255 255 255 / 55%);
+    color: #fff;
+}
+
+.d-btn--on-dark:hover {
+    background: #fff;
+    border-color: #fff;
+    color: var(--d-navy);
+}
+
+.d-btn--sm {
+    font-size: var(--t-xs);
+    padding: 0.55rem 1.1rem;
+}
+
+/* The small label above a heading. Gradient on light, clay on dark — a clay
+   eyebrow is invisible against a photograph. */
+.d-eyebrow {
+    background: linear-gradient(120deg, var(--d-indigo), var(--d-periwinkle));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+    font-size: var(--t-xs);
+    font-weight: 800;
+    letter-spacing: .14em;
+    margin-block-end: var(--sp-3);
+    text-transform: uppercase;
+}
+
+.d-section--dark .d-eyebrow,
+.d-eyebrow--plain {
+    -webkit-text-fill-color: currentColor;
+    background: none;
+    color: var(--d-clay);
+}
+
+.d-head {
+    margin-block-end: var(--sp-7);
+    max-width: 46rem;
+}
+
+.d-head--center {
+    margin-inline: auto;
+    text-align: center;
+}
+
+.d-head__title {
+    font-size: var(--t-2xl);
+    margin: 0 0 var(--sp-3);
+}
+
+.d-head__lede {
+    color: var(--d-muted);
+    font-size: var(--t-lg);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.d-section--dark .d-head__lede {
+    color: rgb(255 255 255 / 76%);
+}
+
+.d-card {
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-lg);
+    height: 100%;
+    overflow: hidden;
+    transition: box-shadow var(--dur-2) var(--ease),
+        transform var(--dur-2) var(--ease);
+}
+
+.d-card--hover:hover {
+    box-shadow: var(--sh-2);
+    transform: translateY(-4px);
+}
+
+/* A 1px accent rail that appears on hover. Drawn with a pseudo-element rather
+   than a border so it can grow from the start edge without moving the card. */
+.d-card--rail {
+    position: relative;
+}
+
+/* --------------------------------------------------------------------------
+   5. Header
+   -------------------------------------------------------------------------- */
+
+.d-header {
+    inset-block-start: 0;
+    inset-inline: 0;
+    position: fixed;
+    z-index: 1000;
+}
+
+/* The bar is 72px and *not* translucent over the hero: a 72px strip of
+   70%-opacity white sits on the hero photograph and greys out the top of the
+   image for no benefit. It stays transparent until the visitor scrolls, at
+   which point it becomes an opaque, blurred bar — at that point translucency is
+   what stops the links being read against moving content. */
+.d-header__bar {
+    align-items: center;
+    background: transparent;
+    display: flex;
+    gap: var(--sp-5);
+    height: var(--header-h);
+    margin-inline: auto;
+    max-width: var(--container);
+    padding-inline: var(--sp-5);
+    transition: background-color var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease),
+        backdrop-filter var(--dur-2) var(--ease);
+}
+
+.d-header.is-stuck .d-header__bar {
+    backdrop-filter: blur(16px) saturate(180%);
+    background: rgb(255 255 255 / 88%);
+    box-shadow: 0 1px 0 var(--d-line), 0 8px 24px rgb(28 25 64 / 8%);
+}
+
+@media (max-width: 767.98px) {
+    .d-header__bar {
+        padding-inline: var(--sp-4);
+    }
+}
+
+.d-header__brand {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    line-height: 0;
+}
+
+/* The Arabic lockup is ~3x wider than the Latin pair, so the cap is on the
+   height and the width follows from the intrinsic ratio. `min()` stops the
+   Latin versions ballooning to the Arabic one's width. */
+.d-header__brand img {
+    height: auto;
+    max-height: 44px;
+    max-width: min(230px, 42vw);
+    transition: opacity var(--dur-1) var(--ease);
+    width: auto;
+}
+
+.d-header__brand:hover img {
+    opacity: .85;
+}
+
+.d-header__nav {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.d-nav {
+    align-items: center;
+    display: flex;
+    gap: var(--sp-1);
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.d-nav__link {
+    border-radius: var(--r-sm);
+    color: var(--d-ink);
+    display: block;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    padding: 0.5rem 0.7rem;
+    position: relative;
+    text-decoration: none;
+    /* The property whose absence caused the original defect: without it a long
+       label in a narrow slot wraps onto two lines while its neighbours stay on
+       one, and the bar grows a ragged edge. */
+    white-space: nowrap;
+    transition: color var(--dur-1) var(--ease);
+}
+
+.d-nav__link::after {
+    background: var(--d-periwinkle);
+    border-radius: 2px;
+    content: '';
+    height: 2px;
+    inset-block-end: 2px;
+    inset-inline: 0.7rem;
+    opacity: 0;
+    position: absolute;
+    transform: scaleX(.35);
+    transition: opacity var(--dur-1) var(--ease), transform var(--dur-2) var(--ease);
+}
+
+.d-nav__link:hover,
+.d-nav__link[aria-current="page"] {
+    color: var(--d-indigo);
+}
+
+.d-nav__link:hover::after,
+.d-nav__link[aria-current="page"]::after {
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+.d-header__actions {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: var(--sp-3);
+}
+
+/* --- Language: a segmented control, not a dropdown ------------------------
+   Three languages is three options. A dropdown makes the visitor open a panel
+   to choose between three visible things, and hides the current state; a
+   segmented control shows all three at once and marks the current one. It is
+   also one tap instead of two, which matters on a phone.
+
+   It is a form, because switching language writes to the session: a GET that
+   mutates state can be triggered by a third-party page with an <img> tag. The
+   buttons are real submit buttons, so it works with scripting disabled. */
+.d-lang {
+    display: inline-flex;
+}
+
+.d-lang__list {
+    background: var(--d-surface-sunk);
+    border-radius: var(--r-pill);
+    display: inline-flex;
+    gap: 2px;
+    list-style: none;
+    margin: 0;
+    padding: 3px;
+}
+
+.d-lang__item {
+    margin: 0;
+}
+
+.d-lang__btn {
+    background: transparent;
+    border: 0;
+    border-radius: var(--r-pill);
+    color: var(--d-muted);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: var(--t-xs);
+    font-weight: 800;
+    letter-spacing: .04em;
+    line-height: 1;
+    padding: 0.45rem 0.7rem;
+    transition: background-color var(--dur-1) var(--ease),
+        color var(--dur-1) var(--ease);
+}
+
+.d-lang__btn:hover {
+    color: var(--d-indigo);
+}
+
+/* `aria-current` is what a screen reader announces; this is the same fact said
+   visually. Two ways of saying one thing, not two facts. */
+.d-lang__btn[aria-current="true"] {
+    background: var(--d-surface);
+    box-shadow: var(--sh-1);
+    color: var(--d-indigo);
+}
+
+/* --- Hamburger ------------------------------------------------------------ */
+
+.d-burger {
+    align-items: center;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    height: 44px;
+    justify-content: center;
+    padding: 0;
+    width: 44px;
+}
+
+.d-burger span {
+    background: var(--d-ink);
+    border-radius: 2px;
+    display: block;
+    height: 2px;
+    transition: transform var(--dur-2) var(--ease), opacity var(--dur-1) var(--ease);
+    width: 22px;
+}
+
+.d-burger[aria-expanded="true"] span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.d-burger[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+}
+
+.d-burger[aria-expanded="true"] span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (max-width: 1099.98px) {
+    .d-burger {
+        display: flex;
+    }
+}
+
+/* Below 640px the CTA goes into the drawer rather than competing with the
+   burger for the last 40px of the bar. */
+@media (max-width: 639.98px) {
+    .d-header__actions .d-btn {
+        display: none;
+    }
+}
+
+/* --- Mobile drawer -------------------------------------------------------
+   A full-screen panel, not a slide-in sidebar: on a phone a sidebar covers
+   80% of the width anyway, and full-screen means the nav items can be as
+   large as a nav item deserves to be. */
+
+.d-drawer {
+    background: var(--d-surface);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-6);
+    inset-block: 0;
+    inset-inline-end: 0;
+    max-width: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--sp-5);
+    position: fixed;
+    transform: translateX(100%);
+    transition: transform var(--dur-3) var(--ease), visibility var(--dur-3);
+    visibility: hidden;
+    /* `100%`, not `100vw`. `100vw` includes the scrollbar's width, which on a
+       desktop makes a full-width fixed panel ~15px wider than the viewport and
+       puts a permanent horizontal scrollbar on the page. The panel is already
+       `position: fixed`, so it measures against the viewport without needing the
+       `vw` unit at all. */
+    width: min(400px, 100%);
+    z-index: 1100;
+}
+
+.rtl .d-drawer {
+    transform: translateX(-100%);
+}
+
+.d-drawer.is-open {
+    transform: translateX(0);
+    visibility: visible;
+}
+
+.d-drawer__head {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.d-drawer__close {
+    align-items: center;
+    background: var(--d-surface-sunk);
+    border: 0;
+    border-radius: 50%;
+    color: var(--d-ink);
+    cursor: pointer;
+    display: flex;
+    height: 44px;
+    justify-content: center;
+    width: 44px;
+}
+
+.d-drawer__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+
+/* --------------------------------------------------------------------------
+   6. Hero
+   -------------------------------------------------------------------------- */
+
+/* The hero is `min-height: 100svh` on a tall screen and no taller than the
+   content on a short one. `100vh` on a phone is wrong because the browser
+   chrome counts in the viewport height and the bottom of the hero ends up
+   under the address bar; `svh` is the smallest, so it never overflows. */
+.d-hero {
+    align-items: center;
+    background-color: var(--d-navy);
+    background-position: center;
+    background-size: cover;
+    display: flex;
+    min-height: min(100svh, 900px);
+    overflow: hidden;
+    padding-block: calc(var(--header-h) + var(--sp-7)) var(--sp-8);
+    position: relative;
+}
+
+/* Two overlays, not one.
+
+   The first is the brand ramp — deep navy at the text edge running into deep
+   indigo — so the hero carries the palette rather than a generic blue. The
+   vertical one is the legibility guarantee: it darkens toward the copy so the
+   headline clears AA whatever the photograph happens to be doing behind it.
+
+   Mint is deliberately NOT in this gradient. Mint is the "available / open"
+   signal in this design, and putting it in a 40%-opacity background gradient
+   turns a status colour into decoration. It appears once, as the live dot on
+   the date badge. */
+.d-hero__scrim {
+    background:
+        linear-gradient(to var(--scrim-dir, bottom),
+            rgb(21 18 50 / 92%) 0%,
+            rgb(28 25 64 / 70%) 45%,
+            rgb(44 48 139 / 40%) 100%),
+        linear-gradient(120deg, #1c1940 0%, #2a206f 55%, #2c308b 100%);
+    inset: 0;
+    position: absolute;
+}
+
+/* The gradient runs from the text side outward. `to bottom` is wrong in RTL:
+   the copy sits on the right, so the dense end of the gradient has to be on
+   the right too or the headline is read over the lightest part of the image. */
+.rtl {
+    --scrim-dir: top right;
+}
+
+html[dir="ltr"] {
+    --scrim-dir: top left;
+}
+
+.d-hero__inner {
+    max-width: 44rem;
+    position: relative;
+    width: 100%;
+}
+
+/* RTL: the copy block sits on the right and the image on the left. Bootstrap's
+   `order-lg-*` classes would do this, but they are physical and this file is
+   not — so the mirroring is expressed once, here, in terms of direction. */
+.rtl .d-hero__inner {
+    margin-inline-start: auto;
+}
+
+.d-hero__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-block-end: var(--sp-5);
+}
+
+.d-badge {
+    align-items: center;
+    backdrop-filter: blur(8px);
+    background: rgb(255 255 255 / 14%);
+    border: 1px solid rgb(255 255 255 / 25%);
+    border-radius: var(--r-pill);
+    color: #fff;
+    display: inline-flex;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    gap: var(--sp-2);
+    padding: 0.45rem 1rem;
+}
+
+.d-badge i {
+    color: var(--d-clay);
+}
+
+.d-hero__title {
+    color: #fff;
+    font-size: var(--t-3xl);
+    /* Three lines maximum. Arabic headings run long, and an unclamped hero
+       title is the single most common cause of a hero that pushes every other
+       section below the fold. */
+    font-weight: 800;
+    line-height: 1.18;
+    margin: 0 0 var(--sp-4);
+    text-wrap: balance;
+}
+
+.rtl .d-hero__title {
+    line-height: 1.4;
+}
+
+.d-hero__lede {
+    color: rgb(255 255 255 / 84%);
+    font-size: var(--t-lg);
+    line-height: 1.7;
+    margin: 0 0 var(--sp-5);
+    max-width: 40rem;
+}
+
+.d-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+}
+
+@media (max-width: 575.98px) {
+    .d-hero {
+        min-height: 0;
+        padding-block: calc(var(--header-h) + var(--sp-6)) var(--sp-7);
+    }
+
+    .d-hero__actions .d-btn {
+        width: 100%;
+    }
+}
+
+/* --- Countdown ----------------------------------------------------------- */
+
+.d-countdown {
+    display: flex;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-6);
+}
+
+.d-count__unit {
+    backdrop-filter: blur(10px);
+    background: rgb(255 255 255 / 10%);
+    border: 1px solid rgb(255 255 255 / 18%);
+    border-radius: var(--r-md);
+    display: flex;
+    flex-direction: column;
+    min-width: 4.25rem;
+    padding: var(--sp-3) var(--sp-2);
+    text-align: center;
+}
+
+.d-count__value {
+    color: #fff;
+    font-size: var(--t-xl);
+
+/* --------------------------------------------------------------------------
+   7. Stats
+   -------------------------------------------------------------------------- */
+
+.d-stats {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+/* Grid, not three fixed columns: `auto-fit` + `minmax` gives three equal
+   columns on a desktop, two on a tablet and one on a phone without three
+   separate breakpoint rules, and without the third card wrapping to a second
+   row while the first two do not. */
+.d-stat {
+    align-items: center;
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-lg);
+    display: flex;
+    gap: var(--sp-4);
+    padding: var(--sp-5);
+}
+
+.d-stat__icon {
+    align-items: center;
+    background: var(--d-surface-sunk);
+    border-radius: var(--r-md);
+    color: var(--d-indigo);
+    display: flex;
+    flex: 0 0 auto;
+    font-size: 1.4rem;
+    height: 3.25rem;
+    justify-content: center;
+    width: 3.25rem;
+}
+
+.d-stat__value {
+    color: var(--d-ink);
+    font-size: var(--t-2xl);
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.d-stat__label {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    margin-block-start: var(--sp-1);
+}
+
+/* --------------------------------------------------------------------------
+   8. About
+   -------------------------------------------------------------------------- */
+
+/* Two columns that stack. The collage is deliberately second in the DOM: in RTL
+   the eye starts on the right, so the copy lands first and the images support
+   it. On a phone the copy therefore comes before the pictures, which is the
+   order a reader wants. */
+.d-about {
+    align-items: center;
+    display: grid;
+    gap: var(--sp-7);
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 992px) {
+    .d-about {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* The collage: one tall tile beside two stacked ones. Same radius and the same
+   gap on all three, so they read as one object rather than three pictures. */
+.d-collage {
+    display: grid;
+    gap: var(--sp-3);
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.d-collage__item {
+    border-radius: var(--r-lg);
+    display: block;
+    overflow: hidden;
+    position: relative;
+}
+
+.d-collage__item img {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-3) var(--ease);
+    width: 100%;
+}
+
+.d-collage__item:hover img {
+    transform: scale(1.04);
+}
+
+/* The first tile spans both rows, which is what makes the pair read as one
+   tall-and-two-small composition rather than as three equal squares. */
+.d-collage__item:first-child {
+    grid-row: span 2;
+}
+
+.d-collage__item:first-child img {
+    aspect-ratio: 3 / 4;
+}
+
+.d-collage__item:not(:first-child) img {
+    aspect-ratio: 4 / 3;
+}
+
+@media (max-width: 575.98px) {
+    .d-collage {
+        grid-template-columns: 1fr;
+    }
+
+    .d-collage__item:first-child {
+        grid-row: auto;
+    }
+
+    .d-collage__item:first-child img {
+        aspect-ratio: 16 / 10;
+    }
+}
+
+/* The audience list. A real <ul> with real bullets, given a check icon so it
+   reads as a list of things the conference is for rather than as a wall of
+   comma-separated nouns. */
+.d-checklist {
+    display: grid;
+    gap: var(--sp-2) var(--sp-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    list-style: none;
+    margin: var(--sp-5) 0 0;
+    padding: 0;
+}
+
+.d-checklist li {
+    align-items: flex-start;
+    color: var(--d-ink-soft);
+    display: flex;
+    font-size: var(--t-sm);
+    gap: var(--sp-3);
+    line-height: 1.55;
+
+/* --------------------------------------------------------------------------
+   10. Video
+   -------------------------------------------------------------------------- */
+
+/* 16:9, centred, and never taller than the viewport — a video that runs past
+   the fold is a video nobody finishes. */
+.d-video {
+    background: var(--d-navy-deep);
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-3);
+    margin-inline: auto;
+    max-width: 960px;
+    overflow: hidden;
+    position: relative;
+}
+
+.d-video video {
+    aspect-ratio: 16 / 9;
+    background: #000;
+    display: block;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* Custom play overlay.
+
+   The button is a real <button> that calls `play()` on the video and is then
+   removed from the tab order — a decorative overlay on top of the native
+   controls would either double up with them or trap keyboard users. The
+   native controls still work underneath; this only replaces the browser's
+   start button. */
+.d-video__play {
+    align-items: center;
+    backdrop-filter: blur(4px);
+    background: rgb(255 255 255 / 14%);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    margin: auto;
+    position: absolute;
+    transition: background-color var(--dur-2) var(--ease),
+        opacity var(--dur-2) var(--ease);
+    width: 5rem;
+    height: 5rem;
+}
+
+.d-video__play i {
+    color: #fff;
+    font-size: 1.6rem;
+    /* Nudged because a geometric glyph in a circle reads as optically
+       off-centre; the difference is small and it matters. */
+    margin-inline-start: .2rem;
+}
+
+.d-video__play:hover {
+    background: rgb(255 255 255 / 26%);
+}
+
+.d-video.is-playing .d-video__play {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   11. Organisers
+   -------------------------------------------------------------------------- */
+
+.d-orgs {
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+
+.d-org {
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-6);
+}
+
+.d-org__mark {
+    align-items: center;
+    background: var(--d-surface-alt);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-md);
+    display: flex;
+    height: 5rem;
+    justify-content: center;
+    margin-block-end: var(--sp-4);
+    padding: var(--sp-3) var(--sp-5);
+}
+
+.d-org__mark img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.d-org__name {
+    font-size: var(--t-lg);
+    margin: var(--sp-3) 0 var(--sp-2);
+}
+
+.d-org__desc {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.65;
+    margin: 0 0 var(--sp-4);
+}
+
+.d-org__link {
+    font-size: var(--t-sm);
+    font-weight: 700;
+    margin-block-start: auto;
+    text-decoration: none;
+}
+
+.d-org__link:hover {
+    text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   12. Speakers
+   -------------------------------------------------------------------------- */
+
+/* 4 / 2 / 1, from one declaration per breakpoint rather than a col-* class per
+   card. */
+.d-speakers {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 1199.98px) {
+    .d-speakers {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 991.98px) {
+    .d-speakers {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 575.98px) {
+    .d-speakers {
+        grid-template-columns: 1fr;
+    }
+}
+
+.d-speaker {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-5) var(--sp-4);
+    text-align: center;
+}
+
+/* The portrait is a circle with a fixed aspect ratio, so a grid of eighteen
+   cards does not reflow eighteen times as the photographs arrive. `contain`
+   rather than `cover` would letterbox; `cover` is right because every portrait
+   is cropped to the same circle anyway. */
+.d-speaker__photo {
+    border: 3px solid var(--d-surface);
+    border-radius: 50%;
+    box-shadow: var(--sh-1);
+    flex: 0 0 auto;
+    height: 6.5rem;
+    margin-block-end: var(--sp-4);
+    overflow: hidden;
+    position: relative;
+    width: 6.5rem;
+}
+
+.d-speaker__photo img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* The fallback: initials on a brand gradient. Initials rather than a
+   silhouette, because initials identify a person and a silhouette implies a
+   photograph exists that the site does not have. */
+.d-speaker__initials {
+    align-items: center;
+    background: linear-gradient(135deg, var(--d-indigo), var(--d-periwinkle));
+    color: #fff;
+    display: flex;
+    font-size: 1.4rem;
+    font-weight: 800;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+}
+
+.d-speaker__name {
+    font-size: var(--t-base);
+    line-height: 1.35;
+    margin: 0 0 var(--sp-1);
+}
+
+.d-speaker__role {
+    color: var(--d-indigo);
+    font-size: var(--t-sm);
+    font-weight: 600;
+    margin: 0 0 2px;
+}
+
+.d-speaker__org {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    margin: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   13. Programme
+   -------------------------------------------------------------------------- */
+
+/* Day tabs as real links, not JS tabs. The selected day is in the query string,
+   so a day is a bookmarkable, shareable URL and the back button behaves — a
+   JS tab puts that state in a variable and two different days become one URL. */
+.d-tabs {
+    display: inline-flex;
+    gap: var(--sp-2);
+    list-style: none;
+    margin: 0 0 var(--sp-6);
+    padding: 0;
+}
+
+.d-tabs__btn {
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-pill);
+    color: var(--d-ink-soft);
+    font-size: var(--t-sm);
+    font-weight: 700;
+    padding: 0.6rem 1.4rem;
+    text-decoration: none;
+    transition: all var(--dur-2) var(--ease);
+}
+
+.d-tabs__btn:hover {
+    border-color: var(--d-periwinkle);
+    color: var(--d-indigo);
+}
+
+.d-tabs__btn[aria-current="true"] {
+    background: var(--d-indigo);
+    border-color: var(--d-indigo);
+    color: #fff;
+}
+
+.d-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.d-timeline__row {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: 6.5rem 1fr;
+    position: relative;
+}
+
+@media (max-width: 767.98px) {
+    .d-timeline__row {
+        gap: var(--sp-2);
+        grid-template-columns: 4.5rem 1fr;
+    }
+}
+
+/* The rail. Drawn on the row rather than as a separate element so it cannot
+   be left behind when a row is the last one. */
+.d-timeline__row::before {
+    background: var(--d-line);
+    content: '';
+    inset-block: 0;
+    inset-inline-start: 6.5rem;
+    position: absolute;
+    width: 2px;
+}
+
+.rtl .d-timeline__row::before {
+    inset-inline-start: 5.5rem;
+}
+
+@media (max-width: 767.98px) {
+    .d-timeline__row::before {
+        inset-inline-start: 4.5rem;
+    }
+}
+
+.d-timeline__row:first-child::before {
+    inset-block-start: 1.25rem;
+}
+
+.d-timeline__row:last-child::before {
+    inset-block-end: calc(100% - 1.25rem);
+}
+
+/* High-contrast time. The one number a delegate scans for, so it is the one
+   element allowed a filled background in the row. */
+.d-timeline__time {
+    background: var(--d-indigo);
+    border-radius: var(--r-md);
+    color: #fff;
+    direction: ltr;
+    font-size: var(--t-sm);
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    height: fit-content;
+    padding: var(--sp-2) var(--sp-3);
+    position: relative;
+    text-align: center;
+    z-index: 1;
+}
+
+.d-timeline__body {
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-lg);
+    padding: var(--sp-4) var(--sp-5);
+}
+
+.d-timeline__title {
+    font-size: var(--t-base);
+    margin: var(--sp-2) 0 var(--sp-1);
+}
+
+.d-timeline__meta {
+    color: var(--d-muted);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--t-sm);
+    gap: var(--sp-1) var(--sp-4);
+    margin: 0;
+}
+
+.d-timeline__meta span {
+    align-items: center;
+    display: inline-flex;
+    gap: var(--sp-2);
+}
+
+.d-timeline__meta i {
+    color: var(--d-lilac);
+}
+
+/* --------------------------------------------------------------------------
+   14. Pricing
+   -------------------------------------------------------------------------- */
+
+.d-prices {
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+.d-price {
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-6);
+    position: relative;
+}
+
+.d-price--featured {
+    border-color: var(--d-indigo);
+    box-shadow: var(--sh-2);
+}
+
+.d-price__flag {
+    background: var(--d-clay);
+    border-radius: 0 var(--r-lg) 0 var(--r-md);
+    color: #fff;
+    font-size: var(--t-xs);
+    font-weight: 800;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    letter-spacing: .06em;
+    padding: 0.4rem 1rem;
+    position: absolute;
+    text-transform: uppercase;
+}
+
+.rtl .d-price__flag {
+    border-radius: var(--r-lg) 0 0 var(--r-md);
+}
+
+.d-price__name {
+    font-size: var(--t-lg);
+    margin: 0 0 var(--sp-2);
+}
+
+.d-price__amount {
+    align-items: baseline;
+    color: var(--d-indigo);
+    display: flex;
+    font-size: var(--t-2xl);
+    font-weight: 800;
+    gap: var(--sp-2);
+    line-height: 1.1;
+}
+
+.d-price__amount small {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    font-weight: 600;
+}
+
+.d-price__note {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    margin: var(--sp-2) 0 var(--sp-4);
+}
+
+.d-price__includes {
+    border-block-start: 1px solid var(--d-line);
+    flex: 1 1 auto;
+    list-style: none;
+    margin: 0 0 var(--sp-5);
+    padding-block-start: var(--sp-4);
+}
+
+.d-price__includes li {
+    align-items: flex-start;
+    color: var(--d-ink-soft);
+    display: flex;
+    font-size: var(--t-sm);
+    gap: var(--sp-3);
+    padding-block: var(--sp-2);
+}
+
+.d-price__includes i {
+    color: var(--d-mint);
+    flex: 0 0 auto;
+    margin-block-start: .35em;
+}
+
+.d-deadline {
+    align-items: center;
+    background: var(--d-surface-alt);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-lg);
+
+/* --------------------------------------------------------------------------
+   15. Venue
+   -------------------------------------------------------------------------- */
+
+.d-venue {
+    align-items: center;
+    display: grid;
+    gap: var(--sp-7);
+    grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 991.98px) {
+    .d-venue {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* The map is a static link-out, not an iframe.
+
+   A third-party iframe costs a cookie consent flow and several hundred
+   kilobytes before the visitor can read the address they came for, and it
+   sends the referrer off-site. A link reaches the same place for neither cost,
+   and the pin is drawn here so the visual is exact rather than whatever the
+   embed decided to render. */
+.d-venue__map {
+    background: var(--d-surface-sunk);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-xl);
+    display: block;
+    overflow: hidden;
+    position: relative;
+}
+
+.d-venue__map img {
+    aspect-ratio: 4 / 3;
+    display: block;
+    object-fit: cover;
+    width: 100%;
+}
+
+.d-venue__pin {
+    align-items: center;
+    background: var(--d-indigo);
+    border: 4px solid #fff;
+    border-radius: 50% 50% 50% 0;
+    box-shadow: var(--sh-2);
+    color: #fff;
+    display: flex;
+    height: 3rem;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    justify-content: center;
+    position: absolute;
+    transform: translate(50%, -50%) rotate(-45deg);
+    width: 3rem;
+}
+
+.rtl .d-venue__pin {
+    transform: translate(50%, -50%) rotate(45deg);
+}
+
+.d-venue__pin i {
+    transform: rotate(45deg);
+}
+
+.rtl .d-venue__pin i {
+    transform: rotate(-45deg);
+}
+
+.d-facts {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    list-style: none;
+    margin: var(--sp-5) 0 0;
+    padding: 0;
+}
+
+.d-facts li {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+}
+
+.d-facts__label {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.d-facts__value {
+    color: var(--d-ink);
+    font-size: var(--t-sm);
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   16. Partners
+   -------------------------------------------------------------------------- */
+
+/* A logo wall. Logos sit on white plates because partner marks are usually
+
+/* --------------------------------------------------------------------------
+   17. Footer
+   -------------------------------------------------------------------------- */
+
+/* A high-contrast dark surface. The logo sits on a light plate because every
+   logo in this brand is dark ink — on near-black it would be invisible, and a
+   footer with an invisible logo is worse than one with a boxed one. */
+.d-footer {
+    background: var(--d-navy);
+    color: rgb(255 255 255 / 76%);
+    padding-block: var(--sp-8) var(--sp-5);
+}
+
+.d-footer__grid {
+    display: grid;
+    gap: var(--sp-7) var(--sp-5);
+    grid-template-columns: 1.4fr 1fr 1fr 1.4fr;
+}
+
+@media (max-width: 991.98px) {
+    .d-footer__grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .d-footer__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.d-footer__title {
+    color: #fff;
+    font-size: var(--t-base);
+    font-weight: 800;
+    margin: 0 0 var(--sp-4);
+}
+
+.d-footer__logo {
+    background: #fff;
+    border-radius: var(--r-md);
+    display: inline-flex;
+    margin-block-end: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+}
+
+.d-footer__logo img {
+    height: auto;
+    max-height: 44px;
+    width: auto;
+}
+
+.d-footer__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.d-footer a {
+    color: rgb(255 255 255 / 80%);
+    text-decoration: none;
+    transition: color var(--dur-1) var(--ease);
+}
+
+.d-footer__list a:hover,
+.d-footer a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.d-footer__address {
+    font-style: normal;
+    line-height: 1.8;
+    margin-block-end: var(--sp-4);
+}
+
+/* Social icons. 44px hit targets — an icon sized to look right next to text is
+   roughly half the minimum comfortable touch target. */
+.d-social {
+    display: flex;
+    gap: var(--sp-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.d-social a {
+    align-items: center;
+    background: rgb(255 255 255 / 10%);
+    border-radius: 50%;
+    display: flex;
+    height: 44px;
+    justify-content: center;
+    transition: background-color var(--dur-2) var(--ease);
+    width: 44px;
+}
+
+.d-social a:hover {
+    background: var(--d-periwinkle);
+}
+
+/* Newsletter. A real <label> — a placeholder is not a label, and a screen
+   reader user has nothing to associate the field with otherwise. */
+.d-news {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-4);
+}
+
+.d-news__row {
+    display: flex;
+    gap: var(--sp-2);
+}
+
+.d-news input {
+    background: rgb(255 255 255 / 10%);
+    border: 1px solid rgb(255 255 255 / 22%);
+    border-radius: var(--r-sm);
+    color: #fff;
+    flex: 1 1 auto;
+    font-family: inherit;
+    font-size: var(--t-sm);
+    min-width: 0;
+    padding: 0.7rem 0.9rem;
+}
+
+.d-news input::placeholder {
+    color: rgb(255 255 255 / 45%);
+}
+
+.d-news input:focus-visible {
+    border-color: var(--d-periwinkle);
+    outline: 2px solid var(--d-periwinkle);
+    outline-offset: 1px;
+}
+
+.d-news input[aria-invalid="true"] {
+    border-color: #ff9b8a;
+}
+
+.d-news__error {
+    color: #ffb4a6;
+    font-size: var(--t-xs);
+    margin: 0;
+}
+
+.d-footer__bottom {
+    align-items: center;
+    border-block-start: 1px solid rgb(255 255 255 / 12%);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--t-sm);
+    gap: var(--sp-3);
+    justify-content: space-between;
+    margin-block-start: var(--sp-7);
+    padding-block-start: var(--sp-5);
+}
+
+.d-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* --------------------------------------------------------------------------
+   18. Motion & print
+   -------------------------------------------------------------------------- */
+
+/* A single, explicit opt-out. Every transition here is decorative: the
+   countdown still ticks, every section is still present, the drawer still
+   opens — only the movement stops.
+
+   `transition-duration` rather than `transition: none`, because setting
+   `transition: none` also drops the *end state* of a transition in some
+   engines, which leaves a hover style stuck on. Dropping the duration to
+   effectively zero reaches the same end state immediately. */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+
+    .d-btn:hover,
+    .d-card--hover:hover {
+        transform: none;
+    }
+
+    .d-gallery__item:hover img,
+    .d-collage__item:hover img {
+        transform: none;
+    }
+}
+
+@media print {
+    .d-header,
+    .d-scrim,
+    .d-drawer,
+    .d-hero__actions,
+    .d-countdown {
+        display: none;
+    }
+
+    .d-hero {
+        min-height: 0;
+    }
+
+    body {
+        color: #000;
+    }
+}
+
+   dark line art, and dark line art on a tinted section disappears. */
+.d-partners {
+    display: grid;
+    gap: var(--sp-3);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.d-partners__item {
+    align-items: center;
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-lg);
+    display: flex;
+    height: 6.5rem;
+    justify-content: center;
+    padding: var(--sp-4);
+    transition: border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+}
+
+.d-partners__item:hover {
+    border-color: var(--d-line-strong);
+    box-shadow: var(--sh-1);
+}
+
+.d-partners__item img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    justify-content: center;
+    margin-block-end: var(--sp-6);
+    padding: var(--sp-4) var(--sp-5);
+    text-align: center;
+}
+
+.d-deadline i {
+    color: var(--d-clay);
+}
+
+.d-deadline strong {
+    color: var(--d-ink);
+}
+
+}
+
+.d-checklist i {
+    color: var(--d-mint);
+    flex: 0 0 auto;
+    margin-block-start: .3em;
+}
+
+/* --------------------------------------------------------------------------
+   9. Gallery
+   -------------------------------------------------------------------------- */
+
+/* A real grid, not a masonry library. `grid-template-rows` with a fixed row
+   height and a span is what produces the staggered look while keeping every
+   tile in document order for the keyboard and for screen readers — which a
+   masonry column layout does not. */
+.d-gallery {
+    display: grid;
+    gap: var(--sp-3);
+    grid-auto-rows: 12rem;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 991.98px) {
+    .d-gallery {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 575.98px) {
+    .d-gallery {
+        grid-auto-rows: 9rem;
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tiles that span two rows give the grid its rhythm. Assigned with :nth-child
+   rather than with classes in the template, so adding a photo cannot leave the
+   grid with a hole. */
+.d-gallery__item:nth-child(6n + 1),
+.d-gallery__item:nth-child(6n + 5) {
+    grid-row: span 2;
+}
+
+.d-gallery__item a {
+    background: var(--d-surface-sunk);
+    border-radius: var(--r-lg);
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.d-gallery__item img {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-3) var(--ease);
+    width: 100%;
+}
+
+.d-gallery__item:hover img,
+.d-gallery__item a:focus-visible img {
+    transform: scale(1.05);
+}
+
+.d-gallery__cap {
+    background: linear-gradient(to top, rgb(21 18 50 / 82%), transparent);
+    border-radius: var(--r-lg);
+    color: #fff;
+    font-size: var(--t-xs);
+    font-weight: 600;
+    inset-block-end: 0;
+    inset-inline: 0;
+    padding: var(--sp-6) var(--sp-4) var(--sp-3);
+    position: absolute;
+}
+
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+/* Tabular figures stop the number jittering as it ticks, which is what makes a
+   countdown look cheap. */
+.d-count__label {
+    color: rgb(255 255 255 / 62%);
+    font-size: var(--t-xs);
+    margin-block-start: 2px;
+}
+
+@media (max-width: 575.98px) {
+    .d-countdown {
+        gap: var(--sp-2);
+    }
+
+    .d-count__unit {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.d-drawer__list a {
+    border-radius: var(--r-md);
+    color: var(--d-ink);
+    display: block;
+    font-size: var(--t-lg);
+    font-weight: 700;
+    padding: var(--sp-3) var(--sp-4);
+    text-decoration: none;
+    transition: background-color var(--dur-1) var(--ease);
+}
+
+.d-drawer__list a:hover,
+.d-drawer__list a:focus-visible {
+    background: var(--d-surface-alt);
+}
+
+.d-drawer__list a[aria-current="page"] {
+    background: var(--d-surface-sunk);
+    color: var(--d-indigo);
+}
+
+/* The scrim. `visibility` rather than `display` so it can fade, and so it
+   leaves the tab order the instant it stops being visible. */
+.d-scrim {
+    background: rgb(28 25 64 / 45%);
+    border: 0;
+    inset: 0;
+    opacity: 0;
+    position: fixed;
+    transition: opacity var(--dur-2) var(--ease), visibility var(--dur-2);
+    visibility: hidden;
+    z-index: 1050;
+}
+
+.d-scrim.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* While the drawer is open the page behind it must not scroll: on iOS the
+   background scrolls under a fixed panel and drags the drawer with it. */
+body.drawer-open {
+    overflow: hidden;
+}
+
+
+
+.d-card--rail::before {
+    background: var(--d-periwinkle);
+    content: '';
+    height: 3px;
+    inset-block-start: 0;
+    inset-inline: 0;
+    position: absolute;
+    transform: scaleX(0);
+    transform-origin: inline-start;
+    transition: transform var(--dur-3) var(--ease);
+}
+
+.d-card--rail:hover::before {
+    transform: scaleX(1);
+}
+
+.d-tag {
+    background: var(--d-surface-sunk);
+    border-radius: var(--r-pill);
+    color: var(--d-indigo);
+    display: inline-flex;
+    font-size: var(--t-xs);
+    font-weight: 700;
+    gap: var(--sp-2);
+    padding: 0.3rem 0.75rem;
+}
+
+.d-tag--open {
+    background: var(--d-mint-wash);
+    color: #1c7a63;
+}
+
+/* A deliberate empty state. Not a grey box saying "nothing here" — a bordered
+   panel with an icon and an invitation, so an unpopulated section reads as
+   "not yet" rather than as "broken". */
+.d-empty {
+    background: var(--d-surface-alt);
+    border: 1px dashed var(--d-line-strong);
+    border-radius: var(--r-lg);
+    color: var(--d-muted);
+    padding: var(--sp-7) var(--sp-5);
+    text-align: center;
+}
+
+.d-empty__icon {
+    color: var(--d-periwinkle);
+    display: block;
+    font-size: 2rem;
+    margin-block-end: var(--sp-3);
+    opacity: .7;
+}
+
+.d-section--dark h3,
+.d-section--dark h4 {
+    color: #fff;
+}
+
+/* A gap above each block, which is what makes a section read as a section
+   rather than as a wall of text. */
+.d-section > .container > * + * {
+    margin-block-start: var(--sp-5);
+}
+
+@media (max-width: 767.98px) {
+    :root {
+        --section-y: 3.5rem;
+        --section-y-sm: 3rem;
+        --header-h: 64px;
+    }
+
+    .d-section--tight {
+        padding-block: var(--sp-7);
+    }
+}
+
+
+/* ==========================================================================
+   Cookie notice
+   ==========================================================================
+   `position: fixed` so it never reflows the page. A consent bar in the document
+   flow shifts the whole site the moment it renders — which is why a first-time
+   visitor watched the footer jump, and why the scroll position they had chosen
+   became the wrong one.
+
+   `inset-block-end: 0` rather than `bottom: 0`: the bar sits at the foot of the
+   page in Arabic exactly as it does in French.
+
+   Hidden with `[hidden]` and revealed by design.js, so a visitor who has
+   already answered never sees it flash on and off.
+   ========================================================================== */
+
+.d-cookie {
+    background: var(--d-navy-deep);
+    border-block-start: 1px solid rgb(255 255 255 / 14%);
+    box-shadow: 0 -8px 32px rgb(21 18 50 / 24%);
+    color: rgb(255 255 255 / 84%);
+    inset-block-end: 0;
+    inset-inline: 0;
+    padding-block: var(--sp-4);
+    position: fixed;
+    z-index: 1150;
+}
+
+/* The `noscript` fallback, which cannot dismiss itself and so must not be
+   fixed over the footer it is covering. */
+.d-cookie--static {
+    position: static;
+}
+
+.d-cookie[hidden] {
+    display: none;
+}
+
+.d-cookie__row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    justify-content: space-between;
+}
+
+.d-cookie__text {
+    font-size: var(--t-sm);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 62ch;
+}
+
+.d-cookie__text strong {
+    color: #fff;
+    display: block;
+    font-size: var(--t-base);
+    margin-block-end: 2px;
+}
+
+.d-cookie__actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+}
+
+.d-cookie__close {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: 50%;
+    color: rgb(255 255 255 / 70%);
+    cursor: pointer;
+    display: flex;
+    height: 40px;
+    justify-content: center;
+    width: 40px;
+}
+
+.d-cookie__close:hover {
+    background: rgb(255 255 255 / 10%);
+    color: #fff;
+}
+
+@media (max-width: 575.98px) {
+    .d-cookie__actions {
+        width: 100%;
+    }
+
+    .d-cookie__actions .d-btn {
+        flex: 1 1 auto;
+    }
+}
+
+/* ==========================================================================
+   Back to top
+   ==========================================================================
+   The template's `.progress-wrap` is `position: fixed; right: 50px` — a physical
+   offset, which on the Arabic page puts the control on the wrong side of the
+   content it belongs to, and it is a bare 45px circle around an unlabelled SVG
+   that a screen reader announces as "graphic".
+
+   `inset-inline-end` mirrors it correctly; the label in the layout gives it a
+   name. The ring is kept and the extra decorative glyph beside it is dropped —
+   a second unlabelled mark is noise, not affordance.
+   ========================================================================== */
+
+.progress-wrap {
+    align-items: center;
+    background: var(--d-indigo);
+    border: 0;
+    border-radius: 50%;
+    bottom: 24px;
+    color: #fff;
+    display: flex;
+    height: 44px;
+    inset-inline-end: 24px;
+    justify-content: center;
+    padding: 0;
+    transition: background-color var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
+    width: 44px;
+    z-index: 900;
+}
+
+.progress-wrap:hover {
+    background: var(--d-indigo-dark);
+    transform: translateY(-3px);
+}
+
+.progress-circle {
+    fill: none;
+    height: 22px;
+    stroke: currentColor;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 0;
+    stroke-width: 4;
+    width: 22px;
+}
+
+.progress-wrap .progress-circle + * {
+    display: none;
+}
+/* --------------------------------------------------------------------------
+   19. Landing page
+   --------------------------------------------------------------------------
+   Namespaced `h-`, deliberately. Everything above this line is shared with the
+   standalone pages, so restyling those classes to match a landing-page
+   composition would restyle /programme and /tarifs at the same time. Every
+   rule here is additive and touches only classes the home page emits.
+
+   Like the rest of this file, everything is logical: no `left`, no `right`.
+   Arabic is the default language here, so the mirror is the common case.
+   -------------------------------------------------------------------------- */
+
+/* Three values this design needs that the brand palette does not have.
+
+   `--h-amber` is the warm accent for a small label on a dark band. The existing
+   `--d-clay` is a desaturated salmon and reads as a status colour against
+   indigo; this one is light enough to stay a label.
+
+   `--h-flame` marks the programme rail. The rail is the one place a saturated
+   colour earns its place: it is the thing a delegate scans for.
+
+   `--h-deep` is the dark band surface, a shade deeper than `--d-navy` so the
+   band reads as the page's own ground rather than as the footer's. */
+:root {
+    --h-amber: #f0a94b;
+    --h-flame: #f0733f;
+    --h-deep: #221d5e;
+    --h-deep-2: #322a80;
+    --h-mist: #f5f5fa;
+    --h-hair: #ecebf6;
+}
+
+/* --- Buttons ------------------------------------------------------------- */
+
+/* Squarer than `.d-btn`'s pill: the reference sets these as rounded rectangles
+   on the dark bands, and a pill beside the header's pill would make the two
+   read as the same control at two sizes. */
+.h-btn {
+    align-items: center;
+    border: 2px solid transparent;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: inherit;
+    font-size: var(--t-xs);
+    font-weight: 800;
+    gap: var(--sp-2);
+    justify-content: center;
+    letter-spacing: .06em;
+    line-height: 1.2;
+    padding: .72rem 1.4rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background-color var(--dur-2) var(--ease),
+        border-color var(--dur-2) var(--ease),
+        color var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease),
+        transform var(--dur-2) var(--ease);
+}
+
+.h-btn svg {
+    height: 1.05em;
+    width: 1.05em;
+}
+
+.h-btn--solid {
+    background: #fff;
+    border-color: #fff;
+    color: var(--d-indigo-dark);
+}
+
+.h-btn--solid:hover {
+    box-shadow: 0 12px 28px rgb(0 0 0 / 26%);
+    transform: translateY(-2px);
+}
+
+.h-btn--ghost {
+    border-color: rgb(255 255 255 / 52%);
+    color: #fff;
+}
+
+.h-btn--ghost:hover {
+    background: #fff;
+    border-color: #fff;
+    color: var(--d-indigo-dark);
+}
+
+.h-btn--outline {
+    border-color: var(--d-indigo);
+    color: var(--d-indigo);
+}
+
+.h-btn--outline:hover {
+    background: var(--d-indigo);
+    border-color: var(--d-indigo);
+    color: #fff;
+}
+
+.h-btn--sm {
+    padding: .6rem 1.15rem;
+}
+
+/* `transform: none` matters: a disabled control that still lifts on hover is
+   telling the pointer it is available. */
+.h-btn:disabled {
+    cursor: not-allowed;
+    opacity: .45;
+    pointer-events: none;
+    transform: none;
+}
+
+/* --------------------------------------------------------------------------
+   Hero
+   -------------------------------------------------------------------------- */
+
+.h-hero {
+    background-color: var(--h-deep);
+    background-image:
+        radial-gradient(120% 95% at 76% 16%, rgb(115 132 255 / 40%) 0%, transparent 58%),
+        radial-gradient(85% 70% at 14% 104%, rgb(88 107 225 / 34%) 0%, transparent 62%),
+        linear-gradient(132deg, #1b1749 0%, #262060 46%, var(--h-deep-2) 100%);
+    color: #fff;
+    overflow: hidden;
+    padding-block: calc(var(--header-h) + var(--sp-8)) var(--sp-9);
+    position: relative;
+}
+
+/* The copy column is first and takes the start side; the artwork is absolutely
+   positioned on the inline-end. `margin-inline-start: auto` is the whole of the
+   RTL story — no `order`, no physical offset to undo later. */
+.h-hero__inner {
+    max-width: 42rem;
+    position: relative;
+    width: 100%;
+    z-index: 3;
+}
+
+.rtl .h-hero__inner {
+    margin-inline-start: auto;
+}
+
+.h-hero__logos {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-5);
+    margin-block-end: var(--sp-6);
+}
+
+/* Dark ink turned white. The brand ships one artwork per locale; mapping every
+   pixel to white with a filter is what lets the same file sit on indigo here
+   and on white in the header without a second export. */
+.h-hero__logos img {
+    filter: brightness(0) invert(1);
+    height: auto;
+    max-height: 42px;
+    width: auto;
+}
+
+.h-hero__title {
+    color: #fff;
+    font-size: clamp(2.5rem, 1.4rem + 4.6vw, 4.25rem);
+    font-weight: 800;
+    letter-spacing: -.015em;
+    line-height: 1.05;
+    margin: 0 0 var(--sp-3);
+    text-transform: uppercase;
+}
+
+/* The year is the same hue as the band, lit from the top. A second flat colour
+   would read as a different word rather than as part of the same name. */
+.h-hero__year {
+    background-image: linear-gradient(180deg, #cdd4ff 0%, #8e9cf5 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.h-hero__kicker {
+    color: rgb(255 255 255 / 82%);
+    font-size: var(--t-sm);
+    font-weight: 700;
+    letter-spacing: .34em;
+    margin: 0 0 var(--sp-5);
+    text-transform: uppercase;
+}
+
+.h-hero__theme {
+    color: #fff;
+    font-size: var(--t-lg);
+    font-weight: 600;
+    line-height: 1.6;
+    margin: 0 0 var(--sp-6);
+    max-width: 34rem;
+}
+
+.h-hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4) var(--sp-6);
+    list-style: none;
+    margin: 0 0 var(--sp-7);
+    padding: 0;
+}
+
+.h-hero__meta li {
+    align-items: flex-start;
+    color: rgb(255 255 255 / 88%);
+    display: flex;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    gap: var(--sp-3);
+    line-height: 1.45;
+    max-width: 15rem;
+}
+
+.h-hero__fact-icon {
+    color: var(--h-amber);
+    flex: 0 0 auto;
+    height: 1.35rem;
+    margin-block-start: .1rem;
+    width: 1.35rem;
+}
+
+.h-hero__fact-icon svg {
+    height: 100%;
+    width: 100%;
+}
+
+.h-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+}
+
+/* --- The hero artwork --------------------------------------------------- */
+
+/* Three isometric tiles of the brand pattern over a bloom.
+
+   Built in CSS rather than shipped as an image: the motif is already a file in
+   config(), so the artwork costs nothing to rebrand and stays sharp at any
+   pixel density. The extrusion is a second copy of the same tile pushed back
+   along Z inside a `preserve-3d` parent — which is what turns a flat rhombus
+   into something that reads as a solid. */
+.h-hero__art {
+    inset-block: 0;
+    inset-inline-end: 0;
+    pointer-events: none;
+    position: absolute;
+    width: min(48%, 640px);
+    z-index: 1;
+}
+
+.h-cube {
+    aspect-ratio: 1;
+    background-image: var(--h-pattern);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    border: 1px solid rgb(255 255 255 / 26%);
+    box-shadow: inset 0 0 70px rgb(115 132 255 / 30%);
+    position: absolute;
+    transform: rotateX(58deg) rotateZ(45deg);
+    transform-style: preserve-3d;
+}
+
+.h-cube::after {
+    border: 1px solid rgb(255 255 255 / 16%);
+    content: '';
+    inset: 0;
+    position: absolute;
+    transform: translateZ(-34px);
+}
+
+.h-cube--front {
+    height: 46%;
+    inset-block-start: 34%;
+    inset-inline-start: 2%;
+    opacity: .85;
+    width: 46%;
+}
+
+.h-cube--mid {
+    height: 38%;
+    inset-block-start: 8%;
+    inset-inline-start: 34%;
+    opacity: .6;
+    width: 38%;
+}
+
+.h-cube--back {
+    height: 30%;
+    inset-block-start: 52%;
+    inset-inline-start: 44%;
+    opacity: .38;
+    width: 30%;
+}
+
+.h-hero__bloom {
+    background: radial-gradient(circle at 62% 42%, rgb(140 152 255 / 34%) 0%, transparent 62%);
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 0;
+}
+
+/* The four-point sparkles. One element plus its two pseudo-elements, each a
+   star drawn with a clip-path. More would need more elements for no gain: they
+   read as a texture, and three is enough of one. */
+.h-hero__sparks {
+    background-color: rgb(255 255 255 / 72%);
+    clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+    height: 22px;
+    inset-block-start: 15%;
+    inset-inline-end: 7%;
+    pointer-events: none;
+    position: absolute;
+    width: 22px;
+    z-index: 2;
+}
+
+.h-hero__sparks::before,
+.h-hero__sparks::after {
+    background-color: rgb(255 255 255 / 58%);
+    clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+    content: '';
+    position: absolute;
+}
+
+.h-hero__sparks::before {
+    height: 14px;
+    inset-block-start: 9rem;
+    inset-inline-end: -6.5rem;
+    width: 14px;
+}
+
+.h-hero__sparks::after {
+    height: 18px;
+    inset-block-start: 21rem;
+    inset-inline-end: 4rem;
+    width: 18px;
+}
+
+@media (max-width: 991.98px) {
+    /* Below the breakpoint the copy takes the full width, so the artwork would
+       sit underneath it. It goes rather than competing; the gradient still
+       carries the band. */
+    .h-hero__art,
+    .h-hero__sparks {
+        display: none;
+    }
+
+    .h-hero {
+        padding-block: calc(var(--header-h) + var(--sp-7)) var(--sp-8);
+    }
+
+    .h-hero__meta li {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .h-hero__actions .h-btn {
+        flex: 1 1 100%;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   The pattern divider
+   -------------------------------------------------------------------------- */
+
+/* A run of the brand's four-module motif, repeated along the inline axis.
+
+   The unit is one motif and deliberately *not* a seamless fill — config/brand.php
+   documents why, and that constraint is the whole point of this band: a motif
+   drawn not to tile reads as a defect anywhere else, and here it reads as a row
+   of emblems.
+
+   `grayscale` because the reference sets the strip in neutral grey. Left in
+   periwinkle at full strength it would compete with the dark bands it separates,
+   which is the opposite of a divider's job. */
+.h-pattern {
+    background-image: var(--h-pattern);
+    background-position: center;
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+    filter: grayscale(1);
+    height: clamp(52px, 7vw, 86px);
+    opacity: .34;
+}
+
+/* --------------------------------------------------------------------------
+   "Rejoignez-nous !" — the invitation and the four figures
+   -------------------------------------------------------------------------- */
+
+.h-join {
+    background: #fff;
+    padding-block: clamp(2.75rem, 6vw, 5rem);
+}
+
+.h-join__grid {
+    align-items: center;
+    display: grid;
+    gap: var(--sp-6) clamp(2rem, 5vw, 4rem);
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 992px) {
+    .h-join__grid {
+        grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+    }
+}
+
+.h-join__title {
+    color: var(--d-indigo-dark);
+    font-size: var(--t-2xl);
+    font-weight: 800;
+    letter-spacing: .01em;
+    line-height: 1.15;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.h-figures {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+@media (max-width: 767.98px) {
+    .h-figures {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* No border: the reference separates these by shadow alone, and a hairline as
+   well makes them read as form fields rather than as figures. */
+.h-figure {
+    background: #fff;
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-2);
+    padding: var(--sp-5) var(--sp-3);
+    text-align: center;
+}
+
+.h-figure__value {
+    color: var(--d-indigo);
+    display: block;
+    font-size: var(--t-xl);
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.h-figure__label {
+    color: var(--d-muted);
+    display: block;
+    font-size: var(--t-xs);
+    line-height: 1.4;
+    margin-block-start: var(--sp-1);
+}
+
+/* --------------------------------------------------------------------------
+   "Pourquoi cette conférence ?"
+   -------------------------------------------------------------------------- */
+
+/* The pattern is tiled at a fixed size and washed over with the band's own
+   colour, rather than printed in a tint of its own: a solid wash is what keeps
+   the motif legible as texture on a 40%-opaque white-on-indigo PNG. */
+.h-why {
+    background-color: var(--h-deep);
+    background-image:
+        linear-gradient(rgb(34 29 94 / 88%), rgb(34 29 94 / 88%)),
+        var(--h-pattern);
+    background-position: center;
+    background-repeat: no-repeat, repeat;
+    background-size: auto, 320px auto;
+    color: rgb(255 255 255 / 86%);
+    overflow: hidden;
+    padding-block: clamp(3.25rem, 8vw, 6.5rem);
+    position: relative;
+}
+
+.h-why__grid {
+    align-items: center;
+    display: grid;
+    gap: var(--sp-8) clamp(2rem, 6vw, 4.5rem);
+    grid-template-columns: minmax(0, 1fr);
+    position: relative;
+    z-index: 1;
+}
+
+@media (min-width: 992px) {
+    .h-why__grid {
+        grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+    }
+}
+
+/* The block-end padding is the room the overlapping inset is borrowed from,
+   which is why the two cannot collide at any width: the parent reserves the
+   space rather than the two boxes negotiating it. */
+.h-why__figure {
+    padding-block-end: clamp(3rem, 7vw, 5rem);
+    position: relative;
+}
+
+.h-why__photo {
+    aspect-ratio: 4 / 3;
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-3);
+    display: block;
+    height: auto;
+    object-fit: cover;
+    width: 100%;
+}
+
+.h-why__inset {
+    border-radius: var(--r-md);
+    bottom: 0;
+    box-shadow: var(--sh-3);
+    inset-inline-end: 0;
+    margin: 0;
+    overflow: hidden;
+    position: absolute;
+    width: min(56%, 290px);
+}
+
+.h-why__inset img {
+    aspect-ratio: 4 / 3;
+    display: block;
+    height: auto;
+    object-fit: cover;
+    width: 100%;
+}
+
+.h-why__inset figcaption {
+    background-image: linear-gradient(180deg, rgb(27 23 73 / 0%) 0%, rgb(24 20 66 / 94%) 62%);
+    bottom: 0;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    inset-inline: 0;
+    padding: var(--sp-6) var(--sp-4) var(--sp-4);
+    position: absolute;
+}
+
+.h-why__inset-title {
+    font-size: var(--t-base);
+    font-weight: 800;
+    letter-spacing: .02em;
+}
+
+.h-why__inset-sub {
+    font-size: var(--t-xs);
+    opacity: .82;
+}
+
+.h-why__eyebrow {
+    color: var(--h-amber);
+    font-size: var(--t-xs);
+    font-weight: 800;
+    letter-spacing: .16em;
+    margin: 0 0 var(--sp-3);
+    text-transform: uppercase;
+}
+
+.h-why__title {
+    color: #fff;
+    font-size: var(--t-2xl);
+    font-weight: 800;
+    letter-spacing: .01em;
+    line-height: 1.28;
+    margin: 0 0 var(--sp-5);
+    text-transform: uppercase;
+}
+
+.rtl .h-why__title {
+    line-height: 1.45;
+}
+
+/* Justified, as the reference sets it. `text-wrap: pretty` on top keeps the last
+   line of each paragraph from being one stretched word, which is the usual cost
+   of justification and the usual reason it is left off. */
+.h-why__para {
+    font-size: var(--t-sm);
+    line-height: 1.95;
+    margin: 0 0 var(--sp-4);
+    text-align: justify;
+    text-wrap: pretty;
+}
+
+.h-why__para:last-child {
+    margin-block-end: 0;
+}
+
+/* --------------------------------------------------------------------------
+   "Inscription" — the tariff cards
+   -------------------------------------------------------------------------- */
+
+.h-inscription {
+    background: var(--h-mist);
+    padding-block: clamp(3.25rem, 7vw, 5.5rem);
+}
+
+.h-inscription__title {
+    color: var(--d-indigo-dark);
+    font-size: var(--t-3xl);
+    font-weight: 800;
+    letter-spacing: .02em;
+    line-height: 1.1;
+    margin: 0 0 var(--sp-7);
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.rtl .h-inscription__title {
+    line-height: 1.4;
+}
+
+/* Capped and centred rather than full-bleed: four cards stretched across 1240px
+   leave the figure and its label marooned in the middle of a very wide box. */
+.h-tariffs {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    list-style: none;
+    margin: 0 auto var(--sp-7);
+    max-width: 62rem;
+    padding: 0;
+}
+
+.h-tariff {
+    background: #fff;
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-1);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--sp-5);
+}
+
+.h-tariff__amount {
+    align-items: baseline;
+    color: var(--d-indigo-dark);
+    display: flex;
+    font-weight: 800;
+    gap: .35rem;
+}
+
+.h-tariff__figure {
+    font-size: var(--t-xl);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+}
+
+.h-tariff__currency {
+    color: var(--d-lilac);
+    font-size: var(--t-sm);
+    letter-spacing: .04em;
+}
+
+.h-tariff__kind {
+    color: var(--d-ink-soft);
+    font-size: var(--t-sm);
+    font-weight: 600;
+}
+
+.h-tariff__audience {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+}
+
+.h-inscription__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   The programme
+   -------------------------------------------------------------------------- */
+
+.h-programme {
+    background-color: var(--h-deep);
+    background-image: linear-gradient(158deg, #1d1852 0%, #262060 58%, var(--h-deep-2) 100%);
+    color: #fff;
+    overflow: hidden;
+    padding-block: clamp(3.25rem, 7vw, 5.5rem);
+    position: relative;
+}
+
+/* The motif, clipped against both edges and sitting behind everything. It is
+   `pointer-events: none` and behind the content rather than beside it, because a
+   decorative band that can be scrolled over is a decoration that eats a click. */
+.h-programme__edge {
+    background-image: var(--h-pattern);
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+    height: 132px;
+    opacity: .26;
+    pointer-events: none;
+    position: absolute;
+    top: 16%;
+    width: 240px;
+    z-index: 0;
+}
+
+.h-programme__edge--start {
+    inset-inline-start: 0;
+}
+
+.h-programme__edge--end {
+    inset-inline-end: 0;
+}
+
+.h-programme > .container {
+    position: relative;
+    z-index: 1;
+}
+
+.h-programme__title {
+    color: rgb(150 156 242 / 78%);
+    font-size: var(--t-xl);
+    font-weight: 800;
+    letter-spacing: .05em;
+    margin: 0 0 var(--sp-7);
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.rtl .h-programme__title {
+    letter-spacing: 0;
+}
+
+.h-programme__grid {
+    align-items: start;
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 992px) {
+    .h-programme__grid {
+        grid-template-columns: 8.5rem minmax(0, 1fr);
+    }
+}
+
+/* --- Day tabs ------------------------------------------------------------ */
+
+/* A card per day rather than a row of pills: the reference sets the day as a
+   small stacked card — label, big number, month — and the big number is what
+   makes the pair distinguishable at a glance without reading either. */
+.h-days {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+@media (min-width: 992px) {
+    .h-days {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.h-day {
+    background: #fff;
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-2);
+    color: var(--d-indigo-dark);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--sp-4) var(--sp-3);
+    text-align: center;
+    text-decoration: none;
+    transition: box-shadow var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
+}
+
+.h-day:hover {
+    box-shadow: var(--sh-3);
+    transform: translateY(-2px);
+}
+
+.h-day--current {
+    background-image: linear-gradient(168deg, #2b2569 0%, #1b1749 100%);
+    color: #fff;
+}
+
+.h-day__label {
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.h-day__num {
+    font-size: var(--t-2xl);
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.h-day__month {
+    font-size: var(--t-xs);
+    opacity: .78;
+}
+
+/* --- The schedule card --------------------------------------------------- */
+
+.h-schedule {
+    background: #fff;
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-3);
+    color: var(--d-ink-soft);
+    overflow: hidden;
+}
+
+.h-schedule__head {
+    align-items: center;
+    background-image: linear-gradient(100deg, #e6eafa 0%, #f4f5fd 52%, #fff 100%);
+    display: flex;
+    gap: var(--sp-4);
+    padding: var(--sp-5) var(--sp-6);
+}
+
+.h-schedule__icon {
+    align-items: center;
+    border: 2px solid var(--d-indigo);
+    border-radius: var(--r-sm);
+    color: var(--d-indigo);
+    display: flex;
+    flex: 0 0 auto;
+    height: 2.6rem;
+    justify-content: center;
+    width: 2.6rem;
+}
+
+.h-schedule__icon svg {
+    height: 1.35rem;
+    width: 1.35rem;
+}
+
+.h-schedule__day {
+    color: var(--d-indigo-dark);
+    font-size: var(--t-lg);
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0;
+}
+
+.h-schedule__date {
+    color: var(--d-lilac);
+    font-size: var(--t-sm);
+    margin: 0;
+}
+
+.h-slots {
+    list-style: none;
+    margin: 0;
+    padding: var(--sp-2) var(--sp-6) var(--sp-5);
+}
+
+.h-slot {
+    align-items: start;
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+    padding-block: var(--sp-4);
+    position: relative;
+}
+
+@media (max-width: 575.98px) {
+    .h-slots {
+        padding-inline: var(--sp-4);
+    }
+
+    /* Below this the three columns squeeze the title into a two-word-per-line
+       ribbon, so the time moves onto its own line above the row instead. */
+    .h-slot {
+        gap: var(--sp-3);
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .h-slot__time {
+        grid-column: 1 / -1;
+    }
+}
+
+.h-slot + .h-slot {
+    border-block-start: 1px solid var(--h-hair);
+}
+
+/* The rail, drawn on the row so it can never be left behind when the last row
+   is removed — the same reason `.d-timeline__row::before` works. */
+.h-slot::before {
+    background: var(--h-hair);
+    content: '';
+    inset-block: 0;
+    inset-inline-start: 4.5rem;
+    position: absolute;
+    width: 2px;
+}
+
+.h-slot:first-child::before {
+    inset-block-start: 1.45rem;
+}
+
+.h-slot:last-child::before {
+    inset-block-end: calc(100% - 1.45rem);
+}
+
+/* The dot, nudged back by half its own width with a *logical* margin, so it
+   lands on the rail in either direction without one physical offset. */
+.h-slot::after {
+    background: var(--h-flame);
+    border-radius: 50%;
+    content: '';
+    height: .62rem;
+    inset-inline-start: 4.5rem;
+    margin-inline-start: -.31rem;
+    position: absolute;
+    top: 1.15rem;
+    width: .62rem;
+    z-index: 2;
+}
+
+.h-slot__time {
+    color: var(--d-indigo-dark);
+    font-size: var(--t-sm);
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    line-height: 1.45;
+    position: relative;
+    z-index: 1;
+}
+
+.h-slot__format {
+    color: var(--d-lilac);
+    display: block;
+    font-size: var(--t-xs);
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.h-slot__title {
+    color: var(--d-indigo-dark);
+    font-size: var(--t-base);
+    font-weight: 800;
+    line-height: 1.4;
+    margin: 2px 0 4px;
+}
+
+.h-slot__note {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    margin: 0;
+}
+
+/* `hidden` has to beat `display: grid`, or the panel can never collapse. */
+.h-slot__detail[hidden] {
+    display: none;
+}
+
+.h-slot__detail {
+    border-inline-start: 2px solid var(--d-line);
+    display: grid;
+    gap: var(--sp-1);
+    margin-block-start: var(--sp-3);
+    padding-inline-start: var(--sp-4);
+}
+
+.h-slot__detail-line {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    margin: 0;
+}
+
+.h-slot__detail-line i {
+    color: var(--d-lilac);
+    margin-inline-end: .45rem;
+}
+
+.h-slot__toggle {
+    align-items: center;
+    background: #fff;
+    border: 2px solid var(--h-flame);
+    border-radius: 50%;
+    color: var(--h-flame);
+    cursor: pointer;
+    display: flex;
+    flex: 0 0 auto;
+    height: 2.1rem;
+    justify-content: center;
+    margin-block-start: .1rem;
+    padding: 0;
+    transition: background-color var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
+    width: 2.1rem;
+}
+
+.h-slot__toggle svg {
+    height: 1rem;
+    transition: transform var(--dur-2) var(--ease);
+    width: 1rem;
+}
+
+.h-slot__toggle:hover {
+    background: var(--h-flame);
+    color: #fff;
+}
+
+/* A plus that becomes a cross, so the control reports its own state without the
+   panel below it having to be read. */
+.h-slot__toggle[aria-expanded="true"] svg {
+    transform: rotate(45deg);
+}
+
+.h-programme__download {
+    margin: var(--sp-6) 0 0;
+    text-align: end;
+}
+
+/* --------------------------------------------------------------------------
+   The line-up rail
+   -------------------------------------------------------------------------- */
+
+.h-lineup {
+    background: #f2f2f7;
+    padding-block: clamp(2.5rem, 5vw, 4rem);
+}
+
+.h-lineup__head {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3) var(--sp-6);
+    justify-content: space-between;
+    margin-block-end: var(--sp-5);
+}
+
+.h-lineup__eyebrow {
+    color: var(--d-lilac);
+    font-size: var(--t-xs);
+    font-weight: 800;
+    letter-spacing: .16em;
+    margin: 0 0 var(--sp-2);
+    text-transform: uppercase;
+}
+
+/* The lead-in dash the reference sets before the label. Rendered from a
+   pseudo-element so it never reaches the accessible name, which is what a
+   decorative dash belongs to. */
+.h-lineup__eyebrow::before {
+    color: var(--h-flame);
+    content: '— ';
+}
+
+.h-lineup__title {
+    color: var(--d-indigo-dark);
+    font-size: var(--t-xl);
+    font-weight: 800;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.rtl .h-lineup__title {
+    line-height: 1.55;
+}
+
+.h-lineup__all {
+    align-items: center;
+    color: var(--d-indigo);
+    display: inline-flex;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    gap: var(--sp-2);
+    padding-block-end: 2px;
+    text-decoration: none;
+}
+
+.h-lineup__all:hover {
+    text-decoration: underline;
+}
+
+.h-lineup__all svg {
+    height: 1.05rem;
+    transition: transform var(--dur-2) var(--ease);
+    width: 1.05rem;
+}
+
+.h-lineup__all:hover svg {
+    transform: translateX(4px);
+}
+
+/* The arrow points the way the link goes, which is the other way in Arabic. */
+.rtl .h-lineup__all:hover svg {
+    transform: translateX(-4px);
+}
+
+.h-lineup__rail-wrap {
+    position: relative;
+}
+
+/* A scroll container with snap, so touch, trackpad, keyboard and the arrow
+   buttons are four routes to one behaviour rather than four implementations of
+   it. `minmax(15rem, 1fr)` is what makes the columns share the width when there
+   are few and overflow when there are many — a bare `1fr` would silently fit
+   eight cards into the space of four. */
+.h-lineup__rail {
+    display: grid;
+    gap: var(--sp-4);
+    grid-auto-columns: minmax(15rem, 1fr);
+    grid-auto-flow: column;
+    list-style: none;
+    margin: 0;
+    overflow-x: auto;
+    padding-block: var(--sp-2);
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+
+.h-lineup__rail::-webkit-scrollbar {
+    display: none;
+}
+
+.h-lineup__rail > li {
+    scroll-snap-align: start;
+}
+
+.h-lineup__arrow {
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--d-line);
+    border-radius: 50%;
+    box-shadow: var(--sh-2);
+    color: var(--d-indigo);
+    cursor: pointer;
+    display: flex;
+    height: 2.5rem;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.5rem;
+    z-index: 3;
+}
+
+.h-lineup__arrow[hidden] {
+    display: none;
+}
+
+.h-lineup__arrow svg {
+    height: 1.05rem;
+    width: 1.05rem;
+}
+
+.h-lineup__arrow--prev {
+    inset-inline-start: -1.1rem;
+}
+
+.h-lineup__arrow--next {
+    inset-inline-end: -1.1rem;
+}
+
+.h-lineup__arrow:hover:not(:disabled) {
+    background: var(--d-indigo);
+    border-color: var(--d-indigo);
+    color: #fff;
+}
+
+.h-lineup__arrow:disabled {
+    cursor: default;
+    opacity: .4;
+}
+
+@media (max-width: 575.98px) {
+    /* Overlapping the cards would sit them on the faces; on a phone they would
+       also sit outside the viewport, since the rail already reaches the edge. */
+    .h-lineup__arrow {
+        display: none !important;
+    }
+}
+
+/* --- The person card ----------------------------------------------------- */
+
+.h-person {
+    background: #fff;
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-1);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    height: 100%;
+    padding: var(--sp-5);
+}
+
+.h-person__avatar {
+    align-items: center;
+    background-image: linear-gradient(140deg, var(--d-indigo) 0%, var(--d-periwinkle) 100%);
+    border-radius: 50%;
+    display: flex;
+    flex: 0 0 auto;
+    height: 3.75rem;
+    justify-content: center;
+    overflow: hidden;
+    width: 3.75rem;
+}
+
+.h-person__avatar img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+.h-person__initials {
+    color: #fff;
+    font-size: var(--t-base);
+    font-weight: 800;
+}
+
+.h-person__name {
+    color: var(--d-indigo-dark);
+    font-size: var(--t-sm);
+    font-weight: 800;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.h-person__role,
+.h-person__org {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* `margin-block-start: auto` pins the chip to the bottom, so a card with one
+   line of role text and a card with three line their chips up with each other. */
+.h-person__chip {
+    align-items: center;
+    color: var(--d-lilac);
+    display: flex;
+    font-size: var(--t-xs);
+    font-weight: 700;
+    gap: var(--sp-2);
+    margin: auto 0 0;
+}
+
+/* --------------------------------------------------------------------------
+   Sponsors
+   -------------------------------------------------------------------------- */
+
+.h-sponsors {
+    background: #fff;
+    padding-block: clamp(2.75rem, 6vw, 4.5rem);
+}
+
+.h-sponsors__title {
+    color: var(--d-indigo-dark);
+    font-size: var(--t-2xl);
+    font-weight: 800;
+    letter-spacing: .06em;
+    margin: 0 0 var(--sp-7);
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.h-sponsors__wall {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-6) clamp(2rem, 6vw, 4rem);
+    justify-content: center;
+}
+
+.h-sponsors__wall img,
+.h-sponsors__item img {
+    height: auto;
+    max-height: 84px;
+    width: auto;
+}
+
+/* The single placeholder mark is shown larger than a wall member would be: one
+   logo at wall size reads as a mistake rather than as a partner. */
+.h-sponsors__wall--single img {
+    max-height: clamp(72px, 11vw, 118px);
+}
+
+.h-sponsors__cta {
+    margin: var(--sp-7) 0 0;
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   20. Landing page — reduced motion
+   --------------------------------------------------------------------------
+   The rail and the slot panel are the two things on this page that move on
+   their own. Both stop dead rather than merely shortening: a carousel that
+   drifts is worse than one that does not move, because it asks the eye to
+   track something it cannot follow.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .h-lineup__rail {
+        scroll-behavior: auto;
+    }
+
+    .h-slot__toggle svg,
+    .h-lineup__all svg {
+        transition: none;
+    }
+}

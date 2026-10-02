@@ -12,6 +12,7 @@ use App\Models\Country;
 use App\Models\Edition;
 use App\Models\Organisation;
 use App\Models\Room;
+use App\Models\TeamMember;
 use App\Models\TicketType;
 use App\Models\Track;
 use Illuminate\Database\Seeder;
@@ -36,6 +37,7 @@ class EditionSeeder extends Seeder
         $this->countries();
         $this->edition2026();
         $this->organisations();
+        $this->teamMembers();
         $this->rooms();
         $this->tracks();
         $this->ticketTypes();
@@ -108,7 +110,7 @@ class EditionSeeder extends Seeder
                 'title' => [
                     'fr' => 'Conférence internationale ARABCIA 2026',
                     'en' => 'International ARABCIA Conference 2026',
-                    'ar' => 'ARABCIA هي الجمعية الإقليمية لمديري التدقيق الداخلي في أفريقيا الناطقة بالفرنسية. تُنظَّم بدعم من المعهد الدولي للتدقيق الداخلي، وتجمع كل عام ممارسي التدقيق الداخلي ومؤسسات الرقابة والأكاديميين والاستشاريين حول التحديات العملية التي تواجه هذه الوظيفة.',
+                    'ar' => 'المؤتمر الدولي ARABCIA 2026',
                 ],
 
                 // The theme is quoted from the 2026 brief. It is stored as data
@@ -127,15 +129,20 @@ Face à l'essor de l'intelligence artificielle, aux cybermenaces et aux boulever
                     'en' => 'The ARABCIA 2026 Annual Conference, organized by ARABCIA and hosted in Morocco by the IIA Morocco, will bring together professionals and institutions contributing to the development of Internal Audit in the Arab world and beyond. This edition will have the theme: "Internal Audit : A Trusted Partner in Organizational Transformation and Resilience".
 
 Facing the rise of artificial intelligence, cyber threats and economic and social upheavals, organizations must anticipate risks, adapt and preserve trust. The conference will explore concrete responses to these challenges and show how Internal Audit, with its independence and professional judgment, can contribute to governance, resilience and sustainable value creation.',
-                    'ar' => 'تُعقَد المؤتمر السنوي ARABICA 2026، بتنظيم من ARABCIA وباستقبال من المعهد الدولي للتدقيق الداخلي IIA المغرب، في الرباط، ويلتقى فيها الخبراء والمؤسسات المساهمة في تطوير التدقيق الداخلي في العالم العربي وما وراءها. وستحمل هذه الدورة thème: "التدقيق الداخلي: شريك موثوق في تحوّل المؤسسات وتعزيز قدرتها على الصمود".
+                    'ar' => 'تُعقد المؤتمر السنوي ARABCIA 2026، بتنظيم من الاتحاد العربي لمعاهد التدقيق الداخلي (ARABCIA) وباستضافة من المعهد الدولي للتدقيق الداخلي IIA المغرب، في مدينة الرباط بالمملكة المغربية. ويلتقي فيها المهنيون والمؤسسات التي تسهم في تطوير التدقيق الداخلي في العالم العربي وما وراءه، وتُدار حول موضوع: «التدقيق الداخلي: شريك موثوق في تحوّل المؤسسات وتعزيز قدرتها على الصمود».
 
-بمواجهة تزايد الذكاء الاصطناعي، والتهديدات الإلكترونية، والتقلبات الاقتصادية والاجتماعية، يجب على المؤسسات أن تسبق المخاطر، وتتكيف، وتحافظ على الثقة. وستستكشف المؤتمر الحلول العملية لهذه التحديات، وستshows كيف يمكن للتتدقيق الداخلي، باستقلاله وحكمه المهني، أن يساهم في الحوكمة، والمرونة، وخلق القيمة المستدامة.',
+ أمام تسارع الذكاء الاصطناعي، وتزايد التهديدات الإلكترونية، والاضطرابات الاقتصادية والاجتماعية، بات على المؤسسات أن تستبق المخاطر، وأن تتكيف، وأن تحافظ على الثقة. وسيناقش المؤتمر الحلول العملية لهذه التحديات، ويبيّن كيف يمكن للتدقيق الداخلي، باستقلاله وحكمه المهني، أن يسهم في الحوكمة والمرونة وخلق قيمة مستدامة.',
                 ],
 
                 'city' => 'Rabat',
                 'country_iso2' => 'MA',
                 'venue_name' => 'Four Seasons Hotel Rabat at Kasr Al Bahr',
-                'venue_address' => null,
+                // Only what the dossier states: the hotel sits at Kasr Al Bahr in
+                // Rabat. The street is left out rather than guessed, because a
+                // wrong address on a conference site sends a delegate — who has
+                // flown in — to the wrong building. The map link is derived from
+                // the coordinates below, so it is exact regardless.
+                'venue_address' => 'Kasr Al Bahr, Rabat, Royaume du Maroc',
                 'venue_lat' => 33.9973,
                 'venue_lng' => -6.8498,
                 'venue_map_url' => null,
@@ -177,16 +184,18 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
                 // support mail rather than delegates.
                 'registration_open' => true,
 
-                'contact_email' => 'contact@arabcia.org',
-                'contact_phone' => null,
+                // The secretariat of the host institute. The 2026 dossier closes
+                // its contact section with this exact mailbox and line — "for any
+                // further information about the conference" — so it is the
+                // edition's general contact, not an invented one. The six named
+                // officers are rows in `teamMembers()` below.
+                'contact_email' => 'hmelhaoui@iiamaroc.org',
+                'contact_phone' => '+212 678 401 113',
 
-                // The 2024 venue and the confirmed 2026 facts are the only values
-                // hardcoded here. Speaker names, sponsor names and the detailed
-                // schedule are left to the organisers.
-                'organiser_contact_name' => null,
+                'organiser_contact_name' => 'ARABCIA — Arab Confederation of Internal Auditors',
                 'organiser_contact_email' => 'contact@arabcia.org',
-                'host_contact_name' => null,
-                'host_contact_email' => null,
+                'host_contact_name' => 'Hasnae MELHAOUI, Secrétaire Générale — IIA Maroc',
+                'host_contact_email' => 'hmelhaoui@iiamaroc.org',
 
                 'hero_image_path' => null,
                 'logo_path' => null,
@@ -205,10 +214,18 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
                     'en' => 'ARABCIA',
                     'ar' => 'ARABCIA',
                 ],
+                // Per the 2026 dossier, p.12: ARABCIA is the Arab Confederation
+                // of Internal Auditors — a non-profit, financially independent
+                // international professional organisation founded in December 2022
+                // and established in the Kingdom of Saudi Arabia, federating the
+                // internal audit institutes of thirteen Arab countries. The 2024
+                // text called it a regional association of French-speaking African
+                // audit directors, which is a different organisation entirely, and
+                // it was being printed on the partners page.
                 'description' => [
-                    'fr' => 'Association régionale des directions d\'audit interne d\'Afrique francophone.',
-                    'en' => 'Regional association of French-speaking African internal audit directors.',
-                    'ar' => 'الجمعية الإقليمية لمديري التدقيق الداخلي في أفريقيا الناطقة بالفرنسية.',
+                    'fr' => 'Confédération arabe des instituts d\'Audit Interne. Organisation professionnelle internationale à but non lucratif, créée en décembre 2022 et établie au Royaume d\'Arabie saoudite, elle fédère les instituts d\'Audit Interne de treize pays arabes.',
+                    'en' => 'Arab Confederation of Internal Auditors. An independent international non-profit professional organisation, founded in December 2022 and established in the Kingdom of Saudi Arabia, federating the internal audit institutes of thirteen Arab countries.',
+                    'ar' => 'الاتحاد العربي لمعاهد التدقيق الداخلي. منظمة مهنية دولية غير ربحية ومستقلة، أُنشئت في ديسمبر 2022 ومقرها المملكة العربية السعودية، وتجمع معاهد التدقيق الداخلي من ثلاثة عشر دولة عربية.',
                 ],
                 'role' => [
                     'fr' => 'Organisateur',
@@ -220,19 +237,19 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
             [
                 'code' => 'IIA_MAROC',
                 'name' => [
-                    'fr' => 'Institut International d\'Audit — Maroc',
-                    'en' => 'Institute of Internal Auditors — Morocco',
-                    'ar' => 'المعهد الدولي للتدقيق الداخلي — المغرب',
+                    'fr' => 'Institut des Auditeurs Internes du Maroc — IIA Maroc',
+                    'en' => 'Institute of Internal Auditors — Morocco (IIA Maroc)',
+                    'ar' => 'المعهد الدولي للتدقيق الداخلي — IIA المغرب',
                 ],
                 'description' => [
-                    'fr' => 'Institut qui accueille la conférence et soutient l\'audit interne au Maroc.',
-                    'en' => 'The institute that hosts the conference and supports internal audit in Morocco.',
-                    'ar' => 'المعهد الذي يستضيف المؤتمر ويدعم التدقيق الداخلي في المغرب.',
+                    'fr' => 'L\'institut qui accueille la conférence au Royaume du Maroc et qui organise chaque année des événements de référence pour la profession.',
+                    'en' => 'The institute that hosts the conference in the Kingdom of Morocco and that organises the profession\'s flagship events each year.',
+                    'ar' => 'المعهد الذي يستضيف المؤتمر في المملكة المغربية وينظّم الأحداث الكبرى للمهنة كل عام.',
                 ],
                 'role' => [
-                    'fr' => 'Hôte',
-                    'en' => 'Host',
-                    'ar' => 'المضيف',
+                    'fr' => 'Institut hôte',
+                    'en' => 'Host institute',
+                    'ar' => 'المعهد المضيف',
                 ],
                 'sort_order' => 2,
             ],
@@ -262,6 +279,108 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
      * and sorting by it would be alphabetical, so the level is stored and the
      * wording lives in the view.
      */
+    /**
+     * The organising committee, as published in the 2026 dossier and the
+     * sponsorship pack.
+     *
+     * These are the six named officers of IIA Maroc — the host institute — with
+     * the direct line and mailbox the organisers themselves print on their
+     * documents. They are rows rather than template text for the same reason
+     * everything else here is: when the committee changes after the next
+     * edition, this is five rows to edit and no deploy, and the contact page
+     * cannot keep showing a president who left the office.
+     *
+     * The pairing of each name to each telephone number and mailbox was
+     * cross-checked between the two source documents: the French dossier lists
+     * the secretariat's line inline, and the sponsorship pack lists the numbers
+     * in a separate column. Every mailbox here either carries the holder's own
+     * name or states the office they hold, which is what makes the pairing
+     * verifiable rather than a guess about column order.
+     *
+     * `TEAM_ORGANISING` because every one of them sits on the organising
+     * committee; `sort_order` follows the order the dossier prints them, which
+     * is by seniority.
+     */
+    private function teamMembers(): void
+    {
+        $edition = Edition::forYear(2026);
+
+        if ($edition === null) {
+            return;
+        }
+
+        $members = [
+            [
+                'name' => 'Deyaa ABBAD EL ANDALOUSSI',
+                'role' => ['fr' => 'Présidente', 'en' => 'President', 'ar' => 'رئيسة'],
+                'email' => 'president@iiamaroc.org',
+                'phone' => '+212 661 122 044',
+            ],
+            [
+                'name' => 'Meriam LIAFI',
+                'role' => ['fr' => 'Vice-Présidente', 'en' => 'Vice President', 'ar' => 'نائبة الرئيس'],
+                'email' => 'vice.president@iiamaroc.org',
+                'phone' => '+212 661 077 672',
+            ],
+            [
+                'name' => 'Hasnae MELHAOUI',
+                'role' => ['fr' => 'Secrétaire Générale', 'en' => 'Secretary General', 'ar' => 'الأمينة العامة'],
+                // The secretariat is the address the dossiers themselves give for
+                // "any further information", so it is also the edition's general
+                // contact number.
+                'email' => 'hmelhaoui@iiamaroc.org',
+                'phone' => '+212 678 401 113',
+            ],
+            [
+                'name' => 'Khadija El Idrissi',
+                'role' => ['fr' => 'Directrice Déléguée', 'en' => 'Executive Director', 'ar' => 'المديرة التنفيذية'],
+                'email' => 'directeur.delegue@iiamaroc.org',
+                'phone' => '+212 665 229 929',
+            ],
+            [
+                'name' => 'Zineb EDDAYA',
+                'role' => ['fr' => 'Trésorière', 'en' => 'Treasurer', 'ar' => 'أمينة الصندوق'],
+                'email' => 'zineb.eddaya@gmail.com',
+                'phone' => '+212 661 291 258',
+            ],
+            [
+                'name' => 'Abdelmounim ZAGHLOUL',
+                'role' => ['fr' => 'Président sortant', 'en' => 'Immediate Past President', 'ar' => 'الرئيس السابق'],
+                'email' => 'zmounim@gmail.com',
+                'phone' => '+212 661 318 247',
+            ],
+        ];
+
+        foreach ($members as $index => $member) {
+            TeamMember::query()->updateOrCreate(
+                [
+                    'edition_id' => $edition->getKey(),
+                    'email' => $member['email'],
+                ],
+                array_merge($member, [
+                    'team' => TeamMember::TEAM_ORGANISING,
+                    // Every officer is an IIA Maroc officer: the committee belongs
+                    // to the host institute, and repeating the institute on each
+                    // row is what lets the card say so under the name.
+                    'organisation' => 'IIA Maroc',
+                    'is_published' => true,
+                    'sort_order' => $index + 1,
+                ]),
+            );
+        }
+
+        // updateOrCreate() matches on the mailbox, so a member who is replaced by
+        // someone else at the same office leaves the old row behind — and the
+        // contact page would then offer a visitor to email an officer who has
+        // left. Rows this method owns are removed first, by the same rule the
+        // track seeder uses.
+        TeamMember::query()
+            ->where('edition_id', $edition->getKey())
+            ->where('team', TeamMember::TEAM_ORGANISING)
+            ->whereNotIn('email', array_column($members, 'email'))
+            ->delete();
+    }
+
     private function rooms(): void
     {
         $edition = Edition::forYear(2026);
@@ -564,7 +683,7 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
                 'value' => [
                     'fr' => 'Trois catégories de parrainage sont disponibles : Platine, Or, Argent et Bronze, avec des avantages croissants à chaque niveau.',
                     'en' => 'Three sponsorship categories are available: Platinum, Gold, Silver and Bronze, with increasing benefits at each level.',
-                    'ar' => 'تتوفر ثلاثCategories من الرعاية: بلاتين، ذهبي، فضي وبرونزي، مع زيادة المزايا في كل مستوى.',
+                    'ar' => 'تتوفر فئات من الرعاية: بلاتين، ذهبي، فضي وبرونزي، مع زيادة المزايا في كل مستوى.',
                 ],
             ],
         ];

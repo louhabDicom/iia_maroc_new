@@ -110,6 +110,69 @@
                 </div>
             @endforeach
         </div>
+
+    {{-- The programme as the organisers published it.
+
+         The two day sheets are the client's own artwork, drawn to a schedule that
+         is still provisional. Showing them is a promise the database has to keep
+         up with, so they are presented as the published programme with the
+         provisional note repeated rather than as the authoritative one — and they
+         open full-size, because a 2571px-wide sheet scaled into a phone column
+         is unreadable and is the single most useful thing on the page to have. --}}
+    @php
+        $daySheets = array_values(array_filter([
+            [
+                'file'  => 'assets/images/conference/programme-day-1.png',
+                'label' => $days[0]?->translatedFormat('l j F') ?? __('programme.day', ['day' => 1]),
+            ],
+            [
+                'file'  => 'assets/images/conference/programme-day-2.png',
+                'label' => $days[1]?->translatedFormat('l j F') ?? __('programme.day', ['day' => 2]),
+            ],
+        ], static fn (array $sheet): bool => file_exists(public_path($sheet['file']))));
+    @endphp
+
+    @if ($daySheets !== [])
+        <section class="ux-section section-padding-03" aria-labelledby="sheets-heading">
+            <div class="container">
+
+                <x-section-head
+                    id="sheets-heading"
+                    :eyebrow="__('programme.title')"
+                    :title="__('programme.sheets_title')"
+                    :lede="__('programme.provisional_notice')"
+                    :level="2"
+                    align="center"
+                    class="mb-5" />
+
+                <div class="row g-4" data-ux-stagger="90">
+                    @foreach ($daySheets as $index => $sheet)
+                        <div class="col-md-6 ux-reveal">
+                            <figure class="ux-sheet h-100">
+                                <a href="{{ asset($sheet['file']) }}"
+                                   class="ux-sheet__media"
+                                   data-lightbox="programme"
+                                   data-caption="{{ $sheet['label'] }}">
+                                    <img src="{{ asset($sheet['file']) }}"
+                                         alt="{{ __('programme.sheets_alt', ['day' => $index + 1]) }}"
+                                         loading="lazy"
+                                         decoding="async">
+                                    <span class="ux-sheet__zoom" aria-hidden="true">
+                                        <i class="fas fa-up-right-from-square"></i>
+                                    </span>
+                                </a>
+                                <figcaption class="ux-sheet__caption">
+                                    <span class="ux-tag ux-tag--solid">{{ $sheet['label'] }}</span>
+                                    <span class="ux-sheet__hint">@lang('programme.sheets_open')</span>
+                                </figcaption>
+                            </figure>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
     </div>
 
 @endsection

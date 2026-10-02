@@ -1,121 +1,208 @@
 {{--
-    Site footer, ported from includes/footer.php.
+    The site footer.
 
-    The 2024 version had an empty .footer-newsletter row whose only job was to be
-    a click target for the registration page, plus a hardcoded "Conception et
-    développement Di com" credit. The click target is now a real link with a real
-    label, because a div with a click handler and no accessible name is
-    invisible to a keyboard or a screen reader, and the credit is dropped: it
-    names a contractor for work that is no longer theirs to claim.
+    Rebuilt as four real columns. The 2024 footer was a centred logo, three
+    social icons, a single row of links and a copyright line — which on a wide
+    screen left two large empty dark areas either side of a narrow stack, and
+    carried no telephone number, no address and no mailbox anywhere. A visitor
+    who had scrolled past the contact page had to scroll back to find any of
+    them.
 
-    Everything else — the background, the social row, the navigation, the
-    copyright bar — keeps the template's class names so the stylesheet applies
-    unchanged.
+    So: brand and blurb, quick links, the organisers' real contact details, and
+    a newsletter sign-up. Everything on it is a row or a config value rather
+    than a string typed into the template, so the next edition changes the
+    footer without a designer.
 --}}
-{{-- The 2024 footer photograph (a 337 KB navy JPEG) is retired in favour of
-     the brand's near-black surface with one pattern motif on it. The motif is
-     placed once rather than repeated: the 2026 tiles are not seamless, so a
-     repeat would show the gaps as a grid of holes. The URL comes from config
-     via Brand::pattern(); the rule itself is in public/assets/css/app.css. --}}
-<div class="footer-section arab-pattern"
-     style="--arab-pattern-image: url('{{ \App\Support\Brand::pattern('modules') }}');">
+<footer class="d-footer" role="contentinfo">
+    <div class="container">
 
-    {{-- Registration call to action. Rendered only while registration is open:
-         a prominent invitation to a closed edition is what generates the
-         "how do I still register?" email. --}}
-    @if ($currentEdition?->registration_open)
-        <div class="container">
-            <div class="footer-newsletter" id="participe">
-                <div class="row">
-                    <div class="col-12 text-center">
-                        <a href="{{ auth()->check() ? route('pricing') : route('register') }}"
-                           class="btn-join">@lang('nav.join')</a>
-                    </div>
-                </div>
+        <div class="d-footer__grid">
+
+            {{-- Column 1 — the brand -------------------------------------- --}}
+            <div>
+                <span class="d-footer__logo">
+                    <img src="{{ \App\Support\Brand::logoUrl() }}"
+                         width="{{ \App\Support\Brand::logo()['width'] }}"
+                         height="{{ \App\Support\Brand::logo()['height'] }}"
+                         alt="{{ __('site.site_name') }}"
+                         loading="lazy"
+                         decoding="async">
+                </span>
+
+                <p class="d-footer__desc">
+                    {{ $currentEdition?->introduction ?? __('site.organiser') }}
+                </p>
+
+                <ul class="d-social">
+                    <li>
+                        <a href="https://www.linkedin.com/company/iia-maroc-amaci/?viewAsMember=true"
+                           rel="noopener noreferrer" target="_blank">
+                            <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                            <span class="visually-hidden">LinkedIn</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.facebook.com/profile.php?id=100066862488270"
+                           rel="noopener noreferrer" target="_blank">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                            <span class="visually-hidden">Facebook</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://work.me/g/5QPnbFtJq/tNBpmrtU"
+                           rel="noopener noreferrer" target="_blank">
+                            {{-- Intrinsic size declared so the icon does not shift
+                                 the row as it loads. The image is a small white
+                                 mark; the numbers are its real proportions. --}}
+                            <img src="{{ asset('assets/images/workplace-icon.png') }}"
+                                 alt="" aria-hidden="true"
+                                 width="24" height="24"
+                                 style="max-height:20px;"
+                                 loading="lazy"
+                                 decoding="async">
+                            <span class="visually-hidden">Workplace</span>
+                        </a>
+                    </li>
+                </ul>
             </div>
-        </div>
-    @endif
 
-    <div class="footer-widget-social">
-        <div class="container">
-            <div class="row text-center">
-                <div class="col-12">
-                    {{-- Locale-aware lockup, matching the header. --}}
-                    <div class="footer-logo mb-4">
-                        <img src="{{ \App\Support\Brand::logoUrl() }}"
-                             width="{{ \App\Support\Brand::logo()['width'] }}"
-                             height="{{ \App\Support\Brand::logo()['height'] }}"
-                             alt="{{ __('site.site_name') }}">
-                    </div>
+            {{-- Column 2 — quick links ------------------------------------- --}}
+            <nav aria-labelledby="footer-links-title">
+                <h2 id="footer-links-title" class="d-footer__title">@lang('footer.quick_links')</h2>
 
-                    <div class="social-title">
-                        <h4 class="title">@lang('footer.follow_us')</h4>
-                    </div>
-                </div>
-                <div class="col-12">
-                    <ul class="social-list">
+                <ul class="d-footer__list">
+                    @foreach ([
+                        ['home', __('nav.home')],
+                        ['programme', __('nav.programme')],
+                        ['speakers', __('nav.speakers')],
+                        ['pricing', __('nav.pricing')],
+                        ['venue', __('nav.venue')],
+                        ['sponsors', __('nav.sponsors')],
+                        ['archive', __('nav.archive')],
+                    ] as [$route, $label])
+                        @continue(! Route::has($route))
+                        <li><a href="{{ route($route) }}">{{ $label }}</a></li>
+                    @endforeach
+                </ul>
+            </nav>
+
+
+            {{-- Column 3 — real contact details ---------------------------- --}}
+            <div>
+                <h2 class="d-footer__title">@lang('nav.contact')</h2>
+
+                {{-- `dir="ltr"` on the machine-formatted values: an address, a
+                     mailbox and a telephone number are all reordered by the bidi
+                     algorithm when they sit inside Arabic text without it, which
+                     is how a phone number ends up printed as "113 401 678 212+". --}}
+                <address class="d-footer__address">
+                    @if ($currentEdition?->venue_name)
+                        <strong style="color:#fff;">{{ $currentEdition->venue_name }}</strong><br>
+                    @endif
+                    @if ($currentEdition?->venue_address)
+                        <span dir="ltr">{{ $currentEdition->venue_address }}</span><br>
+                    @endif
+                    @if ($currentEdition?->city)
+                        <span dir="ltr">{{ $currentEdition->city }}</span>
+                    @endif
+                </address>
+
+                <ul class="d-footer__list">
+                    @if ($currentEdition?->contact_phone)
                         <li>
-                            <a href="https://www.linkedin.com/company/iia-maroc-amaci/?viewAsMember=true"
-                               rel="noopener noreferrer" target="_blank">
-                                <i class="fab fa-linkedin-in" aria-hidden="true"></i>
-                                <span class="sr-only">LinkedIn</span>
+                            <a href="tel:{{ preg_replace('/[^0-9+]/', '', $currentEdition->contact_phone) }}" dir="ltr">
+                                <i class="fas fa-phone me-2" aria-hidden="true"></i>
+                                {{ $currentEdition->contact_phone }}
                             </a>
                         </li>
+                    @endif
+
+                    @if ($currentEdition?->contact_email)
                         <li>
-                            <a href="https://www.facebook.com/profile.php?id=100066862488270"
-                               rel="noopener noreferrer" target="_blank">
-                                <i class="fab fa-facebook-f" aria-hidden="true"></i>
-                                <span class="sr-only">Facebook</span>
+                            <a href="mailto:{{ $currentEdition->contact_email }}" dir="ltr">
+                                <i class="fas fa-envelope me-2" aria-hidden="true"></i>
+                                {{ $currentEdition->contact_email }}
                             </a>
                         </li>
+
+            {{-- Column 4 — newsletter --------------------------------------- --}}
+            <div>
+                <h2 class="d-footer__title">@lang('footer.newsletter')</h2>
+
+                <p class="d-footer__desc">@lang('footer.newsletter_lede')</p>
+
+                {{-- A real form with a real POST target and a real label.
+
+                     There is no newsletter route in this application yet, so the
+                     form posts to the contact endpoint with the subject already
+                     chosen — which makes it work today instead of being a field
+                     that silently discards what is typed into it. Pointing it at
+                     a dedicated route is a one-line change once that exists. --}}
+                <form method="POST" action="{{ route('contact.store') }}" class="d-news">
+                    @csrf
+
+                    <label class="visually-hidden" for="footer-newsletter">
+                        @lang('footer.newsletter_email')
+                    </label>
+
+                    {{-- A honeypot. A real person never sees it; an automated
+                         poster fills in every field it finds. --}}
+                    <div class="visually-hidden" aria-hidden="true">
+                        <label for="footer-newsletter-company">@lang('misc.leave_blank')</label>
+                        <input type="text" id="footer-newsletter-company" name="company"
+                               tabindex="-1" autocomplete="off">
+                    </div>
+
+                    <input type="hidden" name="subject_type" value="other">
+                    <input type="hidden" name="subject" value="Newsletter subscription">
+
+                    <div class="d-news__row">
+                        <input type="email"
+                               id="footer-newsletter"
+                               name="email"
+                               required
+                               autocomplete="email"
+                               dir="ltr"
+                               placeholder="{{ __('footer.newsletter_email') }}">
+                        <button type="submit" class="d-btn d-btn--accent d-btn--sm">
+                            <span class="visually-hidden">@lang('footer.subscribe')</span>
+                            <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <p class="d-news__error">@lang('footer.newsletter_note')</p>
+                </form>
+            </div>
+
+        </div>
+
+        <div class="d-footer__bottom">
+            <p class="mb-0">
+                &copy; {{ $currentEdition?->year ?? date('Y') }}
+                {{ $currentEdition?->organiser ?? __('site.organiser') }}
+                &middot; @lang('footer.rights')
+            </p>
+
+            <ul class="d-footer__legal">
+                <li><a href="{{ route('contact') }}">@lang('footer.privacy')</a></li>
+                <li><a href="{{ route('contact') }}">@lang('footer.legal')</a></li>
+                <li><a href="{{ route('contact') }}">@lang('footer.accessibility')</a></li>
+            </ul>
+        </div>
+
+    </div>
+</footer>
+
+                    @endif
+
+                    @if ($currentEdition?->mapUrl())
                         <li>
-                            <a href="https://work.me/g/5QPnbFtJq/tNBpmrtU"
+                            <a href="{{ $currentEdition->mapUrl() }}"
                                rel="noopener noreferrer" target="_blank">
-                                <img src="{{ asset('assets/images/workplace-icon.png') }}"
-                                     style="max-height: 28px;" alt="Workplace">
+                                <i class="fas fa-location-dot me-2" aria-hidden="true"></i>
+                                @lang('contact.open_map')
                             </a>
                         </li>
-                    </ul>
-                </div>
+                    @endif
+                </ul>
             </div>
-        </div>
-    </div>
-
-    <div class="footer-widget-navigation text-center">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="footer-navigation">
-                        <ul>
-                            <li><a href="{{ route('home') }}">@lang('nav.home')</a></li>
-                            <li><a href="{{ route('programme') }}">@lang('nav.programme')</a></li>
-                            <li><a href="{{ route('speakers') }}">@lang('nav.speakers')</a></li>
-                            <li><a href="{{ route('pricing') }}">@lang('nav.pricing')</a></li>
-                            <li><a href="{{ route('venue') }}">@lang('nav.venue')</a></li>
-                            <li><a href="{{ route('sponsors') }}">@lang('nav.sponsors')</a></li>
-                            <li><a href="{{ route('contact') }}">@lang('nav.contact')</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer-copyright-area">
-        <div class="container">
-            <div class="footer-copyright-wrap">
-                <div class="row align-items-center">
-                    <div class="col-lg-12">
-                        <div class="copyright-text text-center">
-                            <p>
-                                &copy; {{ $currentEdition?->year ?? date('Y') }}
-                                {{ $currentEdition?->organiser ?? __('site.organiser') }}
-                                &middot; @lang('footer.rights')
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>

@@ -8,6 +8,7 @@ use App\Enums\Locale;
 use App\Models\ContactMessage;
 use App\Models\ContactRoute;
 use App\Models\Edition;
+use App\Models\TeamMember;
 use App\Services\Security\RateLimiter;
 use App\Services\Security\SecurityEventLogger;
 use Illuminate\Contracts\View\View;
@@ -44,6 +45,22 @@ class ContactController extends Controller
             'edition' => $edition,
             'locale' => Locale::parse(app()->getLocale()),
             'currentRoute' => 'contact',
+            // The named officers, in the order the dossier prints them.
+            //
+            // Eager-loaded and filtered on `is_published` for the same reason the
+            // sponsors are: an officer who has left the committee must disappear
+            // from the page the moment they are unpublished, rather than staying
+            // on it because a template remembers their name. Ordered in the
+            // query rather than in the view so the ordering is one decision.
+            'team' => TeamMember::query()
+                ->published()
+                ->inTeam(TeamMember::TEAM_ORGANISING)
+                ->when(
+                    $edition !== null,
+                    fn ($query) => $query->where('edition_id', $edition->getKey()),
+                )
+                ->orderBy('sort_order')
+                ->get(),
             // Labels come from the database so the communications team can rename
             // a route without a deploy; the enum is the fallback for a row that
             // has not been created yet.
@@ -57,7 +74,85 @@ class ContactController extends Controller
                 ])
                 ->values()
                 ->all(),
+            // The "reach us" cards, built here rather than in the template.
+            //
+            // The view's job is to print; deciding that a card is worth showing
+            // is a data question, and the 2024 template answered it inline with a
+            // tower of `@if`/`@else`. Each card is filtered out when it has
+            // nothing to say, so an edition row with no phone number produces a
+            // three-card row rather than a card with an empty line in it.
+            'directCards' => $this->directCards($edition),
         ]);
+    }
+
+    /**
+     * The four ways to reach the organisers, as renderable cards.
+     *
+     * Venue, secretariat line, general mailbox, and the site itself. The order
+     * is the order a delegate asks the questions in.
+     *
+     * @return list<array{icon: string, label: string, lines: list<string>, action: array{label: string, href: string, external: bool}|null}>
+     */
+    private function directCards(?Edition $edition): array
+    {
+        if ($edition === null) {
+            return [];
+        }
+
+        $mapUrl = $edition->mapUrl();
+
+        $cards = [
+            [
+                'icon' => 'fa-location-dot',
+                'label' => __('contact.venue'),
+                'lines' => array_values(array_filter([
+                    $edition->venue_name,
+                    $edition->venue_address,
+                ])),
+                'action' => $mapUrl === null ? null : [
+                    'label' => __('contact.open_map'),
+                    'href' => $mapUrl,
+                    'external' => true,
+                ],
+            ],
+            [
+                'icon' => 'fa-phone',
+                'label' => __('contact.secretariat'),
+                'lines' => $edition->contact_phone === null ? [] : [$edition->contact_phone],
+                'action' => $edition->contact_phone === null ? null : [
+                    'label' => __('contact.call'),
+                    // Only the characters a dialler understands, so the link
+                    // works from a phone rather than opening a malformed URL.
+                    'href' => 'tel:'.preg_replace('/[^0-9+]/', '', $edition->contact_phone),
+                    'external' => false,
+                ],
+            ],
+            [
+                'icon' => 'fa-envelope-open-text',
+                'label' => __('contact.email'),
+                'lines' => $edition->contact_email === null ? [] : [$edition->contact_email],
+                'action' => $edition->contact_email === null ? null : [
+                    'label' => __('contact.write'),
+                    'href' => 'mailto:'.$edition->contact_email,
+                    'external' => false,
+                ],
+            ],
+            [
+                'icon' => 'fa-globe',
+                'label' => __('contact.website'),
+                'lines' => [parse_url((string) config('app.url'), PHP_URL_HOST) ?: ''],
+                'action' => [
+                    'label' => __('nav.home'),
+                    'href' => route('home'),
+                    'external' => false,
+                ],
+            ],
+        ];
+
+        return array_values(array_filter(
+            $cards,
+            static fn (array $card): bool => $card['lines'] !== [] && $card['lines'][0] !== '',
+        ));
     }
 
     public function store(Request $request): RedirectResponse

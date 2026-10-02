@@ -12,10 +12,10 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * All public routes live under an optional `{locale?}` segment, so the generator
  * has to know which form to emit. Without this, `route('programme')` would drop
- * the prefix on an Arabic page and the visitor would silently flip to French.
+ * the prefix on an English page and the visitor would silently flip to Arabic.
  *
- * A 301 redirect is issued for an unprefixed request to a prefixed canonical
- * URL, so a page has exactly one address for search engines and for sharing.
+ * The default language (Arabic) has no prefix at all, so there is nothing to set
+ * for it: the route simply matches with the segment absent.
  */
 class LocalizeUrls
 {

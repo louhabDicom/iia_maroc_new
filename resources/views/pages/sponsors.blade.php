@@ -8,6 +8,88 @@
         :crumbs="[__('nav.sponsors') => null]"
         image="assets/images/bg/about_page_bg.jpg" />
 
+    {{-- The offer, in the organisers' own words.
+
+         Three plates lifted from the ARABCIA sponsorship pack: the package
+         overview, the activations that sit alongside it, and the implementation
+         timeline. They are the actual document the deck carries, so a prospect
+         is reading the same figures the committee quotes — rather than a
+         paraphrase typed into a template that drifts out of step with it.
+
+         Each is a button to the full-size file rather than an inline image: a
+         2133px-wide graphic scaled into a 700px column is unreadable, and
+         opening the original is what makes it useful. --}}
+    @php
+        $sponsorPlates = array_values(array_filter([
+            [
+                'file'    => 'assets/images/conference/sponsorship-packages-overview.png',
+                'title'   => __('sponsoring.plate_packages'),
+                'lede'    => __('sponsoring.plate_packages_lede'),
+                'width'   => 2133,
+                'height'  => 1224,
+            ],
+            [
+                'file'    => 'assets/images/conference/sponsorship-custom-activations.png',
+                'title'   => __('sponsoring.plate_activations'),
+                'lede'    => __('sponsoring.plate_activations_lede'),
+                'width'   => 2133,
+                'height'  => 921,
+            ],
+            [
+                'file'    => 'assets/images/conference/sponsorship-timeline.png',
+                'title'   => __('sponsoring.plate_timeline'),
+                'lede'    => __('sponsoring.plate_timeline_lede'),
+                'width'   => 2138,
+                'height'  => 442,
+            ],
+        ], static fn (array $plate): bool => file_exists(public_path($plate['file']))));
+    @endphp
+
+    @if ($sponsorPlates !== [])
+        <section class="ux-section section-padding-03" aria-labelledby="sponsor-plates-heading">
+            <div class="container">
+
+                <x-section-head
+                    id="sponsor-plates-heading"
+                    :eyebrow="__('sponsoring.title')"
+                    :title="__('sponsoring.plates_title')"
+                    :lede="__('sponsoring.plates_lede')"
+                    :level="2"
+                    align="center"
+                    class="mb-5" />
+
+                <div class="row g-4" data-ux-stagger="90">
+                    @foreach ($sponsorPlates as $plate)
+                        <div class="col-lg-4 col-md-6 ux-reveal">
+                            <figure class="ux-plate h-100">
+                                <a href="{{ asset($plate['file']) }}"
+                                   class="ux-plate__media"
+                                   data-lightbox="sponsoring"
+                                   data-caption="{{ $plate['title'] }}">
+                                    <img src="{{ asset($plate['file']) }}"
+                                         alt="{{ $plate['title'] }}"
+                                         width="{{ $plate['width'] }}"
+                                         height="{{ $plate['height'] }}"
+                                         loading="lazy"
+                                         decoding="async">
+                                    <span class="ux-plate__zoom" aria-hidden="true">
+                                        <i class="fas fa-up-right-from-square"></i>
+                                    </span>
+                                </a>
+
+                                <figcaption class="ux-plate__body">
+                                    <h3 class="ux-plate__title">{{ $plate['title'] }}</h3>
+                                    <p class="ux-plate__lede">{{ $plate['lede'] }}</p>
+                                </figcaption>
+                            </figure>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
+
     <div class="section-padding-04">
         <div class="container">
             <div class="app-shell app-shell--wide">

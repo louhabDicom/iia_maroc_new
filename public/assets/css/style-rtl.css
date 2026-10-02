@@ -11,74 +11,88 @@
     font-family: 'THESANSARABIC' !important;
 }
 
-.rtl *{
+/* -------------------------------------------------------------------------
+   Reading direction.
+
+   The 2024 build set `direction: rtl` on `.rtl *`. Arabic is now the site's
+   default language, so that rule is no longer an edge case — it applies to the
+   first screen nearly every visitor sees — and it is actively harmful:
+
+     * `dir="ltr"` islands stop working. A telephone number, an email address
+       and a session time all carry `dir="ltr"` in the markup precisely because
+       the bidi algorithm reorders them inside Arabic text. A class selector on
+       `*` outranks the attribute selector, so those islands were forced back
+       to RTL and the contact page printed every phone number in the wrong
+       order.
+     * It also forced right-alignment onto elements that are laid out rather
+       than read: icon rows, a strip of logos, a progress bar.
+
+   The direction is already declared once, on <html>, and it inherits. The two
+   rules below restore only the islands the markup explicitly asks for, which
+   is the sole case where a local override is ever correct.
+   ------------------------------------------------------------------------- */
+
+[dir="ltr"] {
+    direction: ltr;
+}
+
+[dir="rtl"] {
     direction: rtl;
 }
 
-.rtl .exvent-hero-section .hero-content .title {
-    font-size: 34px;
+/* An LTR island inside an RTL page also needs its text pulled back to the left:
+   `direction` alone reorders the runs but leaves the alignment set by the
+   inherited `text-align: start`, which resolves to the right. */
+.rtl [dir="ltr"] {
+    direction: ltr;
+    text-align: left;
 }
 
-.rtl .exvent-hero-section .hero-content .sub-title, .exvent-hero-section .hero-content .sub-title2 {
-    font-size: 27px;
+/* Latin type inside an Arabic paragraph keeps the Latin face and its own
+   metrics, so a name or an acronym set in an Arabic sentence does not render
+   with the wrong letterforms. `isolate` stops the surrounding Arabic from
+   reordering the Latin run. */
+.rtl .latin,
+.rtl [lang="en"],
+.rtl [lang="fr"] {
+    font-family: 'Roboto', 'Ubuntu', sans-serif;
+    unicode-bidi: isolate;
 }
 
-
-.exvent-hero-section > *,.exvent-hero-row {
+/* The header's top link row sits in the opposite corner in Arabic. That is
+   layout, not language, so the row is laid out LTR while each label keeps the
+   page's own reading direction. */
+.exvent-hero-section > *,
+.exvent-hero-row {
     direction: ltr;
 }
-.social-list{
+
+.social-list {
     direction: ltr;
 }
-.rtl .exvent-hero-section .hero-content .shape-3 {
-    transform: rotate(180deg);
-}
-.rtl .exvent-hero-section .hero-content {
-    position: relative;
-    z-index: 1;
-    padding-right: 185px;
-    padding-top: 67px;
-}
-.rtl #slide-page  .hero-images {
-    position: absolute;
-    bottom: 0;
-    left: 380px;
-    width: 50%;
-    z-index: 2;
-    right: auto;
-}
+
+/* The nav item's icon and label swap sides so the marker stays on the reading
+   edge of the link. */
 .rtl .header-menu .main-menu li {
-    display: flex;
     align-items: center;
-    position: relative;
-    padding: 18px 15px;
+    display: flex;
     flex-direction: row-reverse;
+    padding: 18px 15px;
+    position: relative;
 }
-.rtl .schedule-area .sticky-col .schedule-side-nav .nav-link.active::after { 
-    left: 105px; 
-    transform: rotate(180deg);
-}
+
 .rtl .header-menu .main-menu li a {
     font-size: 18px;
 }
-.rtl .about-section .about-content-wrap .section-paragraph {
-    padding-right: unset;
-}
-.rtl  p , .rtl  li{
-    font-size: 20px !important;
-    font-family: "AvenirArabic";
-    
-}
-.pricing-area .price-card .price-body .price-desc li {
-        direction: ltr;
-}
+
 .rtl .header-btn a {
-    font-weight: bolder;
-    font-size: 21px !important;
     font-family: "AvenirArabic";
+    font-size: 21px !important;
+    font-weight: bolder;
 }
+
 @media only screen and (max-width: 767px) {
- .rtl .exvent-hero-section .hero-content {
-    padding-right: 85px;
-}
+    .rtl .exvent-hero-section .hero-content {
+        padding-right: 85px;
+    }
 }

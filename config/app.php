@@ -104,15 +104,21 @@ return [
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |
-    | The application locale determines the default locale that will be used
-    | by Laravel's translation / localization methods. This option can be
-    | set to any locale for which you plan to have translation strings.
+    | Arabic is the default language of this site, and not by preference: the
+    | conference is convened by an Arab confederation, hosted in the Kingdom of
+    | Morocco, and the primary audience reads Arabic. French and English are
+    | served at their own prefixed addresses, so a French or English reader
+    | still gets a real URL rather than a negotiated one.
+    |
+    | `fallback_locale` is Arabic too. It is what a missing key resolves to, and
+    | a gap in a translation file should read in the site's own language rather
+    | than leak a third one.
     |
     */
 
-    'locale' => env('APP_LOCALE', 'fr'),
+    'locale' => env('APP_LOCALE', 'ar'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'fr'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'ar'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'fr_FR'),
 
@@ -125,11 +131,14 @@ return [
     | English: it needs its own translation directory and `dir=rtl` on <html>,
     | which is why `ar` cannot be expressed as a fallback locale.
     |
+    | Arabic is listed first because this order is the switcher's order, and the
+    | switcher lists the default language first.
+    |
     */
 
-    'available_locales' => ['fr', 'en', 'ar'],
+    'available_locales' => ['ar', 'fr', 'en'],
 
-    'default_locale' => env('APP_LOCALE', 'fr'),
+    'default_locale' => env('APP_LOCALE', 'ar'),
 
     /*
     |--------------------------------------------------------------------------

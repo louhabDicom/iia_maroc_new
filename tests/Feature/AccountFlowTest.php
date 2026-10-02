@@ -53,7 +53,7 @@ class AccountFlowTest extends TestCase
         // in a capturing channel keeps the real OtpService (so hashing, throttling
         // and single-use are all still exercised) while letting the test read the
         // code it needs to submit.
-        $this->channel = new CapturingOtpChannel();
+        $this->channel = new CapturingOtpChannel;
         $this->app->instance(OtpChannel::class, $this->channel);
     }
 
@@ -340,8 +340,10 @@ class AccountFlowTest extends TestCase
     {
         $user = $this->register();
 
+        // Arabic is the default language and is served unprefixed, so the
+        // Arabic account page is `/account`, not `/ar/account`.
         $this->actingAs($user)
-            ->get('/ar/account')
+            ->get('/account')
             ->assertOk()
             ->assertSee('dir="rtl"', escape: false)
             ->assertSee('lang="ar"', escape: false);

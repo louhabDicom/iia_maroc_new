@@ -36,6 +36,24 @@ final class Money
      */
     public static function format(int $minorUnits, string $currency = 'MAD', ?string $locale = null): string
     {
+        $parts = self::parts($minorUnits, $currency, $locale);
+
+        return $parts['amount'].' '.$parts['currency'];
+    }
+
+    /**
+     * The figure and the currency code as two strings.
+     *
+     * Split rather than re-parsed: the thousands convention is the part that
+     * differs per locale, so a template that wanted "7 500" large and "MAD"
+     * small by cutting `format()`'s output apart would get the cut wrong for
+     * at least one of them — the separator is a narrow no-break space, not a
+     * plain one, so `explode(' ', …)` silently produces a broken string.
+     *
+     * @return array{amount: string, currency: string}
+     */
+    public static function parts(int $minorUnits, string $currency = 'MAD', ?string $locale = null): array
+    {
         $locale ??= app()->getLocale();
         $exponent = self::exponent($currency);
 
@@ -61,7 +79,7 @@ final class Money
             ? $wholeFormatted
             : $wholeFormatted.$decimal.str_pad((string) $cents, $exponent, '0', STR_PAD_LEFT);
 
-        return $sign.$result.' '.$currency;
+        return ['amount' => $sign.$result, 'currency' => strtoupper($currency)];
     }
 
     /**

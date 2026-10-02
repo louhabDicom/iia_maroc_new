@@ -1,21 +1,27 @@
 {{--
-    Primary navigation, on the template's own markup.
+    Primary navigation, rendered twice from one list.
 
-    The 2024 build emitted an <li> per page with an `active-menu` class chosen by
-    searching REQUEST_URI for the page's own filename. That cannot be ported as
-    it stands: this app has two URLs per page (`/programme` and `/en/programme`),
-    and a substring test against a filename would mark the wrong item active on
-    both. request()->routeIs() asks the router which named route actually matched,
-    which is the same question asked of something that knows the answer.
+    `variant` decides the element and the classes, nothing else: "bar" is the
+    inline row in the header, "drawer" is the same links stacked in the mobile
+    panel. Both render from the list below, so the two can never drift apart —
+    which is the whole failure mode of a template with a separate hardcoded
+    mobile menu, and the reason the 2024 build's phone menu had lost a link.
 
-    The current page carries aria-current="page" as well as the class, so the
-    highlight survives a high-contrast mode and is announced by a screen reader.
+    Active state comes from `request()->routeIs()`, which asks the router which
+    named route actually matched. The 2024 build searched REQUEST_URI for each
+    page's own filename; that cannot work here, because this app has two URLs
+    per page (`/programme` and `/fr/programme`), and a substring test marks the
+    wrong item on both.
 
-    `stacked` is the offcanvas variant, where the list is a column rather than a
-    row. Both render from the same list so the two can never drift apart.
+    `aria-current="page"` rides alongside the class so the highlight survives a
+    high-contrast mode and is announced by a screen reader — the class alone
+    carries no meaning to either.
 --}}
 @php
-    $items = [
+    $variant = $variant ?? 'bar';
+    $isBar = $variant === 'bar';
+
+    $items = array_values(array_filter([
         ['route' => 'home', 'label' => __('nav.home')],
         ['route' => 'programme', 'label' => __('nav.programme')],
         ['route' => 'speakers', 'label' => __('nav.speakers')],
@@ -23,41 +29,42 @@
         ['route' => 'venue', 'label' => __('nav.venue')],
         ['route' => 'sponsors', 'label' => __('nav.sponsors')],
         ['route' => 'contact', 'label' => __('nav.contact')],
-        ['route' => 'archive', 'label' => __('nav.archive')],
-    ];
+    ], static fn (array $item): bool => Route::has($item['route'])));
 @endphp
 
-<ul @class(['main-menu', 'flex-column' => ($stacked ?? false)])
-    @if ($stacked ?? false) aria-label="{{ __('nav.menu') }}" @endif>
+{{-- `nav` on the bar is already applied by the wrapper in the header; the
+     drawer wraps this in its own dialog, so a second landmark there would be a
+     duplicate rather than a useful one. --}}
+<ul @class([
+    'd-nav' => $isBar,
+    'd-drawer__list' => ! $isBar,
+])>
     @foreach ($items as $item)
-        @continue(! Route::has($item['route']))
+        @php($isCurrent = request()->routeIs($item['route'].'*') || request()->routeIs($item['route']))
 
-        @php
-            $isCurrent = request()->routeIs($item['route'].'*') || request()->routeIs($item['route']);
-        @endphp
-
-        <li @class(['active-menu' => $isCurrent])>
+        <li>
             <a href="{{ route($item['route']) }}"
+               class="{{ $isBar ? 'd-nav__link' : '' }}"
                @if ($isCurrent) aria-current="page" @endif>
                 {{ $item['label'] }}
             </a>
         </li>
     @endforeach
 
-    {{-- Language is a menu item here, as in the 2024 build, rather than a
-         separate control. The switcher posts to the server, so the dropdown holds
-         the form rather than links — see partials.locale-switcher for why that
-         is not the same as the 2024 markup. --}}
-    @if (! ($stacked ?? false))
-        <li class="dropdown">
-            <a class="dropdown-lang-href" href="#" aria-haspopup="true" aria-expanded="false">
-                @lang('misc.language')
-            </a>
-            <ul class="sub-menu">
-                <li class="locale-switcher-item">
-                    @include('partials.locale-switcher', ['inMenu' => true])
-                </li>
-            </ul>
-        </li>
-    @endif
+    {{-- The archive lives in the drawer only.
+
+         On the bar it was a ninth item competing with the seven real pages for
+         a row that is already tight, and it is something nobody arrives
+         looking for. In the drawer it costs one line and is where a returning
+         delegate looks for last year's programme. --}}
+    @unless ($isBar)
+        @if (Route::has('archive'))
+            <li>
+                <a href="{{ route('archive') }}"
+                   @if (request()->routeIs('archive*')) aria-current="page" @endif>
+                    {{ __('nav.archive') }}
+                </a>
+            </li>
+        @endif
+    @endunless
 </ul>

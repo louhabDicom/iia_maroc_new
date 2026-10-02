@@ -96,137 +96,156 @@
     </div>
 @endguest
 
-{{-- `ux-header` is the hook ux.js toggles once the page has scrolled past the
-     hero. The template positions this header absolutely over the hero, so it
-     has to become an opaque bar at that point, or the links sit on top of a
-     moving photograph and stop being readable. --}}
-<div id="header" class="section exvent-header-section ux-header">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 header-toplinks">
-                @auth
-                    <a href="{{ route('account') }}" class="link-log-insc">@lang('account.title')</a>
-                    <span class="header-toplinks-sep">|</span>
-                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                        @csrf
-                        <button type="submit" class="btn-logout">@lang('action.logout')</button>
-                    </form>
-                @else
-                    <a href="{{ route('register') }}" class="link-log-insc">@lang('action.register')</a>
-                    <span class="header-toplinks-sep">|</span>
-                    {{-- data-bs-target rather than an href="#": the button is a real
-                         link so it is reachable by keyboard and works with scripting
-                         off, and the modal is an enhancement layered on top. --}}
-                    <a href="{{ route('login') }}"
-                       class="link-log-insc"
-                       data-bs-toggle="modal"
-                       data-bs-target="#loginModal">@lang('action.login')</a>
-                @endauth
-            </div>
-        </div>
-    </div>
+{{-- The sticky bar.
 
-    <div class="container">
-        <div class="header-wrap">
+     `data-header` is the hook design.js watches for scroll: past the hero the
+     bar becomes an opaque, blurred strip. Before that it stays transparent, so
+     the hero photograph runs to the top edge — a 72px band of 70%-opacity white
+     sitting on the image greys out the top of it for no benefit. --}}
+<header class="d-header" data-header>
+    <div class="d-header__bar">
 
-            {{-- The conference lockup for the active language, from the 2026
-                 brand guidelines. The Arabic main version is much wider than
-                 the Latin pair, so width/height come from Brand::logo() and the
-                 CSS caps the height only: capping one dimension alone keeps
-                 every version at its own aspect ratio. site_name is already
-                 "ARABCIA 2026" in all three locales, so the alt text needs no
-                 translation of its own. --}}
-            <div class="header-logo">
-                <a href="{{ route('home') }}">
-                    <img src="{{ \App\Support\Brand::logoUrl() }}"
-                         width="{{ \App\Support\Brand::logo()['width'] }}"
-                         height="{{ \App\Support\Brand::logo()['height'] }}"
-                         alt="{{ __('site.site_name') }}">
-                </a>
-            </div>
+        {{-- The conference lockup for the active language, from the 2026 brand
+             guidelines. The Arabic main version is roughly three times as wide
+             as the Latin pair, so width/height come from Brand::logo() and the
+             CSS caps the height only: capping one dimension alone keeps every
+             version at its own aspect ratio. site_name is already "ARABCIA 2026"
+             in all three locales, so the alt text needs no translation. --}}
+        <a href="{{ route('home') }}" class="d-header__brand">
+            <img src="{{ \App\Support\Brand::logoUrl() }}"
+                 width="{{ \App\Support\Brand::logo()['width'] }}"
+                 height="{{ \App\Support\Brand::logo()['height'] }}"
+                 alt="{{ __('site.site_name') }}"
+                 fetchpriority="high"
+                 decoding="async">
+        </a>
 
-            <div class="header-menu d-none d-lg-block">
-                @include('partials.nav')
-            </div>
+        <nav class="d-header__nav" aria-label="{{ __('nav.menu') }}">
+            @include('partials.nav', ['variant' => 'bar'])
+        </nav>
 
-            <div class="header-meta">
-                @auth
-                    {{-- The cart icon points at the basket, not the order
-                         history: it is the shopping symbol, and the order list
-                         is one click away from the account page and from the
-                         basket's own summary. The count is the number of places
-                         in the basket, which is what the icon means on every
-                         other shop the visitor has used. --}}
-                    <div class="header-cart dropdown">
-                        <a class="cart-btn" href="{{ route('cart') }}">
-                            <i class="flaticon-shopping-cart" style="font-size: 22px;" aria-hidden="true"></i>
-                            @php($basketCount = \App\Models\Cart::forSession(request()->session()->getId(), auth()->user())->items()->sum('quantity'))
-                            @if ($basketCount > 0)
-                                <span class="count">{{ $basketCount }}</span>
-                            @endif
-                            <span class="sr-only">@lang('order.cart.title')</span>
-                        </a>
-                    </div>
-                @endauth
+        <div class="d-header__actions">
+            <x-locale-switcher />
 
-                <div class="header-btn d-none d-xl-block">
-                    @if ($currentEdition?->registration_open)
-                        <a href="{{ auth()->check() ? route('pricing') : route('register') }}"
-                           class="font-display">@lang('nav.join')</a>
-                    @endif
-                </div>
-
-                <div class="header-toggle d-lg-none">
-                    <button type="button"
-                            data-bs-toggle="offcanvas"
-                            data-bs-target="#mobileNav"
-                            aria-controls="mobileNav"
-                            aria-label="@lang('nav.menu')">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-{{-- Mobile navigation. An offcanvas rather than a collapsed block, because that
-     is what the template's toggle button is wired to, and because the desktop
-     menu is display:none below the lg breakpoint so nothing is left stranded
-     for a screen reader. --}}
-<div class="offcanvas offcanvas-end" tabindex="-1" id="mobileNav" aria-labelledby="mobileNavLabel">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="mobileNavLabel">{{ __('site.host_institute_short') }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@lang('nav.close')"></button>
-    </div>
-    <div class="offcanvas-body">
-        @include('partials.nav', ['stacked' => true])
-
-        <hr>
-
-        <div class="d-flex flex-column gap-2 mt-3">
             @auth
-                <a href="{{ route('cart') }}" class="btn btn-outline-secondary">@lang('order.cart.title')</a>
-                <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary">@lang('order.orders')</a>
-                <a href="{{ route('account') }}" class="btn btn-primary">@lang('account.title')</a>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-danger w-100">@lang('action.logout')</button>
-                </form>
-            @else
-                <a href="{{ route('register') }}" class="btn btn-primary">@lang('action.register')</a>
-                <a href="{{ route('login') }}" class="btn btn-outline-secondary">@lang('action.login')</a>
+                {{-- The cart icon points at the basket, not the order history: it
+                     is the shopping symbol, and the order list is one click away
+                     from the account page. The count is the number of places in
+                     the basket, which is what the icon means on every other shop
+                     the visitor has used.
+
+                     `aria-hidden` on the glyph: the count is repeated in the
+                     visually hidden text, so a screen reader announcing it twice
+                     would say the number with no context. --}}
+                @php($basketCount = \App\Models\Cart::forSession(request()->session()->getId(), auth()->user())->items()->sum('quantity'))
+                <a href="{{ route('cart') }}" class="header-cart">
+                    <span class="cart-btn" aria-hidden="true">
+                        <i class="flaticon-shopping-cart"></i>
+                        @if ($basketCount > 0)
+                            <span class="count">{{ $basketCount }}</span>
+                        @endif
+                    </span>
+                    <span class="visually-hidden">
+                        @lang('order.cart.title')@if ($basketCount > 0) ({{ $basketCount }}) @endif
+                    </span>
+                </a>
             @endauth
+
+            {{-- The one thing the header is asking for. Present at every width
+                 with room for it; below that it moves into the drawer rather
+                 than shrinking into unreadability. --}}
+            @if ($currentEdition?->registration_open)
+                <a href="{{ auth()->check() ? route('pricing') : route('register') }}"
+                   class="d-btn d-btn--primary d-btn--sm">
+                    @lang('nav.registration')
+                </a>
+            @endif
+
+            <button type="button"
+                    class="d-burger"
+                    data-drawer-open
+                    aria-expanded="false"
+                    aria-controls="d-drawer">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span class="visually-hidden">@lang('nav.menu')</span>
+            </button>
         </div>
 
-        <div class="mt-4">
-            @include('partials.locale-switcher')
-        </div>
     </div>
+</header>
+
+{{-- The scrim. A real <button> rather than a div: it is a control that
+     closes the drawer, and a clickable div is neither focusable nor
+     announced as a control by a screen reader.
+
+     `tabindex="-1"` keeps it out of the tab order — Escape and the close
+     button are the accessible ways out of the panel, and this one exists
+     for the pointer. --}}
+<button type="button" class="d-scrim" data-drawer-close tabindex="-1"></button>
+
+{{-- The drawer. A real dialog: `aria-modal`, labelled by its own heading,
+     and dismissed by Escape, by the scrim and by the close button — three
+     ways out, because a panel that can be dismissed only one way traps
+     anyone not using a mouse.
+
+     Its links are the same list the desktop bar renders (partials.nav with
+     variant="drawer"), so the two can never drift apart. --}}
+<div id="d-drawer"
+     class="d-drawer"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="d-drawer-title"
+     data-drawer>
+
+    <div class="d-drawer__head">
+        <h2 id="d-drawer-title" class="d-footer__title mb-0">@lang('nav.menu')</h2>
+        <button type="button" class="d-drawer__close" data-drawer-close>
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+            <span class="visually-hidden">@lang('nav.close')</span>
+        </button>
+    </div>
+
+    @include('partials.nav', ['variant' => 'drawer'])
+
+    {{-- Language and the primary action live in the drawer as well as in the
+         bar. On a short phone the bar has room for the burger and little else,
+         and a control that is not visible is not a control. --}}
+    <div>
+        <x-locale-switcher />
+    </div>
+
+    @if ($currentEdition?->registration_open)
+        <a href="{{ auth()->check() ? route('pricing') : route('register') }}"
+           class="d-btn d-btn--primary w-100">
+            @lang('nav.registration')
+        </a>
+    @endif
+
+    @guest
+        <div class="d-footer__list">
+            <a href="{{ route('login') }}">@lang('action.login')</a>
+            @if ($currentEdition?->registration_open)
+                <a href="{{ route('register') }}">@lang('action.register')</a>
+            @endif
+        </div>
+    @else
+        <div class="d-footer__list">
+            <a href="{{ route('account') }}">@lang('account.title')</a>
+            <a href="{{ route('orders.index') }}">@lang('order.orders')</a>
+
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="d-footer__btn">@lang('action.logout')</button>
+            </form>
+        </div>
+    @endguest
 </div>
+
+
+<button type="button" class="d-scrim" data-drawer-close tabindex="-1"></button>
+
 
 @if ($errors->any() && request()->routeIs('login*') && auth()->guest())
     <script>

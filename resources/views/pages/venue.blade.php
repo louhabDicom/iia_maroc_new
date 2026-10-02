@@ -20,9 +20,9 @@
             ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
             ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
         ]"
-        :cta-label="$edition->venue_map_url ? __('venue.map_cta') : null"
-        :cta-url="$edition->venue_map_url"
-        :cta-url-external="(bool) $edition->venue_map_url"
+        :cta-label="$edition->mapUrl() ? __('venue.map_cta') : null"
+        :cta-url="$edition->mapUrl()"
+        :cta-url-external="(bool) $edition->mapUrl()"
         :secondary-label="__('programme.title')"
         :secondary-url="route('programme')"
         image="assets/images/bg/map_bg.png" />
@@ -94,13 +94,18 @@
                 </div>
 
                 <div class="col-lg-6 ux-reveal ux-reveal-right">
-                    @if ($edition->venue_map_url)
+                    @if ($edition->mapUrl())
                         {{-- The map is a link, not an embedded iframe. A third-party
                              iframe costs a cookie banner and several hundred
                              kilobytes before the visitor can read the address they
                              came for, and it leaks the referrer off-site. The link
-                             offers the same destination and neither cost. --}}
-                        <a href="{{ $edition->venue_map_url }}"
+                             offers the same destination and neither cost.
+
+                             The destination is derived from the stored coordinates
+                             rather than read from `venue_map_url`: a hand-typed map
+                             URL and a lat/lng pair drift apart, and the map is the
+                             one thing on this site a delegate will act on. --}}
+                        <a href="{{ $edition->mapUrl() }}"
                            rel="noopener noreferrer nofollow"
                            target="_blank"
                            class="d-block position-relative ux-card ux-card--edge ux-card--lift overflow-hidden"
