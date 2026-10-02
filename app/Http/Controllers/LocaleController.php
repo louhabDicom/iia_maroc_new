@@ -20,12 +20,8 @@ class LocaleController extends Controller
 {
     public function __invoke(Request $request): RedirectResponse
     {
-        // `Locale::parse()` is deliberately lenient, because it also resolves
-        // inbound values (a URL prefix) where falling back to the default is the
-        // correct outcome. Here the input is a deliberate choice, so an
-        // unrecognised value is rejected instead of silently switching someone
-        // to the wrong language. Validating against the enum also keeps a
-        // crafted value from ever reaching the session or a translation path.
+        // Validating against the enum keeps a crafted value from ever reaching
+        // the session or a translation path.
         $validated = $request->validate([
             'switch_to' => ['required', 'string', Rule::enum(Locale::class)],
         ]);
@@ -37,8 +33,11 @@ class LocaleController extends Controller
         $segments = array_values(array_filter(explode('/', $path), fn ($segment) => $segment !== ''));
 
         // Strip any existing prefix, so switching does not accumulate:
-        // /ar/programme -> /en/programme, never /en/ar/programme.
-        if (isset($segments[0]) && Locale::tryFrom(strtolower(substr($segments[0], 0, 2))) !== null) {
+        // /fr/programme -> /en/programme, never /en/fr/programme.
+        //
+        // The WHOLE first segment is compared, not its first two letters:
+        // substr($segment, 0, 2) would read "archive" as "ar" and drop it.
+        if (isset($segments[0]) && Locale::tryFrom(strtolower($segments[0])) !== null) {
             array_shift($segments);
         }
 
@@ -70,36 +69,27 @@ class LocaleController extends Controller
     }
 
     /**
-     * The page to return the visitor to, as a path on this site.
+     * The page to return the visitor to, as a path on this site, RELATIVE to the
+     * application root.
      *
      * This endpoint is reachable by anyone without a session, so whatever
      * address it redirects to is attacker-influenced. An unvalidated referer
-     * here is an open redirect: a link that lands the visitor on a perfect copy
-     * of a login page is the whole attack, and it costs the phishing page
-     * nothing to set up.
-     *
-     * The guard is therefore a same-ORIGIN check — and it is done by comparing
-     * HOSTS rather than by string-matching `config('app.url')`.
-     *
-     * That is not a stylistic preference. Comparing against APP_URL means the
-     * comparison silently fails — and the switcher silently dumps the visitor
-     * on the home page instead of the page they were reading — whenever the
-     * request host is not byte-identical to APP_URL: a staging or preview
-     * domain, `www` against a bare apex, http against https behind a proxy, or
-     * a different port in local development. Every one of those is a
-     * configuration difference rather than an attack, and none of them should
-     * cost a visitor their place on the page.
-     *
-     * The host still cannot be spoofed by the client, which is the property the
-     * old check was providing: `$request->getHost()` is the host this request
-     * was actually accepted for, so a crafted
-     * `Referer: https://evil.test/` still fails the comparison and the visitor
-     * lands on the home page instead.
+     * here is an open redirect, so the guard is a same-ORIGIN check done by
+     * comparing hosts (not by string-matching config('app.url')): a staging
+     * domain, www vs apex, http vs https behind a proxy or a different port are
+     * configuration differences, not attacks, and must not cost a visitor their
+     * place on the page. `$request->getHost()` is the host this request was
+     * accepted for, so a crafted `Referer: https://evil.test/` still fails.
      *
      * The session's stored previous URL is preferred over the Referer header,
      * because it is recorded by this application rather than supplied by the
-     * client. Returns '/' when neither is same-origin: the home page, which is
-     * a safe landing rather than an error.
+     * client. Returns '/' when neither is same-origin.
+     *
+     * SUBFOLDER INSTALLS: when the app is served from a subfolder (for example
+     * https://diprojets.com/iia_maroc_new/public), the referer's path contains
+     * that subfolder. redirect()/url() add it back themselves, so it is removed
+     * here — otherwise it is doubled: /iia_maroc_new/public/iia_maroc_new/public.
+     * On a domain root the base path is empty and nothing changes.
      */
     private function safeReturnPath(Request $request): string
     {
@@ -107,6 +97,8 @@ class LocaleController extends Controller
             $request->hasSession() ? $request->session()->previousUrl() : null,
             $request->headers->get('referer'),
         ]);
+
+        $base = $request->getBasePath();
 
         foreach ($candidates as $candidate) {
             $host = parse_url($candidate, PHP_URL_HOST);
@@ -118,6 +110,10 @@ class LocaleController extends Controller
             $path = parse_url($candidate, PHP_URL_PATH);
 
             if (is_string($path) && $path !== '') {
+                if ($base !== '' && str_starts_with($path, $base)) {
+                    $path = substr($path, strlen($base)) ?: '/';
+                }
+
                 return $path;
             }
         }
