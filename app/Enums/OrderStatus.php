@@ -57,12 +57,18 @@ enum OrderStatus: string
      * stops a replayed gateway callback from flipping a cancelled order back
      * to paid.
      *
+     * `Pending -> Failed` is legal because an order can fail before it is ever
+     * presented to the gateway: the buyer completes the checkout and the bank
+     * declines, and the order may never have left `Pending` if the redirect was
+     * interrupted. Without this edge the failure had nowhere to go and the
+     * order sat at `Pending` forever, indistinguishable from an abandoned one.
+     *
      * @return array<int, self>
      */
     public function allowedTransitions(): array
     {
         return match ($this) {
-            self::Pending => [self::AwaitingPayment, self::Paid, self::Cancelled, self::Expired],
+            self::Pending => [self::AwaitingPayment, self::Paid, self::Failed, self::Cancelled, self::Expired],
             self::AwaitingPayment => [self::Paid, self::Failed, self::Cancelled, self::Expired],
             self::Failed => [self::AwaitingPayment, self::Paid, self::Cancelled, self::Expired],
             self::Paid => [self::Refunded, self::PartiallyRefunded],

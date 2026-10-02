@@ -7,6 +7,7 @@ return [
     'contact'            => 'اتصل بنا',
     'from'               => 'ابتداءً من :amount',
     'no_sponsors'        => 'سيُعلَن عن قائمة الشركاء قريبًا.',
+    'previous'           => 'شركاء الدورات السابقة',
     'tier.bronze'        => 'برونزي',
     'tier.gold'          => 'ذهبي',
     'tier.institutional' => 'مؤسسي',

@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ArchiveController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PricingController;
 use App\Http\Controllers\ProgrammeController;
 use App\Http\Controllers\RegisterController;
@@ -179,6 +184,98 @@ Route::middleware('auth')->group(function () use ($page): void {
     Route::post('/{locale?}/verify-phone/resend', [VerificationController::class, 'resend'])
         ->name('verification.resend');
 });
+
+// --- The basket -------------------------------------------------------------
+//
+// Reachable while signed out: a visitor fills a basket and is asked to sign in
+// at the checkout, and the basket must survive that. The 2024 build only showed
+// the basket to a signed-in user, so the pricing page's "add to cart" buttons
+// silently did nothing for anyone not already logged in.
+
+$page('cart', 'panier', [CartController::class, 'show']);
+Route::post('/panier', [CartController::class, 'store'])->name('cart.store.fr');
+Route::post('/{locale?}/panier', [CartController::class, 'store'])->name('cart.store');
+
+Route::post('/panier/ligne/{cart}/{ticketType}', [CartController::class, 'update'])->name('cart.update.fr');
+Route::post('/{locale?}/panier/ligne/{cart}/{ticketType}', [CartController::class, 'update'])->name('cart.update');
+
+Route::post('/panier/ligne/{cart}/{ticketType}/supprimer', [CartController::class, 'destroy'])->name('cart.destroy.fr');
+Route::post('/{locale?}/panier/ligne/{cart}/{ticketType}/supprimer', [CartController::class, 'destroy'])->name('cart.destroy');
+
+Route::post('/panier/vider', [CartController::class, 'clear'])->name('cart.clear.fr');
+Route::post('/{locale?}/panier/vider', [CartController::class, 'clear'])->name('cart.clear');
+
+// --- The checkout -----------------------------------------------------------
+
+$page('checkout', 'inscription', [CheckoutController::class, 'create']);
+Route::post('/inscription', [CheckoutController::class, 'store'])->name('checkout.store.fr');
+Route::post('/{locale?}/inscription', [CheckoutController::class, 'store'])->name('checkout.store');
+
+Route::get('/inscription/payer/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay.fr');
+Route::get('/{locale?}/inscription/payer/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay');
+
+// --- Orders -----------------------------------------------------------------
+//
+// Behind auth, and additionally scoped to the signed-in buyer inside each
+// controller. The 2024 `mescommandes.php` listed orders by session but took the
+// id for the invoice and the cancellation from `$_POST['id']`, so any signed-in
+// visitor could open and void somebody else's order.
+
+Route::middleware('auth')->group(function () use ($page): void {
+    $page('orders.index', 'mes-commandes', [OrderController::class, 'index']);
+    Route::get('/commandes', [OrderController::class, 'index'])->name('orders.alt.fr');
+    Route::get('/{locale?}/commandes', [OrderController::class, 'index'])->name('orders.alt');
+
+    $page('orders.show', 'commande', [OrderController::class, 'show']);
+    Route::get('/{locale?}/commande/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.alt-show.fr');
+    Route::get('/{locale?}/orders/{order}', [OrderController::class, 'show'])->name('orders.alt-show');
+
+    Route::post('/commande/{order}/facture', [OrderController::class, 'invoice'])->name('orders.invoice.fr');
+    Route::post('/{locale?}/commande/{order}/facture', [OrderController::class, 'invoice'])->name('orders.invoice');
+
+    Route::post('/commande/{order}/annuler', [OrderController::class, 'cancel'])->name('orders.cancel.fr');
+    Route::post('/{locale?}/commande/{order}/annuler', [OrderController::class, 'cancel'])->name('orders.cancel');
+
+    Route::get('/paiement/retour/{order}', [PaymentController::class, 'return'])->name('payment.return.fr');
+    Route::get('/{locale?}/paiement/retour/{order}', [PaymentController::class, 'return'])->name('payment.return');
+
+    Route::get('/paiement/annule/{order}', [PaymentController::class, 'cancel'])->name('payment.cancel.fr');
+    Route::get('/{locale?}/paiement/annule/{order}', [PaymentController::class, 'cancel'])->name('payment.cancel');
+});
+
+// The CMI server-to-server callback. Deliberately NOT localised and NOT behind
+// auth: it is a POST from the gateway's own servers, with no session, and it
+// answers in CMI's protocol rather than in HTML. The gateway signature is what
+// authenticates it, and it is verified before anything is written.
+Route::post('/payment/cmi/callback', [PaymentController::class, 'callback'])
+    ->name('payment.callback');
+
+// The local rehearsal page, refused unless PAYMENT_DRIVER=test, so it can never
+// become a way to settle an order in production. Not localised: a developer
+// affordance, not a page a delegate ever sees.
+Route::get('/payment/test/{uuid}', [PaymentController::class, 'testGatewayPage'])
+    ->middleware('auth')
+    ->name('payment.test');
+
+// --- Documents --------------------------------------------------------------
+//
+// `Document::downloadUrl()` has always pointed at `documents.download`; before
+// this route existed that call raised a RouteNotFoundException and any page
+// listing a document was a 500.
+
+Route::get('/documents/{document}/download', [DocumentController::class, 'download'])
+    ->name('documents.download');
+Route::get('/{locale?}/documents/{document}/download', [DocumentController::class, 'download'])
+    ->name('documents.download.locale');
+
+Route::get('/presentations/{file}/download', [DocumentController::class, 'presentation'])
+    ->middleware('auth')
+    ->name('presentations.download');
+Route::get('/{locale?}/presentations/{file}/download', [DocumentController::class, 'presentation'])
+    ->middleware('auth')
+    ->name('presentations.download.locale');
+
 
 // --- The language switcher ------------------------------------------------
 //

@@ -128,7 +128,233 @@ label {
     font-weight: 500;
 }
 
-/* --- Alerts -------------------------------------------------------------- */
+/* --- Form controls used by the auth and account screens -------------------- */
+
+/* `.input` is the control the sign-in, registration and verification screens
+   use. It is an alias of the Bootstrap control rather than a second design:
+   two nearly-identical input styles on one site is how a form ends up looking
+   like it was pasted in from somewhere else. */
+.input,
+.form-control,
+.form-select {
+    background-color: #fff;
+    border: 2px solid #8b92ca;
+    border-radius: 30px;
+    color: var(--arab-heading);
+    display: block;
+    font-family: 'Roboto', 'AvenirArabic', sans-serif;
+    font-size: 15px;
+    padding: 12px 20px;
+    width: 100%;
+}
+
+.input:focus,
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--arab-primary);
+    box-shadow: 0 0 0 .2rem rgba(252, 9, 124, .15);
+    outline: none;
+}
+
+/* The error state. Driven by a class rather than by `aria-invalid` alone,
+   because a screen reader announces the error text but a sighted user needs the
+   border to change too. */
+.input-error,
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: #dc3545;
+    background-image: none;
+}
+
+.field-error {
+    color: #b02a37;
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 6px 0 0;
+}
+
+/* ========================================================================== */
+/* Application components                                                      */
+/* -------------------------------------------------------------------------- */
+/* Named blocks rather than utility soup.                                     */
+/*                                                                            */
+/* The sign-in, registration, verification, account, archive and partner      */
+/* screens are server-rendered forms with no page chrome of their own, so they */
+/* need a small vocabulary of their own to look like the rest of the site.      */
+/* These are deliberately component-shaped: a card is one class, not          */
+/* "bg-white border rounded-lg p-6 shadow-sm", so a change to the card design  */
+/* is one edit rather than a find-and-replace across every template.           */
+/* ========================================================================== */
+
+/* A centred column. --narrow for a form, --wide for a list. */
+.app-shell { margin-inline: auto; max-width: 46rem; }
+.app-shell--narrow { max-width: 30rem; }
+.app-shell--wide { max-width: 64rem; }
+.app-shell--center { text-align: center; }
+
+/* The white rounded panel every standalone screen sits on. */
+.app-card {
+    background: #fff;
+    border: 1px solid #e6e6ea;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgb(31 24 46 / 6%);
+    padding: 32px;
+}
+
+.app-card--flush { padding: 0; overflow: hidden; }
+
+/* Headings and copy inside a shell. */
+.app-title {
+    color: var(--arab-heading);
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 8px;
+}
+
+.app-title--sm { font-size: 1.5rem; }
+.app-lede { color: var(--arab-body); font-size: 1.05rem; margin: 0 0 24px; }
+.app-note { color: var(--arab-muted); font-size: .875rem; margin: 0; }
+.app-note--strong { color: var(--arab-body); font-weight: 500; }
+
+/* A brand-coloured text link. Distinct from a button so the two are never
+   confused for one another. */
+.app-link { color: var(--arab-primary); font-weight: 500; text-decoration: none; }
+.app-link:hover,
+.app-link:focus { color: var(--arab-primary-dark); text-decoration: underline; }
+
+/* Inline status pill. */
+.app-badge {
+    border-radius: 30px;
+    display: inline-block;
+    font-size: .8rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: 7px 14px;
+    white-space: nowrap;
+}
+
+.app-badge--success { background: rgb(var(--arab-gold-rgb) / 20%); color: #3d5200; }
+.app-badge--warning { background: #fff3cd; color: #8a6100; }
+.app-badge--danger { background: rgb(220 53 69 / 12%); color: #842029; }
+.app-badge--info { background: rgb(0 172 238 / 12%); color: #005b7a; }
+.app-badge--muted { background: #f0f0f2; color: var(--arab-body); }
+
+/* The selected item in a year switcher. -- */
+.app-badge--brand { background: var(--arab-primary); color: #fff; }
+
+/* A stacked list of rows: the order history, the participant list. */
+.app-list { border-top: 1px solid #e6e6ea; margin: 0; padding: 0; list-style: none; }
+
+.app-list__row {
+    align-items: center;
+    border-bottom: 1px solid #e6e6ea;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+    padding: 18px 0;
+}
+
+.app-list__row:last-child { border-bottom: 0; }
+.app-list__row--tight { padding: 12px 0; }
+
+/* A circular confirmation mark. */
+.app-tick {
+    align-items: center;
+    background: rgb(var(--arab-gold-rgb) / 18%);
+    border-radius: 50%;
+    color: #4c6b00;
+    display: inline-flex;
+    height: 64px;
+    justify-content: center;
+    width: 64px;
+}
+
+.app-tick svg { height: 32px; width: 32px; }
+
+/* A checkbox with its label beside it, aligned so the box sits on the first
+   line of a multi-line label rather than floating in the middle of it. */
+.app-check { align-items: flex-start; display: flex; gap: 12px; }
+
+.app-check input[type="checkbox"] {
+    flex: 0 0 auto;
+    height: 18px;
+    margin-top: 4px;
+    width: 18px;
+}
+
+.app-check label { font-weight: 400; }
+
+/* A large, letter-spaced one-time-code field. */
+.app-code {
+    font-family: ui-monospace, 'Roboto Mono', monospace;
+    font-size: 1.75rem;
+    letter-spacing: .5em;
+    padding: 16px 20px;
+    text-align: center;
+}
+
+/* An empty-state block: a short line, centred, with an action beneath it. */
+.app-empty {
+    background: #fafafc;
+    border: 1px dashed #d9d9de;
+    border-radius: 16px;
+    color: var(--arab-body);
+    padding: 40px 24px;
+    text-align: center;
+}
+
+/* Grid of partner logos. */
+.app-logo-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.app-logo {
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e6e6ea;
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    min-height: 120px;
+    padding: 20px;
+    transition: box-shadow .3s linear, transform .3s linear;
+}
+
+.app-logo:hover { box-shadow: 0 12px 28px rgb(31 24 46 / 10%); transform: translateY(-3px); }
+.app-logo img { max-height: 60px; max-width: 100%; object-fit: contain; }
+
+/* A key/value row, for the order and invoice summaries. */
+.app-facts { display: grid; gap: 12px 24px; grid-template-columns: auto 1fr; margin: 0; }
+.app-facts dt { color: var(--arab-muted); font-weight: 500; }
+.app-facts dd { color: var(--arab-heading); font-weight: 600; margin: 0; text-align: end; }
+
+/* A bordered notice, for "sales are closed" and capacity messages. */
+.app-notice {
+    background: #f4f4f8;
+    border-inline-start: 4px solid var(--arab-cyan);
+    border-radius: 10px;
+    color: var(--arab-body);
+    font-size: .95rem;
+    padding: 14px 18px;
+}
+
+.app-notice--warning { background: #fff8e6; border-inline-start-color: #d99a00; }
+.app-notice--danger { background: rgb(220 53 69 / 8%); border-inline-start-color: #dc3545; }
+
+/* Section rhythm, so the heading-to-content spacing is identical on every
+   standalone screen. */
+.app-section + .app-section { margin-top: 40px; }
+.app-section__title { color: var(--arab-heading); font-size: 1.25rem; font-weight: 700; margin: 0 0 16px; }
+
 
 .alert-warning {
     background-color: #e8e8e8;

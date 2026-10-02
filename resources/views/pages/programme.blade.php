@@ -9,14 +9,12 @@
         :title="__('programme.title')"
         :crumbs="[__('nav.programme') => null]" />
 
-    <div class="schedule-area section-padding-02 grey-bg">
-        <img src="{{ asset('assets/images/shape/schedule_shape1.png') }}" class="schedule-shape1" alt="">
-        <img src="{{ asset('assets/images/shape/schedule_shape2.png') }}" class="schedule-shape2" alt="">
+    <div class="schedule-area section-padding-02" style="background:var(--ux-surface-alt);">
 
         <div class="container">
             {{-- The brief states the scientific programme is provisional, so the page
                  says so rather than implying it is final. --}}
-            <p class="notice-provisional">@lang('programme.provisional_notice')</p>
+            <p class="notice-provisional text-center ux-reveal">@lang('programme.provisional_notice')</p>
 
             {{-- Day switcher. Real links rather than tabs, because the selected day
                  is in the query string: a day is then a bookmarkable URL, it can be
@@ -24,17 +22,14 @@
                  state in a JS variable, so two different days would be one URL and
                  the page would be unlinkable. --}}
             @if (count($days) > 1)
-                <nav class="programme-day-nav nav d-block justify-content-center mt-4"
+                <nav class="ux-day-nav mt-4"
                      aria-label="{{ __('programme.all_days') }}">
                     @foreach ($days as $day)
                         <a href="{{ route('programme', array_filter([
                                 'locale' => request()->route('locale'),
                                 'day' => $day->toDateString(),
                             ])) }}"
-                           @class([
-                               'nav-link',
-                               'active' => $selectedDay?->isSameDay($day),
-                           ])
+                           @class(['ux-day-nav__item', 'is-active' => $selectedDay?->isSameDay($day)])
                            @if ($selectedDay?->isSameDay($day)) aria-current="page" @endif>
                             {{ $day->translatedFormat('l d F') }}
                         </a>
@@ -43,7 +38,7 @@
             @endif
 
             @if ($slots === [])
-                <p class="empty-state mt-4">@lang('programme.no_sessions')</p>
+                <p class="app-empty mt-4 ux-reveal">@lang('programme.no_sessions')</p>
             @endif
 
             {{-- One block per time slot, with parallel sessions side by side. A
@@ -60,25 +55,23 @@
                             $slotEnd = collect($slotSessions)
                                 ->max(fn ($session) => $session->endsAtDateTime()->getTimestamp());
                         @endphp
-                        <div class="schedule-row">
-                            <div class="row g-0 align-items-stretch">
-                                <div class="col-lg-3 col-12">
-                                    <div class="schedule-time" dir="ltr">
-                                        {{ $start }}<br>
-                                        <span class="schedule-card__meta">
-                                            &ndash; {{ \Illuminate\Support\Carbon::createFromTimestamp($slotEnd)->format('H:i') }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-lg-9 col-12">
-                                    <div class="row g-3">
-                                        @foreach ($slotSessions as $session)
-                                            <div class="col-md-6 col-12">
-                                                <article class="schedule-card">
+                        <article class="ux-timeline__slot ux-reveal">
+                            <p class="ux-timeline__time" dir="ltr">
+                                {{ $start }}<br>
+                                <span>&ndash; {{ \Illuminate\Support\Carbon::createFromTimestamp($slotEnd)->format('H:i') }}</span>
+                            </p>
+
+                            <div class="ux-timeline__body">
+                                <div class="row g-3" data-ux-stagger="70">
+                                    @foreach ($slotSessions as $session)
+                                        <div class="col-md-6 col-12">
+                                            <div class="ux-card ux-card--edge ux-card--lift schedule-card h-100">
+                                                <div class="p-4">
+
                                                     <p class="schedule-card__meta">
-                                                        {{ $session->format->label($locale->value) }}
+                                                        <span class="ux-tag">{{ $session->format->label($locale->value) }}</span>
                                                         @if ($session->room)
-                                                            &middot; {{ $session->room->name }}
+                                                            <span class="ux-tag ux-tag--muted">{{ $session->room->name }}</span>
                                                         @endif
                                                     </p>
 
@@ -89,7 +82,7 @@
                                                     @endif
 
                                                     @if ($session->summary)
-                                                        <p class="schedule-card__track">{{ $session->summary }}</p>
+                                                        <p class="schedule-card__summary">{{ $session->summary }}</p>
                                                     @endif
 
                                                     @if ($session->speakers->isNotEmpty())
@@ -102,17 +95,17 @@
                                                          rather than assuming a slot length,
                                                          so a session that over-runs is
                                                          visible here. --}}
-                                                    <p class="schedule-card__meta mt-2" dir="ltr">
+                                                    <p class="schedule-card__meta mt-3 mb-0" dir="ltr">
                                                         {{ $session->startsAtString() }} &ndash; {{ $session->endsAtString() }}
                                                         ({{ $session->durationMinutes() }}&prime;)
                                                     </p>
-                                                </article>
+                                                </div>
                                             </div>
-                                        @endforeach
-                                    </div>
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
-                        </div>
+                        </article>
                     @endforeach
                 </div>
             @endforeach

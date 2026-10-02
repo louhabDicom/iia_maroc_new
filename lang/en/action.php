@@ -13,6 +13,8 @@ return [
     'register'   => 'Register',
     'resend'     => 'Resend the code',
     'submit'     => 'Submit',
+    'update'     => 'Update',
+    'remove'     => 'Remove',
     'verify'     => 'Verify code',
     'view'       => 'View',
 ];

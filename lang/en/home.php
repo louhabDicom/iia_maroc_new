@@ -3,6 +3,14 @@
 declare(strict_types=1);
 
 return [
+    // --- Homepage counters -------------------------------------------------
+    // The values come from the edition row and the published programme (see
+    // HomeController), never from here — these are only the labels.
+    'stats' => [
+        'attendees' => 'Delegates',
+        'workshops' => 'Workshops',
+        'days'      => 'Days',
+    ],
     'about_subtitle'     => 'A conference to',
     'about_title'        => 'About',
     'audience_title'     => 'Target audience',

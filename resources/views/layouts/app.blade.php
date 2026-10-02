@@ -86,9 +86,19 @@
     @endif
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
 
+    {{-- The experience layer, last of all: motion, depth and light. It composes
+         on top of the design rather than replacing it, and every rule that moves
+         something respects prefers-reduced-motion. --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/ux.css') }}">
+
     @stack('head')
 </head>
 <body class="{{ ($isRtl ?? false) ? 'rtl' : '' }}">
+
+{{-- Scroll progress. Sits above everything, including the header, and is driven
+     by ux.js through a custom property. It has no content of its own, so it is
+     hidden from assistive technology rather than announced on every scroll. --}}
+<div class="ux-progress" role="presentation" aria-hidden="true"></div>
 
 <div class="main-wrapper">
 
@@ -127,6 +137,12 @@
 <script src="{{ asset('assets/js/plugins/jquery.magnific-popup.min.js') }}"></script>
 <script src="{{ asset('assets/js/plugins/lightbox.min.js') }}"></script>
 <script src="{{ asset('assets/js/main.js') }}"></script>
+
+{{-- The experience layer. Vanilla, dependency-free, and strictly additive: if
+     it fails to load the site is unchanged. It is loaded last so it sees the
+     final DOM and so nothing it adds is removed by a plugin that assumes it
+     owns the page. --}}
+<script src="{{ asset('assets/js/ux.js') }}" defer></script>
 
 @stack('scripts')
 </body>

@@ -5,68 +5,131 @@
 
 @section('content')
 
-    {{-- Hero. Dates and venue come from the edition, never hardcoded. --}}
-    <div class="section exvent-hero-section d-lg-flex d-block align-items-center"
-         style="background-image: url({{ asset('assets/images/bg/hero_bg1.jpg') }});">
+    {{-- Hero. Dates and venue come from the edition, never hardcoded.
 
-        <div class="container">
-            <div class="row exvent-hero-row">
-                <div class="col-lg-6">
-                    <div class="hero-content">
-                        <h3 class="sub-title" data-aos="fade-down" data-aos-delay="600">
-                            {{ $edition->starts_on->translatedFormat('d') }}&ndash;{{ $edition->ends_on->translatedFormat('d') }}<br>
-                            {{ $edition->starts_on->translatedFormat('M Y') }} &ndash; {{ $edition->venueLine($locale) }}
-                        </h3>
-                        <h2 class="title" data-aos="fade-left" data-aos-delay="800">
-                            {{ $edition->theme ?? __('site.site_name') }}
-                        </h2>
-                        @if ($edition->introduction)
-                            <h4 class="sub-title" data-aos="fade-up" data-aos-delay="600">
-                                {!! nl2br(e(\Illuminate\Support\Str::limit($edition->introduction, 160))) !!}
-                            </h4>
-                        @endif
-                    </div>
-                </div>
-            </div>
+         The 2024 hero was a photograph with a heading laid over it and little
+         else. This keeps the same photograph and the same facts, but treats the
+         hero as the one screen that has to earn attention in three seconds: a
+         large headline, one clear primary action, a secondary action, and the
+         three figures the brief names.
+    --}}
+    <section class="ux-hero section exvent-hero-section"
+             style="background-image: url({{ asset('assets/images/bg/hero_bg1.jpg') }});">
+
+        {{-- The drifting colour fields. Purely decorative, so they are hidden
+             from assistive technology rather than announced as content. --}}
+        <div class="ux-aurora" aria-hidden="true">
+            <div class="ux-aurora__field ux-aurora__field--magenta" data-ux-parallax="0.10"></div>
+            <div class="ux-aurora__field ux-aurora__field--violet" data-ux-parallax="0.16"></div>
+            <div class="ux-aurora__field ux-aurora__field--gold" data-ux-parallax="0.07"></div>
+            <div class="ux-aurora__grain"></div>
         </div>
 
-        <div class="hero-images">
-            <div class="images" data-aos="fade-left" data-aos-delay="900">
-                <img src="{{ asset('assets/images/hero_img1.jpg') }}" class="slide-img" alt="">
-            </div>
-        </div>
-
-    </div>
-
-    {{-- Event figures. --}}
-    <div class="event-counter-section section-padding grey-bg">
-        <img src="{{ asset('assets/images/shape/counter_shape1.png') }}" alt="" class="conter-shape1">
-        <img src="{{ asset('assets/images/shape/counter_shape2.png') }}" alt="" class="conter-shape2">
-        <img src="{{ asset('assets/images/shape/counter_shape3.png') }}" alt="" class="conter-shape3">
-
-        <div class="container">
+        <div class="container position-relative">
             <div class="row align-items-center">
-                <div class="col-lg-5 col-12">
-                    <div class="section-title">
-                        <h2 class="title">@lang('home.join_us')</h2>
+                <div class="col-lg-7">
+                    <div class="hero-content py-5">
+
+                        <p class="ux-hero__eyebrow ux-reveal">
+                            {{ $edition->starts_on->translatedFormat('d') }}&ndash;{{ $edition->ends_on->translatedFormat('d M Y') }}
+                        </p>
+
+                        <h1 class="ux-hero__title ux-reveal">
+                            {{ $edition->theme ?? $edition->titleIn($locale) }}
+                        </h1>
+
+                        <p class="ux-hero__lede ux-reveal">
+                            {{ $edition->venueLine($locale) }}
+                        </p>
+
+                        @if ($edition->introduction)
+                            <p class="ux-hero__lede ux-reveal">
+                                {!! nl2br(e(\Illuminate\Support\Str::limit($edition->introduction, 190))) !!}
+                            </p>
+                        @endif
+
+                        <div class="ux-hero__actions ux-reveal">
+                            @if ($edition->registration_open)
+                                <a href="{{ auth()->check() ? route('pricing') : route('register') }}"
+                                   class="ux-btn ux-btn--primary"
+                                   data-ux-magnetic="0.22">
+                                    <span>@lang('home.hero_cta')</span>
+                                </a>
+                            @endif
+
+                            <a href="{{ route('programme') }}"
+                               class="ux-btn ux-btn--on-dark"
+                               data-ux-magnetic="0.18">
+                                <span>@lang('home.hero_secondary')</span>
+                            </a>
+                        </div>
+
                     </div>
                 </div>
-                <div class="col-lg-7 col-12">
-                    <div class="row align-items-center justify-content-center">
+
+                {{-- The photograph, kept as a real element so it can be framed
+                     and lifted rather than sitting flat in the background. It is
+                     decorative: the same information is in the text above. --}}
+                <div class="col-lg-5">
+                    <div class="hero-images d-none d-lg-block">
+                        <div class="images ux-card ux-card--glass ux-card--flush ux-reveal ux-reveal-scale ux-tilt"
+                             data-ux-tilt="5">
+                            <img src="{{ asset('assets/images/hero_img1.jpg') }}"
+                                 class="slide-img w-100"
+                                 alt=""
+                                 loading="eager"
+                                 decoding="async">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- A soft fade into the next section, so the hard edge between the hero
+             and the page below stops looking like a seam. --}}
+        <div class="ux-hero__fade" aria-hidden="true"></div>
+    </section>
+
+    {{-- Event figures.
+
+         The values are counted from the published programme by HomeController,
+         not hardcoded here, so this block can never claim a number the
+         programme page contradicts. ux.js animates them from zero; with
+         scripting off they are simply the final value. --}}
+    <div class="event-counter-section section-padding" style="background:var(--ux-surface-alt);">
+        <div class="container">
+            <div class="row align-items-center g-5">
+
+                <div class="col-lg-4 col-12">
+                    <div class="section-title ux-reveal ux-reveal-left">
+                        <h2 class="title">@lang('home.join_us')</h2>
+                        <p class="ux-section-lede">
+                            {{ \Illuminate\Support\Str::limit($edition->introduction, 150) }}
+                        </p>
+                        <a href="{{ route('pricing') }}" class="ux-btn ux-btn--primary" data-ux-magnetic="0.2">
+                            <span>@lang('home.hero_cta')</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-8 col-12">
+                    <div class="row g-4" data-ux-stagger="90">
                         @foreach ([
                             ['value' => $stats['attendees'], 'label' => __('home.stats.attendees')],
                             ['value' => $stats['workshops'], 'label' => __('home.stats.workshops')],
                             ['value' => $stats['days'], 'label' => __('home.stats.days')],
                         ] as $stat)
-                            <div class="col-md-4 col-8">
-                                <div class="counter-item">
-                                    <h1 class="counter-numb counter color{{ $loop->iteration }}">{{ number_format($stat['value']) }}</h1>
-                                    <span>{{ $stat['label'] }}</span>
+                            <div class="col-md-4">
+                                <div class="ux-stat ux-reveal ux-reveal-scale"
+                                     data-ux-tilt="4">
+                                    <span class="ux-stat__value">{{ number_format($stat['value']) }}</span>
+                                    <span class="ux-stat__label">{{ $stat['label'] }}</span>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

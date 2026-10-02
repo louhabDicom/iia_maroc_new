@@ -13,6 +13,8 @@ return [
     'register'   => 'S\'inscrire',
     'resend'     => 'Renvoyer le code',
     'submit'     => 'Envoyer',
+    'update'     => 'Modifier',
+    'remove'     => 'Retirer',
     'verify'     => 'Vérifier le code',
     'view'       => 'Voir',
 ];

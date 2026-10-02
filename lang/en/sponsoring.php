@@ -7,6 +7,7 @@ return [
     'contact'            => 'Contact us',
     'from'               => 'From :amount',
     'no_sponsors'        => 'The partner list will be announced shortly.',
+    'previous'           => 'Partners from previous editions',
     'tier.bronze'        => 'Bronze',
     'tier.gold'          => 'Gold',
     'tier.institutional' => 'Institutional',

@@ -4,24 +4,28 @@
 @section('description', __('archive.intro'))
 
 @section('content')
-    <div class="mx-auto max-w-4xl">
+    <x-page-hero
+        :title="__('archive.title')"
+        :crumbs="[__('nav.archive') => null]"
+        image="assets/images/bg/about_page_bg.jpg" />
 
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            @lang('archive.title')
-        </h1>
-        <p class="mt-2 text-slate-600 dark:text-slate-400">@lang('archive.intro')</p>
+    <div class="section-padding-04">
+        <div class="container">
+            <div class="app-shell app-shell--wide">
+
+                <p class="app-lede">@lang('archive.intro')</p>
 
         {{-- Year switcher, built from the editions table. A year that does not
              exist yields null below rather than an empty page, because
              Edition::archive() resolves against real rows. --}}
         @if ($editions->isNotEmpty())
-            <nav class="mt-6 flex flex-wrap gap-2" aria-label="{{ __('archive.title') }}">
+            <nav class="d-flex flex-wrap gap-2 mb-4" aria-label="{{ __('archive.title') }}">
                 @foreach ($editions as $year)
                     <a href="{{ route('archive', ['locale' => request()->route('locale'), 'year' => $year->year]) }}"
                        @class([
-                           'rounded-full px-4 py-1.5 font-mono text-sm font-medium transition',
-                           'bg-brand text-white' => $archived?->year === $year->year,
-                           'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700' => $archived?->year !== $year->year,
+                           'app-badge',
+                           'app-badge--brand' => $archived?->year === $year->year,
+                           'app-badge--muted' => $archived?->year !== $year->year,
                        ])
                        @if ($archived?->year === $year->year) aria-current="page" @endif>
                         {{ $year->year }}
@@ -31,35 +35,31 @@
         @endif
 
         @if ($archived === null)
-            <p class="mt-12 rounded-lg border border-slate-200 bg-slate-50 px-6 py-10 text-center text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-                @lang('state.empty')
-            </p>
+            <div class="app-empty">@lang('state.empty')</div>
         @else
-            <section class="mt-10 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-                <h2 class="text-xl font-semibold text-slate-900 dark:text-white">
+            <section class="app-card">
+                <h2 class="app-title app-title--sm">
                     {{ $archived->titleIn($locale) }}
                 </h2>
 
-                <p class="mt-2 text-slate-600 dark:text-slate-400">
+                <p class="app-note">
                     {{ $archived->dateLine($locale) }}<br>
                     {{ $archived->venueLine($locale) }}
                 </p>
 
                 @if ($archived->archive_note)
-                    <p class="mt-4 border-s-2 border-brand-300 ps-4 text-sm text-slate-600 dark:border-brand-800 dark:text-slate-400">
-                        {{ $archived->archive_note }}
-                    </p>
+                    <div class="app-notice mt-4">{{ $archived->archive_note }}</div>
                 @endif
 
                 @if ($stats)
-                    <dl class="mt-6 flex flex-wrap gap-8">
+                    <dl class="d-flex flex-wrap gap-5 mt-4 mb-0">
                         <div>
-                            <dt class="text-sm text-slate-500 dark:text-slate-400">@lang('programme.title')</dt>
-                            <dd class="text-2xl font-bold text-slate-900 dark:text-white">{{ $stats['sessions'] }}</dd>
+                            <dt class="app-note">@lang('programme.title')</dt>
+                            <dd class="app-title app-title--sm mb-0">{{ $stats['sessions'] }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm text-slate-500 dark:text-slate-400">@lang('speakers.title')</dt>
-                            <dd class="text-2xl font-bold text-slate-900 dark:text-white">{{ $stats['speakers'] }}</dd>
+                            <dt class="app-note">@lang('speakers.title')</dt>
+                            <dd class="app-title app-title--sm mb-0">{{ $stats['speakers'] }}</dd>
                         </div>
                     </dl>
                 @endif
@@ -68,24 +68,24 @@
             {{-- Downloads. isAvailableIn() checks the per-locale flag, so a
                  document that was only translated into French does not 404 for
                  an Arabic visitor. --}}
-            <section class="mt-10" aria-labelledby="archive-documents">
-                <h2 id="archive-documents" class="text-xl font-semibold text-slate-900 dark:text-white">
+            <section class="app-section" aria-labelledby="archive-documents">
+                <h2 id="archive-documents" class="app-section__title">
                     @lang('archive.documents')
                 </h2>
 
                 @if ($documents->isEmpty())
-                    <p class="mt-4 text-slate-600 dark:text-slate-400">@lang('state.coming_soon')</p>
+                    <p class="app-note">@lang('state.coming_soon')</p>
                 @else
-                    <ul class="mt-4 divide-y divide-slate-200 dark:divide-slate-800">
+                    <ul class="app-list">
                         @foreach ($documents as $document)
                             @if ($document->isAvailableIn($locale->value))
-                                <li class="flex items-center justify-between gap-4 py-3">
-                                    <span class="font-medium text-slate-900 dark:text-white">{{ $document->title }}</span>
+                                <li class="app-list__row">
+                                    <span class="app-note--strong">{{ $document->title }}</span>
                                     <a href="{{ $document->downloadUrl() }}"
-                                       class="text-sm font-medium text-brand hover:underline">
+                                       class="app-link">
                                         @lang('action.download')
                                         @if ($document->formattedSize())
-                                            <span class="font-mono text-xs text-slate-400">({{ $document->formattedSize() }})</span>
+                                            <span class="app-note">({{ $document->formattedSize() }})</span>
                                         @endif
                                     </a>
                                 </li>

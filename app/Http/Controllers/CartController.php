@@ -1,0 +1,230 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Enums\Locale;
+use App\Models\Cart;
+use App\Models\TicketType;
+use App\Services\Registration\CheckoutService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+/**
+ * The basket.
+ *
+ * Replaces `addToCart.php` and `removeitem.php`, which had two defects worth
+ * naming. The first rejected the insert when a cart row already existed, so a
+ * single abandoned 'encours' row permanently blocked that customer from
+ * buying again — the exact failure the 2024 build's own comments apologise for
+ * without fixing. The second concatenated the product id straight into SQL.
+ *
+ * A cart here is a row that expires, holds no price, and holds at most one
+ * line per ticket type. Prices resolve at checkout.
+ */
+class CartController extends Controller
+{
+    public function __construct(
+        private readonly CheckoutService $checkout,
+    ) {}
+
+    /**
+     * Show the basket.
+     */
+    public function show(Request $request): View|RedirectResponse
+    {
+        $cart = $this->currentCart($request);
+
+        if ($cart->items()->doesntExist()) {
+            return redirect()->route('pricing')->with('status', __('order.cart_empty'));
+        }
+
+        $cart->load(['items.ticketType']);
+
+        // The estimate is indicative only. The authoritative figure is the
+        // quote produced at checkout, which applies the member rate from the
+        // server's own record rather than from what the visitor claimed.
+        return view('pages.cart', [
+            'cart' => $cart,
+            'locale' => Locale::parse(app()->getLocale()),
+            'currentRoute' => 'cart',
+            'estimatedTotal' => (int) $cart->items->sum(
+                fn ($item): int => $item->estimatedTotal()
+            ),
+            'currency' => (string) ($cart->items->first()?->ticketType?->currency
+                ?? config('conference.default_currency', 'MAD')),
+        ]);
+    }
+
+    /**
+     * Add a quantity of a ticket to the basket.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'ticket_type_id' => ['required', 'integer', Rule::exists('ticket_types', 'id')],
+            'quantity' => ['required', 'integer', 'min:1', 'max:20'],
+            'member_quantity' => ['required', 'integer', 'min:0', 'max:20'],
+        ], [], [
+            'ticket_type_id' => __('register.ticket'),
+            'quantity' => __('order.quantity'),
+            'member_quantity' => __('order.member_places'),
+        ]);
+
+        if ($data['member_quantity'] > $data['quantity']) {
+            return back()->withErrors([
+                'member_quantity' => __('order.member_places_exceed'),
+            ]);
+        }
+
+        $ticket = TicketType::query()
+            ->active()
+            ->whereKey($data['ticket_type_id'])
+            ->first();
+
+        if ($ticket === null) {
+            // Either withdrawn or outside its sales window. Both are a
+            // refusal rather than a silent no-op, so a stale pricing page
+            // cannot produce a basket that fails later at checkout.
+            return back()->withErrors([
+                'ticket_type_id' => __('pricing.closed'),
+            ]);
+        }
+
+        $cart = $this->currentCart($request);
+
+        $line = $cart->items()->where('ticket_type_id', $ticket->getKey())->first();
+
+        if ($line === null) {
+            // A new line, rather than a second row for the same ticket: two
+            // rows for one tariff would be summed at checkout into a quantity
+            // the buyer never chose.
+            $cart->items()->create([
+                'ticket_type_id' => $ticket->getKey(),
+                'quantity' => $data['quantity'],
+                'member_quantity' => $data['member_quantity'],
+            ]);
+        } else {
+            $line->update([
+                'quantity' => $data['quantity'],
+                'member_quantity' => $data['member_quantity'],
+            ]);
+        }
+
+        $this->attachUser($request, $cart);
+
+        return redirect()->route('cart')->with('status', __('order.cart_updated'));
+    }
+
+    /**
+     * Change a line's quantity, including down to zero to remove it.
+     */
+    public function update(Request $request, int $cart, int $ticketType): RedirectResponse
+    {
+        $owned = $this->ownedCart($request, $cart);
+
+        $line = $owned->items()->where('ticket_type_id', $ticketType)->first();
+
+        if ($line === null) {
+            return redirect()->route('cart')->with('status', __('order.cart_empty'));
+        }
+
+        $data = $request->validate([
+            'quantity' => ['required', 'integer', 'min:0', 'max:20'],
+            'member_quantity' => ['required', 'integer', 'min:0', 'max:20'],
+        ], [], [
+            'quantity' => __('order.quantity'),
+            'member_quantity' => __('order.member_places'),
+        ]);
+
+        // A quantity of zero removes the line, so one form handles both
+        // "change" and "remove" without a second endpoint.
+        if ($data['quantity'] < 1) {
+            $line->delete();
+
+            return redirect()->route('cart')->with('status', __('order.cart_updated'));
+        }
+
+        if ($data['member_quantity'] > $data['quantity']) {
+            return back()->withErrors([
+                'member_quantity' => __('order.member_places_exceed'),
+            ]);
+        }
+
+        $line->update($data);
+
+        return redirect()->route('cart')->with('status', __('order.cart_updated'));
+    }
+
+    /**
+     * Remove a line.
+     */
+    public function destroy(Request $request, int $cart, int $ticketType): RedirectResponse
+    {
+        $this->ownedCart($request, $cart)
+            ->items()
+            ->where('ticket_type_id', $ticketType)
+            ->delete();
+
+        return redirect()->route('cart')->with('status', __('order.cart_updated'));
+    }
+
+    /**
+     * Empty the basket.
+     */
+    public function clear(Request $request): RedirectResponse
+    {
+        $this->currentCart($request)->items()->delete();
+
+        return redirect()->route('pricing')->with('status', __('order.cart_emptied'));
+    }
+
+    // --- Helpers ---------------------------------------------------------
+
+    private function currentCart(Request $request): Cart
+    {
+        return Cart::forSession(
+            $request->session()->getId(),
+            $request->user(),
+        );
+    }
+
+    /**
+     * A cart is only ever modified through a cart this session owns.
+     *
+     * Scoped in SQL rather than fetched and compared, so a visitor cannot
+     * empty somebody else's basket by guessing an id — which is exactly what
+     * `removeitem.php` did, taking `$_POST['id']` with no ownership test.
+     */
+    private function ownedCart(Request $request, int $cartId): Cart
+    {
+        $cart = Cart::query()
+            ->forSession($request->session()->getId())
+            ->whereKey($cartId)
+            ->first();
+
+        abort_if($cart === null, 404);
+
+        return $cart;
+    }
+
+    /**
+     * Claim the cart for the user once they are signed in.
+     *
+     * Done on add rather than at checkout so a basket survives the login that
+     * the checkout itself requires. Without it, an anonymous visitor fills a
+     * basket, signs in as the checkout demands, and arrives back at an empty
+     * page with no explanation.
+     */
+    private function attachUser(Request $request, Cart $cart): void
+    {
+        $user = $request->user();
+
+        if ($user !== null && $cart->user_id !== $user->getKey()) {
+            $cart->forceFill(['user_id' => $user->getKey()])->save();
+        }
+    }
+}

@@ -27,6 +27,16 @@ return Application::configure(basePath: dirname(__DIR__))
             LocalizeUrls::class,
         ]);
 
+        // The CMI server-to-server callback is the one route that cannot carry
+        // a CSRF token: it is a request from a third-party server, with no
+        // session and no form behind it. It is authenticated by the gateway's
+        // signature instead, which PaymentController verifies before acting on
+        // anything. Excluding it narrowly — by path, not wholesale — keeps
+        // CSRF protection on every other POST in the application.
+        $middleware->validateCsrfTokens(except: [
+            'payment/cmi/callback',
+        ]);
+
         $middleware->alias([
             'verified.phone' => EnsurePhoneIsVerified::class,
         ]);

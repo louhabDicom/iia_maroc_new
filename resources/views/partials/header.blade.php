@@ -96,7 +96,11 @@
     </div>
 @endguest
 
-<div id="header" class="section exvent-header-section">
+{{-- `ux-header` is the hook ux.js toggles once the page has scrolled past the
+     hero. The template positions this header absolutely over the hero, so it
+     has to become an opaque bar at that point, or the links sit on top of a
+     moving photograph and stop being readable. --}}
+<div id="header" class="section exvent-header-section ux-header">
     <div class="container">
         <div class="row">
             <div class="col-12 header-toplinks">
@@ -137,11 +141,20 @@
 
             <div class="header-meta">
                 @auth
+                    {{-- The cart icon points at the basket, not the order
+                         history: it is the shopping symbol, and the order list
+                         is one click away from the account page and from the
+                         basket's own summary. The count is the number of places
+                         in the basket, which is what the icon means on every
+                         other shop the visitor has used. --}}
                     <div class="header-cart dropdown">
-                        <a class="cart-btn" href="{{ route('account') }}">
+                        <a class="cart-btn" href="{{ route('cart') }}">
                             <i class="flaticon-shopping-cart" style="font-size: 22px;" aria-hidden="true"></i>
-                            <span class="count">{{ auth()->user()->orders()->count() }}</span>
-                            <span class="sr-only">@lang('account.orders')</span>
+                            @php($basketCount = \App\Models\Cart::forSession(request()->session()->getId(), auth()->user())->items()->sum('quantity'))
+                            @if ($basketCount > 0)
+                                <span class="count">{{ $basketCount }}</span>
+                            @endif
+                            <span class="sr-only">@lang('order.cart.title')</span>
                         </a>
                     </div>
                 @endauth
@@ -186,10 +199,12 @@
 
         <div class="d-flex flex-column gap-2 mt-3">
             @auth
+                <a href="{{ route('cart') }}" class="btn btn-outline-secondary">@lang('order.cart.title')</a>
+                <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary">@lang('order.orders')</a>
                 <a href="{{ route('account') }}" class="btn btn-primary">@lang('account.title')</a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-outline-secondary w-100">@lang('action.logout')</button>
+                    <button type="submit" class="btn btn-outline-danger w-100">@lang('action.logout')</button>
                 </form>
             @else
                 <a href="{{ route('register') }}" class="btn btn-primary">@lang('action.register')</a>

@@ -1,0 +1,1987 @@
+/* ==========================================================================
+   ARABCIA — experience layer
+   --------------------------------------------------------------------------
+   Loaded LAST, after app.css, so it wins on equal specificity and composes
+   on top of the template rather than replacing it.
+
+   Where app.css is the *design*, this file is the *feel*: motion, depth,
+   light. Everything here is additive and namespaced under `.ux-`, and every
+   rule that moves something has a `prefers-reduced-motion` escape in the block
+   at the bottom, so the site stays completely usable for a visitor who has
+   asked their OS not to animate.
+
+   Logical properties throughout (`inset-inline`, `margin-inline`) rather than
+   left/right, because Arabic runs right-to-left and hardcoded left offsets
+   are what make an RTL page look broken.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Tokens
+   --------------------------------------------------------------------------
+   Extends the brand defined in app.css rather than restating it, so the
+   palette still has one home.
+   -------------------------------------------------------------------------- */
+
+:root {
+    /* Timing. One scale, used everywhere, so the site feels like one thing. */
+    --ux-dur-fast: 180ms;
+    --ux-dur: 340ms;
+    --ux-dur-slow: 640ms;
+    --ux-dur-reveal: 900ms;
+
+    /* Easing. `out` is the workhorse; `spring` is for things that should feel
+       like they have weight; `in-out` is for anything that leaves and returns. */
+    --ux-ease-out: cubic-bezier(.22, 1, .36, 1);
+    --ux-ease-spring: cubic-bezier(.34, 1.46, .64, 1);
+    --ux-ease-in-out: cubic-bezier(.65, .02, .28, 1);
+
+    /* Depth. Five steps, named by size rather than by number so a rule can
+       say what it means. */
+    --ux-shadow-1: 0 1px 2px rgb(26 10 30 / 5%), 0 2px 6px rgb(26 10 30 / 4%);
+    --ux-shadow-2: 0 4px 12px rgb(26 10 30 / 6%), 0 12px 28px rgb(26 10 30 / 6%);
+    --ux-shadow-3: 0 10px 24px rgb(26 10 30 / 8%), 0 28px 60px rgb(26 10 30 / 9%);
+    --ux-shadow-4: 0 20px 44px rgb(26 10 30 / 10%), 0 48px 96px rgb(26 10 30 / 12%);
+    --ux-shadow-glow: 0 10px 34px rgb(252 9 124 / 30%);
+
+    /* Light. */
+    --ux-glass: rgb(255 255 255 / 74%);
+    --ux-glass-strong: rgb(255 255 255 / 88%);
+    --ux-glass-line: rgb(255 255 255 / 55%);
+    --ux-hairline: rgb(26 10 30 / 8%);
+    --ux-ink: #1a0a1e;
+    --ux-ink-soft: #4c4d56;
+    --ux-surface: #ffffff;
+    --ux-surface-alt: #f8f6fb;
+
+    /* Gradients. */
+    --ux-grad-brand: linear-gradient(115deg, #fc097c 0%, #c2189b 45%, #5b21b6 100%);
+    --ux-grad-gold: linear-gradient(115deg, #f9d464 0%, #f2a900 100%);
+    --ux-grad-cool: linear-gradient(140deg, #00acee 0%, #4b5cf0 100%);
+    --ux-grad-night: linear-gradient(160deg, #250449 0%, #09033b 55%, #14032e 100%);
+
+    /* Radii. */
+    --ux-radius-sm: 12px;
+    --ux-radius: 20px;
+    --ux-radius-lg: 28px;
+    --ux-radius-xl: 36px;
+}
+
+/* --------------------------------------------------------------------------
+   Reveal on scroll
+   --------------------------------------------------------------------------
+   The element starts hidden and is released by ux.js adding `.is-revealed`.
+
+   The initial state lives on a class rather than inline in the markup, and
+   ux.js adds `no-js` removal logic: if scripting is off, nothing is ever
+   revealed, so the page would stay blank. Rather than invert that risk, the
+   hiding rule is scoped to `html:not(.no-js)` — the layout already ships
+   `class="no-js"`, and ux.js removes it. Scripting off means the page is simply
+   visible from the start.
+   -------------------------------------------------------------------------- */
+
+html:not(.no-js) .ux-reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+        opacity var(--ux-dur-reveal) var(--ux-ease-out),
+        transform var(--ux-dur-reveal) var(--ux-ease-out);
+    transition-delay: var(--ux-reveal-delay, 0ms);
+    will-change: opacity, transform;
+}
+
+html:not(.no-js) .ux-reveal.ux-reveal-left {
+    transform: translateX(-32px);
+}
+
+html:not(.no-js) .ux-reveal.ux-reveal-right {
+    transform: translateX(32px);
+}
+
+html:not(.no-js) .ux-reveal.ux-reveal-scale {
+    transform: scale(.94);
+}
+
+html:not(.no-js) .ux-reveal.is-revealed {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Aurora — the hero backdrop
+   --------------------------------------------------------------------------
+   Three drifting radial colour fields plus a grain overlay, built entirely
+   from gradients. No image request, no canvas, and it scales to any viewport.
+
+   Each field is a sibling element rather than a background on the parent so
+   they can be animated independently; a single animated background-position
+   cannot produce parallax between layers.
+   -------------------------------------------------------------------------- */
+
+.ux-aurora {
+    isolation: isolate;
+    overflow: hidden;
+    position: relative;
+}
+
+.ux-aurora__field {
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: .55;
+    pointer-events: none;
+    position: absolute;
+
+    /* The parallax offset from ux.js.
+
+       Deliberately the individual `translate` property rather than `transform`:
+       the drift keyframes below animate `transform`, and individual properties
+       are applied *before* `transform` in the cascade, so the scroll offset and
+       the drift compose instead of one overwriting the other. */
+    translate: 0 var(--px, 0px);
+    will-change: transform, translate;
+}
+
+.ux-aurora__field--magenta {
+    background: radial-gradient(circle, #fc097c 0%, transparent 70%);
+    height: 44vmax;
+    inset-block-start: -12vmax;
+    inset-inline-start: -8vmax;
+    width: 44vmax;
+}
+
+.ux-aurora__field--violet {
+    background: radial-gradient(circle, #6d28d9 0%, transparent 70%);
+    height: 38vmax;
+    inset-block-start: 18vmax;
+    inset-inline-end: -10vmax;
+    width: 38vmax;
+}
+
+.ux-aurora__field--gold {
+    background: radial-gradient(circle, #f9d464 0%, transparent 70%);
+    bottom: -14vmax;
+    height: 34vmax;
+    inset-inline-start: 28vmax;
+    opacity: .38;
+    width: 34vmax;
+}
+
+/* Film grain. A tiny inline SVG noise, tiled. Sits above the colour fields and
+   below the content, and is what stops the large gradients from banding on an
+   8-bit display. */
+.ux-aurora__grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+    inset: 0;
+    mix-blend-mode: soft-light;
+    opacity: .5;
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+}
+
+/* Content inside an aurora always sits above it. */
+.ux-aurora > *:not(.ux-aurora__field):not(.ux-aurora__grain) {
+    position: relative;
+    z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-aurora__field--magenta { animation: ux-drift-a 26s var(--ux-ease-in-out) infinite alternate; }
+    .ux-aurora__field--violet  { animation: ux-drift-b 32s var(--ux-ease-in-out) infinite alternate; }
+    .ux-aurora__field--gold    { animation: ux-drift-c 38s var(--ux-ease-in-out) infinite alternate; }
+}
+
+@keyframes ux-drift-a {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(8vw, 6vh, 0) scale(1.14); }
+}
+
+@keyframes ux-drift-b {
+    from { transform: translate3d(0, 0, 0) scale(1.08); }
+    to   { transform: translate3d(-9vw, -5vh, 0) scale(.94); }
+}
+
+@keyframes ux-drift-c {
+    from { transform: translate3d(0, 0, 0) scale(.96); }
+    to   { transform: translate3d(-6vw, -7vh, 0) scale(1.12); }
+}
+
+/* --------------------------------------------------------------------------
+   Surfaces — glass, gradient border, lift
+   --------------------------------------------------------------------------
+   `.ux-card` is the one card on the site. It composites rather than competes:
+   it can sit on the white page, or on an aurora section, and the `--glass`
+   custom property is the only thing that changes between those two places.
+   -------------------------------------------------------------------------- */
+
+.ux-card {
+    background: var(--ux-surface);
+    border: 1px solid var(--ux-hairline);
+    border-radius: var(--ux-radius);
+    box-shadow: var(--ux-shadow-2);
+    position: relative;
+    transition:
+        transform var(--ux-dur) var(--ux-ease-out),
+        box-shadow var(--ux-dur) var(--ux-ease-out),
+        border-color var(--ux-dur) var(--ux-ease-out);
+}
+
+/* Frosted variant, for use over an aurora. */
+.ux-card--glass {
+    background: var(--ux-glass);
+    backdrop-filter: blur(18px) saturate(160%);
+    border-color: var(--ux-glass-line);
+    box-shadow: var(--ux-shadow-3);
+}
+
+/*
+ * Gradient border without a second element: a 1px transparent border, and a
+ * background gradient clipped to just the padding-box edge using a double
+ * background. Cheaper and more robust than a pseudo-element, and it keeps the
+ * border-radius.
+ */
+.ux-card--edge::before {
+    background: var(--ux-grad-brand);
+    border-radius: inherit;
+    content: '';
+    inset: 0;
+    opacity: 0;
+    padding: 1px;
+    pointer-events: none;
+    position: absolute;
+    transition: opacity var(--ux-dur) var(--ux-ease-out);
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+}
+
+.ux-card--edge:hover::before,
+.ux-card--edge:focus-within::before {
+    opacity: 1;
+}
+
+/* Hover lift. `--lift` lets a dense grid use a smaller hop than a hero card
+   without a separate rule. */
+@media (prefers-reduced-motion: no-preference) {
+    .ux-card--lift:hover {
+        box-shadow: var(--ux-shadow-4);
+        transform: translateY(calc(-1 * var(--ux-lift, 6px)));
+    }
+}
+
+/* 3D tilt, driven by ux.js through these two custom properties. Only
+   transform-related properties change, so the tilt cannot trigger layout. */
+.ux-tilt {
+    transform: perspective(900px)
+        rotateX(var(--tilt-x, 0deg))
+        rotateY(var(--tilt-y, 0deg))
+        translateZ(0);
+    transition: transform var(--ux-dur) var(--ux-ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-tilt.ux-tilt-active {
+        transition: transform 90ms linear;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   --------------------------------------------------------------------------
+   One primary treatment. The shine sweep is a pseudo-element translated across
+   the button on hover; it is `overflow: hidden` clipped so it never spills.
+   -------------------------------------------------------------------------- */
+
+.ux-btn {
+    align-items: center;
+    border: 0;
+    border-radius: 999px;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    gap: .6em;
+    justify-content: center;
+    overflow: hidden;
+    padding: .85em 1.9em;
+    position: relative;
+    text-decoration: none;
+    transition:
+        transform var(--ux-dur) var(--ux-ease-out),
+        box-shadow var(--ux-dur) var(--ux-ease-out);
+
+    /* --mx/--my are written by ux.js while the pointer is over the button. They
+       default to zero, so a button that is never hovered looks and behaves
+       exactly as before. */
+    transform: translate(var(--mx, 0px), var(--my, 0px));
+}
+
+.ux-btn--primary {
+    background: var(--ux-grad-brand);
+    box-shadow: var(--ux-shadow-glow);
+}
+
+/* The sweep. Rotated so it crosses at an angle rather than sliding flat. */
+.ux-btn::after {
+    background: linear-gradient(
+        100deg,
+        transparent 20%,
+        rgb(255 255 255 / 38%) 50%,
+        transparent 80%
+    );
+    content: '';
+    inset: -50% -20%;
+    position: absolute;
+    transform: translateX(-130%) rotate(12deg);
+    transition: transform var(--ux-dur-slow) var(--ux-ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-btn:hover,
+    .ux-btn:focus-visible {
+        box-shadow: 0 14px 40px rgb(252 9 124 / 42%);
+        /* The magnetic offset is preserved and the lift is added on top, so the
+           two effects compose instead of one cancelling the other. */
+        transform: translate(var(--mx, 0px), calc(var(--my, 0px) - 3px));
+    }
+
+    .ux-btn:hover::after,
+    .ux-btn:focus-visible::after {
+        transform: translateX(130%) rotate(12deg);
+    }
+}
+
+/* Keyboard focus on a button with overflow:hidden would be clipped, so the
+   ring is drawn on a wrapper-level box-shadow instead. */
+.ux-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--arab-primary);
+}
+
+.ux-btn--ghost {
+    background: transparent;
+    border: 2px solid currentColor;
+    color: inherit;
+}
+
+.ux-btn--ghost:hover {
+    background: rgb(255 255 255 / 12%);
+    box-shadow: none;
+}
+
+/* The label sits above the sweep. */
+.ux-btn > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Scroll progress
+   --------------------------------------------------------------------------
+   A 3px bar pinned to the top of the viewport. Width is driven by a custom
+   property from ux.js; the scaleX transform is used rather than width because it
+   runs on the compositor and never triggers layout.
+   -------------------------------------------------------------------------- */
+
+.ux-progress {
+    background: var(--ux-grad-brand);
+    height: 3px;
+    inset-block-start: 0;
+    inset-inline: 0;
+    position: fixed;
+    transform: scaleX(var(--ux-progress, 0));
+    transform-origin: left center;
+    z-index: 1200;
+}
+
+/* The bar fills from the left in LTR and from the right in Arabic. */
+.rtl .ux-progress {
+    transform-origin: right center;
+}
+
+/* --------------------------------------------------------------------------
+   Marquee — an infinite logo strip
+   --------------------------------------------------------------------------
+   The track holds each logo twice and is translated by exactly -50%, so the
+   hand-off between the two halves is invisible. It pauses on hover and on
+   keyboard focus, because a scrolling strip is impossible to read otherwise.
+   -------------------------------------------------------------------------- */
+
+.ux-marquee {
+    overflow: hidden;
+    position: relative;
+}
+
+/* Fades at both edges so logos enter and leave rather than being cut off. */
+.ux-marquee::before,
+.ux-marquee::after {
+    content: '';
+    height: 100%;
+    inset-block: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 5rem;
+    z-index: 2;
+}
+
+.ux-marquee::before {
+    background: linear-gradient(to right, #fff, transparent);
+    inset-inline-start: 0;
+}
+
+.ux-marquee::after {
+    background: linear-gradient(to left, #fff, transparent);
+    inset-inline-end: 0;
+}
+
+.ux-marquee__track {
+    align-items: center;
+    display: flex;
+    gap: 2.5rem;
+    padding-block: .5rem;
+    width: max-content;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-marquee__track {
+        animation: ux-marquee var(--ux-marquee-duration, 40s) linear infinite;
+    }
+
+    .ux-marquee:hover .ux-marquee__track,
+    .ux-marquee:focus-within .ux-marquee__track {
+        animation-play-state: paused;
+    }
+
+    @keyframes ux-marquee {
+        from { transform: translateX(0); }
+        to   { transform: translateX(-50%); }
+    }
+
+    /* RTL: the strip must travel the other way, or it scrolls against reading
+       direction. The animation is reversed rather than mirrored so the timing
+       curve is identical. */
+    .rtl .ux-marquee__track {
+        animation-name: ux-marquee-rtl;
+    }
+
+    @keyframes ux-marquee-rtl {
+        from { transform: translateX(0); }
+        to   { transform: translateX(50%); }
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Stat card — the counters on the home page
+   --------------------------------------------------------------------------
+   The number is tabular and oversized so it does not reflow as it counts, and
+   the gradient rule underneath is the same one the primary button uses.
+   -------------------------------------------------------------------------- */
+
+.ux-stat {
+    background: var(--ux-surface);
+    border: 1px solid var(--ux-hairline);
+    border-radius: var(--ux-radius-lg);
+    box-shadow: var(--ux-shadow-2);
+    overflow: hidden;
+    padding: 2rem 1.5rem;
+    position: relative;
+    text-align: center;
+    transition:
+        transform var(--ux-dur) var(--ux-ease-out),
+        box-shadow var(--ux-dur) var(--ux-ease-out);
+}
+
+.ux-stat::before {
+    background: var(--ux-grad-brand);
+    border-radius: 999px;
+    content: '';
+    height: 3px;
+    inset-block-start: 0;
+    inset-inline: 22%;
+    position: absolute;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-stat:hover {
+        box-shadow: var(--ux-shadow-4);
+        transform: translateY(-6px);
+    }
+}
+
+.ux-stat__value {
+    background: var(--ux-grad-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: block;
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 3.5rem);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    letter-spacing: -.03em;
+    line-height: 1;
+    -webkit-text-fill-color: transparent;
+}
+
+.ux-stat__label {
+    color: var(--ux-ink-soft);
+    display: block;
+    font-size: .95rem;
+    margin-top: .75rem;
+}
+
+@media (forced-colors: active) {
+    .ux-stat__value {
+        background: none;
+        color: CanvasText;
+        -webkit-text-fill-color: CanvasText;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Hero
+   --------------------------------------------------------------------------
+   The 2024 hero was a photograph with text on it. This keeps the same content
+   and the same photo, but pushes it behind a colour wash so the headline stays
+   legible over any image, and gives the type room to be large.
+   -------------------------------------------------------------------------- */
+
+.ux-hero {
+    background-position: center;
+    background-size: cover;
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+}
+
+/* The wash. Two layers: a dark gradient for text contrast (WCAG-wise this is
+   what makes white-on-photo readable) and a brand tint for identity. */
+.ux-hero::before {
+    background:
+        linear-gradient(180deg, rgb(9 3 59 / 82%) 0%, rgb(37 4 73 / 70%) 55%, rgb(9 3 59 / 88%) 100%),
+        var(--ux-grad-night);
+    content: '';
+    inset: 0;
+    position: absolute;
+    z-index: 0;
+}
+
+.ux-hero > * {
+    position: relative;
+    z-index: 1;
+}
+
+.ux-hero__title {
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: clamp(2.1rem, 5.2vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -.025em;
+    line-height: 1.06;
+    margin: 0 0 1rem;
+    text-wrap: balance;
+}
+
+/* The aurora sits inside the hero and must sit between the colour wash and the
+   text, and must never intercept a click meant for a button underneath it. */
+.ux-hero > .ux-aurora {
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 1;
+}
+
+/* The content column sits above the fields. */
+.ux-hero > .container,
+.ux-hero__fade {
+    position: relative;
+    z-index: 2;
+}
+
+/* The fade into the next section. */
+.ux-hero__fade {
+    background: linear-gradient(180deg, transparent, #fff);
+    bottom: -1px;
+    height: 4rem;
+    inset-inline: 0;
+    pointer-events: none;
+    position: absolute;
+}
+
+.ux-section-lede {
+    color: var(--ux-ink-soft);
+    font-size: 1.02rem;
+    line-height: 1.65;
+    margin: .85rem 0 1.5rem;
+    max-width: 42ch;
+}
+
+/* The date line above the headline. */
+.ux-hero__eyebrow {
+    align-items: center;
+    color: var(--arab-gold);
+    display: inline-flex;
+    font-size: .95rem;
+    font-weight: 600;
+    gap: .6rem;
+    letter-spacing: .06em;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+}
+
+/* The little live dot next to the eyebrow. */
+.ux-hero__eyebrow::before {
+    background: var(--arab-gold);
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgb(249 212 100 / 70%);
+    content: '';
+    height: 8px;
+    width: 8px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-hero__eyebrow::before {
+        animation: ux-pulse 2.4s ease-out infinite;
+    }
+
+    @keyframes ux-pulse {
+        0%   { box-shadow: 0 0 0 0 rgb(249 212 100 / 60%); }
+        70%  { box-shadow: 0 0 0 14px rgb(249 212 100 / 0%); }
+        100% { box-shadow: 0 0 0 0 rgb(249 212 100 / 0%); }
+    }
+}
+
+.ux-hero__lede {
+    color: rgb(255 255 255 / 82%);
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    line-height: 1.65;
+    margin: 0 0 2rem;
+    max-width: 46ch;
+}
+
+.ux-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .9rem;
+}
+
+/* A white-on-hero secondary button, so the primary gradient button is not the
+   only way to act. */
+.ux-btn--on-dark {
+    background: rgb(255 255 255 / 12%);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgb(255 255 255 / 35%);
+    color: #fff;
+}
+
+.ux-btn--on-dark:hover {
+    background: rgb(255 255 255 / 22%);
+    box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   Inner page hero
+   --------------------------------------------------------------------------
+   The `page-hero` component every non-home page uses. Same wash treatment, so
+   moving between pages keeps the same visual key.
+   -------------------------------------------------------------------------- */
+
+.page-hero {
+    overflow: hidden;
+    position: relative;
+}
+
+.page-hero::before {
+    background:
+        linear-gradient(180deg, rgb(9 3 59 / 80%) 0%, rgb(37 4 73 / 74%) 100%),
+        var(--ux-grad-night);
+    content: '';
+    inset: 0;
+    position: absolute;
+    z-index: 0;
+}
+
+.page-hero > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* The aurora, when the page passes one. It sits between the colour wash and the
+   text, and can never intercept a click meant for a link underneath it. */
+.page-hero > .ux-aurora {
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 1;
+}
+
+.page-hero > .container { z-index: 2; }
+
+.page-hero .title {
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    letter-spacing: -.025em;
+    line-height: 1.1;
+    margin: 0;
+}
+
+/* The eyebrow reuses the hero's live-dot treatment, so the two read as one
+   component rather than as a home-page flourish pasted onto an inner page. */
+.page-hero .ux-hero__eyebrow { margin-bottom: .9rem; }
+
+/* The lede under an inner-page heading. Capped at a comfortable measure: a
+   60-word paragraph across a 1200px container is unreadable however good the
+   type is. */
+.page-hero__lede {
+    color: rgb(255 255 255 / 82%);
+    font-size: clamp(.98rem, 1.3vw, 1.1rem);
+    line-height: 1.65;
+    margin: .9rem 0 0;
+    max-width: 56ch;
+}
+
+/* Actions in the hero band. */
+.page-hero .ux-hero__actions { margin-top: 1.75rem; }
+
+/* A row of quick facts directly under the heading: dates, venue, city. The
+   point is that a visitor can answer "when and where is it" without scrolling,
+   which is the first question every one of them arrives with. */
+.page-hero__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem 1.5rem;
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+}
+
+.page-hero__facts li {
+    align-items: center;
+    color: rgb(255 255 255 / 86%);
+    display: flex;
+    font-size: .93rem;
+    font-weight: 500;
+    gap: .5rem;
+}
+
+.page-hero__facts i {
+    color: var(--arab-gold);
+    font-size: 1rem;
+}
+
+.page-hero .breadcrumb {
+    margin: 1.25rem 0 0;
+}
+
+.page-hero .breadcrumb a {
+    color: rgb(255 255 255 / 70%);
+}
+
+.page-hero .breadcrumb a:hover {
+    color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   Programme timeline
+   --------------------------------------------------------------------------
+   The programme was a table in 2024 and is a grid of time slots now. The rail
+   and the node are the two things that make a long day scannable: the eye can
+   follow the rail down and only stop at the nodes.
+   -------------------------------------------------------------------------- */
+
+.ux-timeline {
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+/* The rail. Drawn on the parent and offset to the time column with a logical
+   property, so it lands on the correct side in Arabic too. */
+.ux-timeline::before {
+    background: linear-gradient(180deg, var(--arab-primary), var(--arab-cyan));
+    border-radius: 999px;
+    content: '';
+    inset-block: 1.5rem 0;
+    inset-inline-start: 5.5rem;
+    opacity: .35;
+    position: absolute;
+    width: 2px;
+}
+
+.ux-timeline__slot {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: 4.5rem 1fr;
+    padding-block: 1.25rem;
+    position: relative;
+}
+
+.ux-timeline__time {
+    color: var(--arab-primary);
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: .95rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    line-height: 1.5;
+    padding-inline-start: 2.25rem;
+    text-align: end;
+    white-space: nowrap;
+}
+
+/* The node sits on the rail. */
+.ux-timeline__slot::before {
+    background: var(--ux-surface);
+    border: 2px solid var(--arab-primary);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px var(--ux-surface-alt);
+    content: '';
+    height: 11px;
+    inset-block-start: 1.65rem;
+    inset-inline-start: 5.5rem;
+    position: absolute;
+    transform: translateX(-50%);
+    width: 11px;
+}
+
+.rtl .ux-timeline__slot::before {
+    transform: translateX(50%);
+}
+
+.ux-timeline__body {
+    padding-inline-start: 2.25rem;
+}
+
+.ux-timeline__title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 0 .35rem;
+}
+
+.ux-timeline__meta {
+    color: var(--ux-ink-soft);
+    font-size: .875rem;
+    margin: 0;
+}
+
+@media (max-width: 575.98px) {
+    /* Below sm the two columns stop paying for themselves; the time moves above
+       the title and the rail goes away rather than being squeezed. */
+    .ux-timeline::before {
+        display: none;
+    }
+
+    .ux-timeline__slot {
+        gap: .4rem;
+        grid-template-columns: 1fr;
+    }
+
+    .ux-timeline__slot::before {
+        display: none;
+    }
+
+    .ux-timeline__time {
+        padding-inline-start: 0;
+        text-align: start;
+    }
+
+    .ux-timeline__body {
+        padding-inline-start: 0;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Tags, chips and pills
+   --------------------------------------------------------------------------
+   The small inline labels a card carries: a session format, a room name, a
+   status. One component with modifiers rather than three near-identical classes,
+   so a page cannot end up with two different-looking tags.
+   -------------------------------------------------------------------------- */
+
+.ux-tag {
+    align-items: center;
+    background: rgb(252 9 124 / 10%);
+    border-radius: 999px;
+    color: var(--arab-primary-dark);
+    display: inline-flex;
+    font-size: .75rem;
+    font-weight: 600;
+    gap: .35rem;
+    letter-spacing: .01em;
+    line-height: 1;
+    padding: .45rem .8rem;
+    white-space: nowrap;
+}
+
+/* --muted is for context rather than emphasis: a room name beside a bright
+   session-format tag must not compete with it. */
+.ux-tag--muted { background: rgb(26 10 30 / 6%); color: var(--ux-ink-soft); }
+.ux-tag--gold { background: rgb(249 212 100 / 22%); color: #6b5200; }
+.ux-tag--cyan { background: rgb(0 172 238 / 14%); color: #005b7a; }
+.ux-tag--solid { background: var(--ux-grad-brand); color: #fff; }
+
+/* A row of tags. Wraps rather than scrolls, because a horizontal scroller of
+   metadata is one more thing to discover on a phone. */
+.ux-tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+/* --------------------------------------------------------------------------
+   Section heading — eyebrow, title, lede
+   --------------------------------------------------------------------------
+   The counterpart to the hero: a heading at the top of a section needs the same
+   rhythm as the hero (small eyebrow, large title, short lede) or the page reads
+   as one hero followed by an unrelated wall of content.
+   -------------------------------------------------------------------------- */
+
+.ux-eyebrow {
+    color: var(--arab-primary);
+    display: block;
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    margin-bottom: .65rem;
+    text-transform: uppercase;
+}
+
+/* Gradient variant, for the heading that anchors a light section. */
+.ux-eyebrow--gradient {
+    background: var(--ux-grad-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+
+.ux-head__title {
+    color: var(--ux-ink);
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -.02em;
+    line-height: 1.15;
+    margin: 0;
+    text-wrap: balance;
+}
+
+.ux-head__lede {
+    color: var(--ux-ink-soft);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin: .9rem 0 0;
+    max-width: 58ch;
+}
+
+/* Centred, with the lede centred too — a left-aligned paragraph under a centred
+   heading is the commonest misalignment on a page like this. */
+.ux-head--center { margin-inline: auto; text-align: center; }
+.ux-head--center .ux-head__lede { margin-inline: auto; }
+
+/* On a dark section the ink tokens invert. One modifier rather than a second
+   set of rules per child, so a new child inherits the right colours for free. */
+.ux-head--on-dark .ux-head__title { color: #fff; }
+.ux-head--on-dark .ux-head__lede { color: rgb(255 255 255 / 76%); }
+.ux-head--on-dark .ux-eyebrow { color: var(--arab-gold); }
+
+/* --------------------------------------------------------------------------
+   Programme day switcher
+   --------------------------------------------------------------------------
+   Real links to `?day=`, styled as pills. The active day is a filled pill *and*
+   carries aria-current in the markup, so the state is never colour-only.
+   -------------------------------------------------------------------------- */
+
+.ux-day-nav { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; }
+
+.ux-day-nav__item {
+    background: var(--ux-surface);
+    border: 1px solid var(--ux-hairline);
+    border-radius: 999px;
+    color: var(--ux-ink-soft);
+    font-size: .92rem;
+    font-weight: 600;
+    padding: .7rem 1.4rem;
+    text-decoration: none;
+    transition:
+        background-color var(--ux-dur) var(--ux-ease-out),
+        border-color var(--ux-dur) var(--ux-ease-out),
+        color var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+}
+
+.ux-day-nav__item:hover {
+    border-color: var(--arab-primary);
+    color: var(--arab-primary);
+    transform: translateY(-2px);
+}
+
+.ux-day-nav__item.is-active {
+    background: var(--ux-grad-brand);
+    border-color: transparent;
+    box-shadow: var(--ux-shadow-glow);
+    color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   Person card — speakers
+   --------------------------------------------------------------------------
+   Replaces the template's `.single-speaker`. The old card put the portrait in a
+   fixed-height box with a decorative corner shape, which crops a portrait badly
+   on a narrow screen; here the media area has an intrinsic aspect ratio and the
+   whole card is one rounded surface with a hover lift.
+   -------------------------------------------------------------------------- */
+
+.ux-person {
+    background: var(--ux-surface);
+    border: 1px solid var(--ux-hairline);
+    border-radius: var(--ux-radius-lg);
+    box-shadow: var(--ux-shadow-2);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    transition:
+        box-shadow var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-person:hover {
+        box-shadow: var(--ux-shadow-4);
+        transform: translateY(-6px);
+    }
+}
+
+/* The gradient bar that replaces the template's corner shape. It reads as part
+   of the card rather than as a sticker laid over it. */
+.ux-person::before {
+    background: var(--ux-grad-brand);
+    content: '';
+    height: 3px;
+    inset-block-start: 0;
+    inset-inline: 0;
+    position: absolute;
+    transform: scaleX(0);
+    transform-origin: inline-start;
+    transition: transform var(--ux-dur-slow) var(--ux-ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-person:hover::before { transform: scaleX(1); }
+}
+
+/* A keynote carries the bar permanently, so the two tiers are distinguishable at
+   a glance without reading the label. */
+.ux-person--keynote::before { transform: scaleX(1); }
+
+.ux-person__media {
+    aspect-ratio: 1 / 1;
+    background:
+        linear-gradient(150deg, rgb(252 9 124 / 10%), rgb(91 33 182 / 12%)),
+        var(--ux-surface-alt);
+    overflow: hidden;
+    position: relative;
+}
+
+.ux-person__media img {
+    height: 100%;
+    inset: 0;
+    object-fit: cover;
+    position: absolute;
+    transition: transform var(--ux-dur-slow) var(--ux-ease-out);
+    width: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-person:hover .ux-person__media img { transform: scale(1.06); }
+}
+
+/* Initials on a tinted field, for a speaker with no portrait. Identifies the
+   person without implying a photograph exists that does not. */
+.ux-person__initials {
+    align-items: center;
+    color: var(--arab-primary);
+    display: flex;
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: clamp(2.2rem, 6vw, 3.2rem);
+    font-weight: 700;
+    height: 100%;
+    justify-content: center;
+    letter-spacing: -.02em;
+    width: 100%;
+}
+
+.ux-person__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 1.4rem 1.4rem 1.6rem;
+}
+
+.ux-person__name {
+    color: var(--ux-ink);
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.ux-person__role {
+    color: var(--arab-primary);
+    font-size: .875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin: .35rem 0 0;
+}
+
+.ux-person__org {
+    color: var(--ux-ink-soft);
+    font-size: .85rem;
+    margin: .15rem 0 0;
+}
+
+.ux-person__bio {
+    color: var(--ux-ink-soft);
+    font-size: .9rem;
+    line-height: 1.65;
+    margin: .85rem 0 0;
+}
+
+/* margin-top:auto pushes the footnote to the bottom, so a card with a biography
+   and one without still line their footers up across a grid row. */
+.ux-person__foot {
+    border-top: 1px solid var(--ux-hairline);
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+.ux-person__sessions {
+    color: var(--ux-ink-soft);
+    font-size: .82rem;
+    line-height: 1.55;
+    margin: .5rem 0 0;
+}
+
+/* A wide variant for keynotes: media on one side, text on the other, so the
+   headline act is visibly a different weight from the rest of the line-up. */
+@media (min-width: 768px) {
+    .ux-person--wide { flex-direction: row; }
+
+    .ux-person--wide .ux-person__media {
+        aspect-ratio: 4 / 3;
+        flex: 0 0 42%;
+    }
+
+    .ux-person--wide .ux-person__body {
+        justify-content: center;
+        padding: 2rem 2.2rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Feature tile
+   --------------------------------------------------------------------------
+   An icon, a title and a line of text. Used for the practical information on the
+   venue page and for the "what's included" list on the pricing page.
+
+   The icon is a rounded gradient square rather than the template's loose PNG: a
+   flat image on a light card has no relationship to the type around it.
+   -------------------------------------------------------------------------- */
+
+.ux-feature {
+    background: var(--ux-surface);
+    border: 1px solid var(--ux-hairline);
+    border-radius: var(--ux-radius);
+    box-shadow: var(--ux-shadow-1);
+    display: flex;
+    gap: 1rem;
+    height: 100%;
+    padding: 1.35rem;
+    transition:
+        box-shadow var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-feature:hover {
+        box-shadow: var(--ux-shadow-3);
+        transform: translateY(-4px);
+    }
+}
+
+/* A stacked variant, for a tile that is mostly a number or a short label. */
+.ux-feature--stacked {
+    align-items: flex-start;
+    flex-direction: column;
+    text-align: start;
+}
+
+.ux-feature__icon {
+    align-items: center;
+    background: var(--ux-grad-brand);
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgb(252 9 124 / 24%);
+    color: #fff;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 1.15rem;
+    height: 46px;
+    justify-content: center;
+    width: 46px;
+}
+
+.ux-feature__icon--gold { background: var(--ux-grad-gold); box-shadow: 0 6px 16px rgb(242 169 0 / 26%); color: #4a3400; }
+.ux-feature__icon--cool { background: var(--ux-grad-cool); box-shadow: 0 6px 16px rgb(0 172 238 / 26%); }
+
+.ux-feature__body { min-width: 0; }
+
+.ux-feature__title {
+    color: var(--ux-ink);
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: 1.02rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.ux-feature__text {
+    color: var(--ux-ink-soft);
+    font-size: .9rem;
+    line-height: 1.6;
+    margin: .35rem 0 0;
+}
+
+/* On a dark section the tile becomes glass rather than white, which is the only
+   way a white card reads correctly over a photograph. */
+.ux-section--dark .ux-feature {
+    background: var(--ux-glass);
+    border-color: var(--ux-glass-line);
+    backdrop-filter: blur(12px);
+}
+
+.ux-section--dark .ux-feature__title { color: #fff; }
+.ux-section--dark .ux-feature__text { color: rgb(255 255 255 / 78%); }
+
+/* --------------------------------------------------------------------------
+   Section band
+   --------------------------------------------------------------------------
+   The alternating background every page is built on: white, then a very light
+   tint, then white. `content-visibility:auto` on the lower bands is what keeps a
+   long page responsive on a phone — the browser skips layout and paint for a band
+   that is off-screen, which is most of the page at any moment.
+   -------------------------------------------------------------------------- */
+
+.ux-section { position: relative; }
+
+.ux-section--tint { background: var(--ux-surface-alt); }
+
+/* A soft fade into the next band rather than a hard edge. */
+.ux-section--fade-out::after {
+    background: linear-gradient(180deg, transparent, rgb(26 10 30 / 4%));
+    bottom: 0;
+    content: '';
+    height: 40%;
+    inset-inline: 0;
+    pointer-events: none;
+    position: absolute;
+}
+
+/* --------------------------------------------------------------------------
+   Check list — "what's included"
+   --------------------------------------------------------------------------
+   A tick rather than a bullet, drawn with two borders on a pseudo-element so it
+   needs no markup, no icon font and no extra request.
+   -------------------------------------------------------------------------- */
+
+.ux-checks { list-style: none; margin: 0; padding: 0; }
+
+.ux-checks__item {
+    align-items: flex-start;
+    color: var(--ux-ink-soft);
+    display: flex;
+    font-size: .92rem;
+    gap: .65rem;
+    line-height: 1.6;
+    padding-block: .35rem;
+}
+
+.ux-checks__item::before {
+    background: var(--ux-grad-brand);
+    border-radius: 50%;
+    content: '';
+    flex: 0 0 auto;
+    height: 20px;
+    margin-top: .15rem;
+    position: relative;
+    width: 20px;
+}
+
+/* The tick. `position:absolute` against the circle above, offset with logical
+   inset properties so it is centred in Arabic too. */
+.ux-checks__item::after {
+    border-block-end: 2px solid #fff;
+    border-inline-start: 2px solid #fff;
+    content: '';
+    height: 6px;
+    inset-block-start: 6px;
+    inset-inline-start: 7px;
+    position: absolute;
+    transform: rotate(-45deg);
+    width: 10px;
+}
+
+.ux-section--dark .ux-checks__item { color: rgb(255 255 255 / 84%); }
+
+/* --------------------------------------------------------------------------
+   Price card
+   --------------------------------------------------------------------------
+   Built from the ux-card surface rather than the template's `.price-card`, whose
+   coloured header band fought with the brand palette. The featured tier gets a
+   gradient ring instead of a second hue, so "recommended" is legible without
+   introducing a colour that means nothing else on the site.
+   -------------------------------------------------------------------------- */
+
+.ux-price {
+    background: var(--ux-surface);
+    border: 1px solid var(--ux-hairline);
+    border-radius: var(--ux-radius-lg);
+    box-shadow: var(--ux-shadow-2);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    padding: 2rem 1.75rem;
+    position: relative;
+    text-align: center;
+    transition:
+        box-shadow var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-price:hover {
+        box-shadow: var(--ux-shadow-4);
+        transform: translateY(-6px);
+    }
+}
+
+/* A gradient ring drawn with a doubled background: `border-color` cannot take a
+   gradient, but a background painted on the border-box and clipped to padding-box
+   can fake one exactly. */
+.ux-price--featured {
+    background:
+        linear-gradient(var(--ux-surface), var(--ux-surface)) padding-box,
+        var(--ux-grad-brand) border-box;
+    border: 2px solid transparent;
+    box-shadow: var(--ux-shadow-glow);
+}
+
+.ux-price__flag {
+    background: var(--ux-grad-brand);
+    border-radius: 999px;
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 700;
+    inset-block-start: 1.1rem;
+    inset-inline-end: 1.1rem;
+    letter-spacing: .08em;
+    padding: .4rem .85rem;
+    position: absolute;
+    text-transform: uppercase;
+}
+
+.ux-price__name {
+    color: var(--ux-ink);
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.ux-price__audience {
+    color: var(--ux-ink-soft);
+    font-size: .875rem;
+    margin: .35rem 0 0;
+}
+
+/* Tabular figures, so the amount does not shift sideways as it is formatted and
+   the row of cards keeps a common baseline. */
+.ux-price__amount {
+    color: var(--arab-primary);
+    display: block;
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: clamp(2rem, 5vw, 2.6rem);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    letter-spacing: -.03em;
+    line-height: 1.1;
+    margin: 1.1rem 0 0;
+}
+
+.ux-price__note {
+    color: var(--ux-ink-soft);
+    font-size: .8rem;
+    margin: .3rem 0 1.25rem;
+}
+
+.ux-price__foot { margin-top: auto; padding-top: 1.25rem; }
+
+/* --------------------------------------------------------------------------
+   CTA band
+   --------------------------------------------------------------------------
+   The closing call to action. A dark gradient panel with an aurora inside it, so
+   the one screen that asks for something carries the same depth as the hero
+   instead of being a flat coloured box at the bottom of the page.
+   -------------------------------------------------------------------------- */
+
+.ux-cta {
+    background: var(--ux-grad-night);
+    border-radius: var(--ux-radius-xl);
+    box-shadow: var(--ux-shadow-4);
+    color: #fff;
+    overflow: hidden;
+    padding: clamp(2.5rem, 6vw, 4rem) clamp(1.5rem, 5vw, 3.5rem);
+    position: relative;
+    text-align: center;
+}
+
+.ux-cta__title {
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: clamp(1.5rem, 3.4vw, 2.3rem);
+    font-weight: 700;
+    letter-spacing: -.02em;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.ux-cta__text {
+    color: rgb(255 255 255 / 80%);
+    line-height: 1.7;
+    margin: .9rem auto 1.75rem;
+    max-width: 52ch;
+}
+
+.ux-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .9rem;
+    justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   Contact tile
+   --------------------------------------------------------------------------
+   One way to reach the organisers. Each tile is the same shape whether it holds
+   an address, a phone number or an email, so the block reads as a list of
+   equivalent options rather than as three differently-sized boxes.
+   -------------------------------------------------------------------------- */
+
+.ux-tile { display: flex; gap: 1rem; height: 100%; }
+
+.ux-tile__icon {
+    align-items: center;
+    background: linear-gradient(150deg, rgb(252 9 124 / 12%), rgb(91 33 182 / 14%));
+    border-radius: 16px;
+    color: var(--arab-primary);
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 1.15rem;
+    height: 52px;
+    justify-content: center;
+    width: 52px;
+}
+
+.ux-tile__label {
+    color: var(--ux-ink-soft);
+    display: block;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    margin-bottom: .3rem;
+    text-transform: uppercase;
+}
+
+.ux-tile__value {
+    color: var(--ux-ink);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.ux-tile__value a { color: inherit; text-decoration: none; }
+.ux-tile__value a:hover { color: var(--arab-primary); text-decoration: underline; }
+
+/* On a dark section the tile becomes glass, matching .ux-feature. */
+.ux-section--dark .ux-tile__value { color: #fff; }
+.ux-section--dark .ux-tile__value a { color: #fff; }
+.ux-section--dark .ux-tile__label { color: var(--arab-gold); }
+.ux-section--dark .ux-tile__icon {
+    background: rgb(255 255 255 / 14%);
+    color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   Notice
+   --------------------------------------------------------------------------
+   A single line of standing information — the programme is provisional,
+   registration is closed. A left rule in a status colour rather than a filled
+   block, because it sits inside content and must not out-shout the content.
+   -------------------------------------------------------------------------- */
+
+.ux-notice {
+    align-items: flex-start;
+    background: var(--ux-surface);
+    border: 1px solid var(--ux-hairline);
+    border-inline-start: 4px solid var(--arab-primary);
+    border-radius: var(--ux-radius-sm);
+    color: var(--ux-ink-soft);
+    display: flex;
+    font-size: .92rem;
+    gap: .7rem;
+    line-height: 1.6;
+    padding: 1rem 1.15rem;
+}
+
+.ux-notice--warning { border-inline-start-color: #e0a800; background: #fffaf0; }
+.ux-notice--danger { border-inline-start-color: #dc3545; background: #fff5f6; }
+.ux-notice--success { border-inline-start-color: #1f9d55; background: #f2fbf6; }
+
+/* The icon is decorative; the wording carries the meaning. */
+.ux-notice__icon { flex: 0 0 auto; font-size: 1.1rem; line-height: 1.5; }
+
+/* --------------------------------------------------------------------------
+   Logo card — sponsors
+   --------------------------------------------------------------------------
+   A partner's mark on a white tile. Logos are transparent PNGs of wildly
+   different densities, so the tile supplies the contrast and the padding that the
+   marks themselves cannot: without it, a light-grey logo on a tinted page
+   disappears entirely.
+   -------------------------------------------------------------------------- */
+
+.ux-logo-card {
+    align-items: center;
+    background: var(--ux-surface);
+    border: 1px solid var(--ux-hairline);
+    border-radius: var(--ux-radius);
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    min-height: 120px;
+    padding: 1.25rem;
+    transition:
+        border-color var(--ux-dur) var(--ux-ease-out),
+        box-shadow var(--ux-dur) var(--ux-ease-out),
+        transform var(--ux-dur) var(--ux-ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ux-logo-card:hover {
+        border-color: rgb(252 9 124 / 35%);
+        box-shadow: var(--ux-shadow-3);
+        transform: translateY(-4px);
+    }
+}
+
+.ux-logo-card img {
+    max-height: 64px;
+    max-width: 100%;
+    object-fit: contain;
+    transition: filter var(--ux-dur) var(--ux-ease-out);
+}
+
+/* Many partner marks are dark-on-transparent; a slight desaturation makes a row
+   of them read as one set rather than as competing brands. Restored on hover. */
+@media (prefers-reduced-motion: no-preference) {
+    .ux-logo-card:hover img { filter: none; }
+}
+
+.ux-logo-card__name {
+    color: var(--ux-ink-soft);
+    font-size: .85rem;
+    font-weight: 600;
+    margin-top: .75rem;
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Empty state
+   --------------------------------------------------------------------------
+   Used wherever a real, expected set is empty — no partners announced yet, no
+   session in a slot. The illustration is an inline SVG ring so it inherits the
+   brand gradient and needs no request.
+   -------------------------------------------------------------------------- */
+
+.ux-empty {
+    align-items: center;
+    color: var(--ux-ink-soft);
+    display: flex;
+    flex-direction: column;
+    gap: .9rem;
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.ux-empty__mark {
+    align-items: center;
+    border: 2px dashed rgb(252 9 124 / 30%);
+    border-radius: 50%;
+    color: var(--arab-primary);
+    display: flex;
+    font-size: 1.5rem;
+    height: 68px;
+    justify-content: center;
+    width: 68px;
+}
+
+.ux-empty__text { margin: 0; max-width: 44ch; }
+
+/* --------------------------------------------------------------------------
+   RTL — the handful of places logical properties are not enough
+   --------------------------------------------------------------------------
+   Everything above uses inset-inline and margin-inline, which flip by themselves.
+   These three rules fix the cases where a physical value is baked into a
+   transform or a gradient, and no logical property can rescue it.
+   -------------------------------------------------------------------------- */
+
+.rtl .ux-person::before { transform-origin: right center; }
+
+/* The tick leans the other way when mirrored, otherwise it points down-left and
+   reads as a backslash. */
+.rtl .ux-checks__item::after { transform: rotate(-45deg) scaleX(-1); }
+
+.rtl .page-hero__facts i { transform: scaleX(-1); }
+
+/* --------------------------------------------------------------------------
+   Performance — the site is read on hotel and conference wifi
+   --------------------------------------------------------------------------
+   A delegate opens this page on whatever connection they have that day. Three
+   measures, all purely additive:
+
+     1. `content-visibility:auto` on the bands below the fold. The browser skips
+        layout, paint and hit-testing for anything off-screen and re-runs it the
+        moment it scrolls in. On the programme page — 43 sessions, a grid each —
+        that is most of the DOM.
+     2. `contain-intrinsic-size` gives each skipped band a placeholder height, so
+        the scrollbar does not jump as bands resolve.
+     3. Below 768px the same rule applies to individual cards, which is where a
+        phone really feels it.
+
+   Skipped deliberately: nothing here is applied to the first screen, because the
+   first screen must never wait on a heuristic.
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 768px) {
+    .ux-section--defer {
+        contain-intrinsic-size: auto 640px;
+        content-visibility: auto;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .ux-person,
+    .ux-feature,
+    .ux-price,
+    .ux-logo-card,
+    .ux-tile {
+        contain-intrinsic-size: auto 320px;
+        content-visibility: auto;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Base polish
+   --------------------------------------------------------------------------
+   Global rules that apply to every page. Deliberately late in the file: these
+   are element selectors with low specificity, and putting them after the
+   components means a component never has to fight them.
+   -------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------
+   Wiring for ux.js
+   --------------------------------------------------------------------------
+   The states the script toggles, kept together so there is one place to look
+   when asking "what does the JavaScript actually change?".
+   -------------------------------------------------------------------------- */
+
+/*
+ * Header shrink. The template's header is position:absolute over the hero, so
+ * it cannot simply gain a shadow — it needs to become a solid bar once the page
+ * has scrolled past the hero, or the links sit on a moving photograph.
+ */
+.ux-header {
+    transition:
+        background-color var(--ux-dur) var(--ux-ease-out),
+        box-shadow var(--ux-dur) var(--ux-ease-out),
+        backdrop-filter var(--ux-dur) var(--ux-ease-out);
+}
+
+.ux-header.is-scrolled {
+    backdrop-filter: blur(14px) saturate(160%);
+    background-color: rgb(255 255 255 / 92%);
+    box-shadow: var(--ux-shadow-2);
+}
+
+/* Only force the text dark when the header is over a light bar, or the links
+   vanish into the white. */
+.ux-header.is-scrolled .main-menu > li > a,
+.ux-header.is-scrolled .header-meta a {
+    color: var(--ux-ink);
+}
+
+/* A single item in the marquee. Fixed width so the doubled track lines up and
+   the -50% translation lands exactly on the seam. */
+.ux-marquee__item {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    height: 4rem;
+    justify-content: center;
+    width: 9rem;
+}
+
+.ux-marquee__item img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    opacity: .68;
+    transition: opacity var(--ux-dur) var(--ux-ease-out);
+}
+
+.ux-marquee__item:hover img {
+    opacity: 1;
+}
+
+/*
+ * Screen-reader-only. Bootstrap 5 ships `.visually-hidden`; this is the same
+ * contract under the name the layout and templates already use, so the live
+ * region works whichever one a given page happens to have.
+ */
+.sr-only {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion — the escape hatch
+   --------------------------------------------------------------------------
+   Every animation in this file is already wrapped in
+   `prefers-reduced-motion: no-preference`, so this block is belt-and-braces for
+   the JS side: it forces anything that *did* get an inline transform back to
+   rest, which matters because a revealed element must not be left translated
+   when the reveal is switched off mid-session.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* An element mid-reveal would otherwise stay at opacity 0. */
+    .ux-reveal {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .ux-tilt {
+        transform: none !important;
+    }
+
+    /* The aurora fields still paint, they just stop drifting. */
+    .ux-aurora__field {
+        transform: none !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Print
+   --------------------------------------------------------------------------
+   A programme is genuinely printed by attendees. Chrome, gradients and the
+   scroll bar are all noise on paper, and the brand wash would print as a solid
+   black block unless it is removed.
+   -------------------------------------------------------------------------- */
+
+@media print {
+    .ux-aurora,
+    .ux-aurora__field,
+    .ux-aurora__grain,
+    .ux-progress,
+    .progress-wrap,
+    .header-area,
+    .footer-area,
+    .ux-btn,
+    .ux-marquee::before,
+    .ux-marquee::after {
+        display: none !important;
+    }
+
+    .ux-hero::before,
+    .page-hero::before {
+        background: none !important;
+    }
+
+    .ux-hero,
+    .page-hero {
+        color: #000 !important;
+        background-image: none !important;
+    }
+
+    .ux-hero__title,
+    .page-hero .title {
+        color: #000 !important;
+    }
+
+    .ux-hero__lede {
+        color: #333 !important;
+    }
+
+    /* The whole grid is printed, so the single-day filter must not hide half
+       of it. */
+    .ux-timeline {
+        display: block !important;
+    }
+
+    .ux-card {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    /* The new page components print as flat blocks. A gradient border or a
+       coloured icon tells a reader on paper nothing, and the shadow only
+       smudges. */
+    .ux-person,
+    .ux-price,
+    .ux-feature,
+    .ux-logo-card,
+    .ux-cta {
+        border: 1px solid #999 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .ux-person::before,
+    .ux-price__flag,
+    .ux-feature__icon,
+    .ux-tile__icon {
+        display: none !important;
+    }
+
+    /* An empty state is noise on paper: if there is nothing to say, print the
+       heading and stop. */
+    .ux-empty {
+        padding: 1rem 0;
+    }
+
+    .ux-empty__mark { display: none !important; }
+
+    /* The gradient title is invisible in forced-colours mode and unreliable on
+       paper; restate it as ink. */
+    .ux-eyebrow--gradient,
+    .ux-stat__value,
+    .ux-price__amount {
+        background: none !important;
+        color: #000 !important;
+        -webkit-text-fill-color: #000 !important;
+    }
+
+    .ux-cta {
+        background: none !important;
+        color: #000 !important;
+    }
+
+    .ux-cta__title,
+    .ux-cta__text { color: #000 !important; }
+
+    a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: .75em;
+        word-break: break-all;
+    }
+}
+::selection {
+    background: var(--arab-primary);
+    color: #fff;
+}
+
+/* Smooth scrolling, but only when the visitor has not asked us to stop. Set on
+   `html` rather than `body` because `scroll-behavior` on body is ignored in
+   several engines when the scrolling element is the document. */
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+/* Anchored headings must not hide under the sticky header. */
+:target {
+    scroll-margin-top: 6rem;
+}
+
+/* A single, consistent focus ring. `:focus-visible` so a mouse click does not
+   leave a ring behind, but a keyboard tab always does — the ring is the only
+   thing telling a keyboard user where they are. */
+:focus-visible {
+    outline: 3px solid var(--arab-primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+/* Anchor targets offset for the same reason as :target. */
+[id] {
+    scroll-margin-top: 6rem;
+}
+
+/* Typography: tighter tracking on large display text, which is what separates
+   "a heading" from "a headline". */
+.section-title .title,
+.page-hero .title,
+.display-1 {
+    letter-spacing: -.02em;
+    line-height: 1.08;
+}
+
+/* Gradient display text, used on the hero title and section headings. */
+.ux-text-gradient {
+    background: var(--ux-grad-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    /* Fallback: if background-clip:text is unsupported the colour below wins. */
+    -webkit-text-fill-color: transparent;
+}
+
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+    .ux-text-gradient {
+        background: none;
+        color: var(--arab-primary);
+        -webkit-text-fill-color: currentColor;
+    }
+}
+
+/* Gradient text on a transparent fill is invisible to forced-colours mode and
+   to print, so it is restated as a solid colour there. */
+@media (forced-colors: active) {
+    .ux-text-gradient {
+        background: none;
+        color: CanvasText;
+        -webkit-text-fill-color: CanvasText;
+    }
+}

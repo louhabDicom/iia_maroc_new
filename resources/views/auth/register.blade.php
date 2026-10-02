@@ -19,18 +19,22 @@
 @section('description', __('register.subtitle'))
 
 @section('content')
-    <div class="mx-auto max-w-2xl">
+    {{-- A standalone form screen. The card and shell carry the layout, so the
+         heading, the form and the closing link all sit in the same column as
+         the sign-in and verification screens. --}}
+    <div class="section-padding-04">
+        <div class="container">
+            <div class="app-shell">
 
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            @lang('register.title')
-        </h1>
-        <p class="mt-2 text-slate-600 dark:text-slate-400">@lang('register.subtitle')</p>
+        <h1 class="app-title">@lang('register.title')</h1>
+        <p class="app-lede">@lang('register.subtitle')</p>
 
-        <form method="POST" action="{{ route('register.store') }}"
-              class="mt-8 space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="app-card">
+        <form method="POST" action="{{ route('register.store') }}">
             @csrf
 
-            <div class="grid gap-6 sm:grid-cols-2">
+            <div class="row g-4">
+                <div class="col-md-6">
                 <x-form.field name="first_name" :label="__('register.first_name')" required>
                     <input type="text" name="first_name" id="first_name" required
                            autocomplete="given-name"
@@ -38,7 +42,9 @@
                            @class(['input', 'input-error' => $errors->has('first_name')])
                            @if ($errors->has('first_name')) aria-invalid="true" aria-describedby="first_name-error" @endif>
                 </x-form.field>
+                </div>
 
+                <div class="col-md-6">
                 <x-form.field name="last_name" :label="__('register.last_name')" required>
                     <input type="text" name="last_name" id="last_name" required
                            autocomplete="family-name"
@@ -46,6 +52,7 @@
                            @class(['input', 'input-error' => $errors->has('last_name')])
                            @if ($errors->has('last_name')) aria-invalid="true" aria-describedby="last_name-error" @endif>
                 </x-form.field>
+                </div>
             </div>
 
             <x-form.field name="email" :label="__('register.email')" required>
@@ -88,7 +95,8 @@
                 </x-form.field>
             </div>
 
-            <div class="grid gap-6 sm:grid-cols-2">
+            <div class="row g-4">
+                <div class="col-md-6">
                 <x-form.field name="country_id" :label="__('register.country')">
                     <select name="country_id" id="country_id" class="input">
                         <option value="">@lang('misc.optional')</option>
@@ -100,16 +108,20 @@
                         @endforeach
                     </select>
                 </x-form.field>
+                </div>
 
+                <div class="col-md-6">
                 <x-form.field name="city" :label="__('register.city')">
                     <input type="text" name="city" id="city"
                            autocomplete="address-level2"
                            value="{{ old('city') }}"
                            class="input">
                 </x-form.field>
+                </div>
             </div>
 
-            <div class="grid gap-6 sm:grid-cols-2">
+            <div class="row g-4">
+                <div class="col-md-6">
                 <x-form.field name="password" :label="__('register.password')" :help="__('register.password_help')" required>
                     <input type="password" name="password" id="password" required
                            autocomplete="new-password"
@@ -117,42 +129,49 @@
                            @class(['input', 'input-error' => $errors->has('password')])
                            @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
                 </x-form.field>
+                </div>
 
+                <div class="col-md-6">
                 <x-form.field name="password_confirmation" :label="__('register.password_confirmation')" required>
                     <input type="password" name="password_confirmation" id="password_confirmation" required
                            autocomplete="new-password"
                            dir="ltr"
                            class="input">
                 </x-form.field>
+                </div>
             </div>
 
-            {{-- Consent. Checked with `required` on the input as well as validated
-                 server-side, so the error appears before the round trip and the
-                 server check is the one that actually counts. --}}
+            {{-- Consent. `required` on the input as well as validated server-side,
+                 so the error appears before the round trip and the server check
+                 is the one that actually counts. --}}
             <div>
-                <label class="flex items-start gap-3">
+                <div class="app-check">
                     <input type="checkbox" name="terms" id="terms" value="1" required
                            @checked(old('terms'))
-                           @class(['mt-1 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand', 'input-error' => $errors->has('terms')])>
-                    <span class="text-sm text-slate-700 dark:text-slate-300">
+                           @class(['input-error' => $errors->has('terms')])
+                           @if ($errors->has('terms')) aria-invalid="true" aria-describedby="terms-error" @endif>
+                    <label for="terms">
                         @lang('register.terms')
-                        <span class="text-rose-600" aria-hidden="true">*</span>
-                    </span>
-                </label>
+                        <span class="text-danger" aria-hidden="true">*</span>
+                    </label>
+                </div>
                 @error('terms')
-                    <p id="terms-error" class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p id="terms-error" class="field-error" role="alert">{{ $message }}</p>
                 @enderror
             </div>
 
-            <p class="text-xs text-slate-500 dark:text-slate-400">@lang('register.privacy')</p>
+            <p class="app-note">@lang('register.privacy')</p>
 
-            <div class="flex flex-wrap items-center gap-4">
+            <div class="d-flex flex-wrap align-items-center gap-4">
                 <button type="submit" class="btn btn-primary">@lang('register.submit')</button>
-                <p class="text-sm text-slate-600 dark:text-slate-400">
+                <p class="app-note">
                     @lang('register.have_account')
-                    <a href="{{ route('login') }}" class="font-medium text-brand hover:underline">@lang('register.login_link')</a>
+                    <a href="{{ route('login') }}" class="app-link">@lang('register.login_link')</a>
                 </p>
             </div>
         </form>
+        </div>
+            </div>
+        </div>
     </div>
 @endsection

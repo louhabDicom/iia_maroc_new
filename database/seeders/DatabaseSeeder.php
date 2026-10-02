@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\Room;
-use App\Models\Speaker;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -23,11 +20,21 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        // Order matters and is load-bearing:
+        //
+        //   EditionSeeder  creates the 2026 edition, the rooms and the tracks
+        //                   that ProgrammeSeeder resolves its room/track codes
+        //                   against, so it has to run first.
+        //   SpeakersSeeder must precede ProgrammeSeeder: the programme attaches
+        //   speakers by name and throws on an unknown name rather than silently
+        //                   dropping the session. Seeding it afterwards fails.
+        //
+        // Every one of these is idempotent (updateOrCreate, or a delete-then-
+        // rebuild for the programme), so `db:seed` can be re-run safely.
         $this->call([
             EditionSeeder::class,
-        ]);
-
-        $this->call([
+            SpeakersSeeder::class,
+            ProgrammeSeeder::class,
             DemoUserSeeder::class,
         ]);
     }

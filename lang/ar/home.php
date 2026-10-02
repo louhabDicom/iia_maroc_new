@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'stats' => [
+        'attendees' => 'المشاركون',
+        'workshops' => 'ورشات العمل',
+        'days'      => 'أيام',
+    ],
     'about_subtitle'     => 'مؤتمر لـ',
     'about_title'        => 'حول المؤتمر',
     'audience_title'     => 'الفئة المستهدفة',

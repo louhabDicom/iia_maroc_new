@@ -68,20 +68,62 @@ class Cart extends Model
 
     /**
      * Find or create the live cart for a session, discarding any expired one.
+     *
+     * Authenticated visitors get a cart keyed on their account, not on the
+     * session. Two reasons, and the second is the one that matters:
+     *
+     *  1. the checkout requires a signed-in account, so a guest's basket has
+     *     to survive the login — keying only on the session means a basket
+     *     built before signing in is orphaned at the moment it is needed;
+     *  2. a basket tied to a session disappears on a new device or a cleared
+     *     cookie, so someone who assembled a group order on their phone and
+     *     then paid from a laptop arrives at an empty basket with no
+     *     explanation.
+     *
+     * A guest still gets a session-scoped cart, because there is no account to
+     * hang it on yet.
      */
     public static function forSession(string $sessionId, ?User $user = null): self
     {
-        static::query()
-            ->forSession($sessionId)
-            ->where('expires_at', '<=', now())
-            ->delete();
+        $query = static::query();
 
-        return static::query()->firstOrCreate(
-            ['session_id' => $sessionId],
-            [
-                'user_id' => $user?->getKey(),
-                'expires_at' => now()->addMinutes((int) config('cart.ttl_minutes', 120)),
-            ],
+        $query->where(function ($q) use ($sessionId, $user): void {
+            $q->where('session_id', $sessionId);
+
+            if ($user !== null) {
+                // An account's cart is reachable from any session it was last
+                // used from, which is what makes it survive a device change.
+                $q->orWhere('user_id', $user->getKey());
+            }
+        })->where('expires_at', '<=', now())->delete();
+
+        $attributes = $user !== null
+            ? ['user_id' => $user->getKey()]
+            : ['user_id' => null];
+
+        $existing = static::query()
+            ->where('expires_at', '>', now())
+            ->when(
+                $user !== null,
+                fn ($q) => $q->where('user_id', $user->getKey()),
+                fn ($q) => $q->where('session_id', $sessionId),
+            )
+            ->first();
+
+        if ($existing !== null) {
+            // Keep the session column current so a later guest request on the
+            // same session still finds it.
+            if ($existing->session_id !== $sessionId || $existing->user_id !== ($user?->getKey())) {
+                $existing->forceFill($attributes + ['session_id' => $sessionId])->save();
+            }
+
+            return $existing;
+        }
+
+        return static::query()->create(
+            ['session_id' => $sessionId] + $attributes + [
+                'expires_at' => now()->addMinutes((int) config('conference.cart_ttl_minutes', config('cart.ttl_minutes', 120))),
+            ]
         );
     }
 }

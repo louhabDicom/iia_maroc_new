@@ -1,0 +1,291 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Payment;
+
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
+use App\Exceptions\PaymentException;
+use App\Models\Order;
+use App\Models\Payment;
+use App\Services\Registration\InvoiceService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
+
+/**
+ * Applies a verified gateway result to an order.
+ *
+ * This is the class the 2024 build most conspicuously lacked. It had a
+ * `callback.php` that wrote to `iia_condidat` — a table the conference flow
+ * never populated — so a customer could pay 7 500 MAD and the order stayed
+ * 'encours' forever, invisible to the organiser and blocking the customer from
+ * trying again.
+ *
+ * Three properties make the difference:
+ *
+ *  1. **Idempotency.** The gateway may call back more than once; CMI's own
+ *     documentation says a rejection can be followed by an acceptance for the
+ *     same order. A unique `idempotency_key` makes the second call a no-op
+ *     rather than a second capture.
+ *  2. **The state machine is enforced.** `transitionTo()` refuses an illegal
+ *     move, so a late callback cannot flip a cancelled order back to paid.
+ *  3. **Only a verified payload gets here.** The controller verifies the
+ *     signature before calling; this class never sees unverified input.
+ */
+class PaymentSettlementService
+{
+    public function __construct(
+        private readonly InvoiceService $invoices,
+    ) {}
+
+    /**
+     * Record a verified result against its order.
+     *
+     * @param  array<string, mixed>  $payload
+     *
+     * @throws PaymentException when the payload names no order we hold
+     */
+    public function settle(array $payload, VerifiedPayment $result, bool $authoritative, ?Order $order = null): Order
+    {
+        $order ??= $this->resolveOrder($payload, $result);
+
+        if ($order === null) {
+            // A correctly signed callback for an order we do not have. Logged
+            // and rejected: it is either a replay from a deleted order or a
+            // probe, and inventing an order to attach it to would be worse
+            // than recording nothing.
+            Log::warning('cmi.callback.unresolvable', [
+                'oid' => $payload['oid'] ?? null,
+                'return_code' => $result->returnCode,
+            ]);
+
+            throw PaymentException::unresolvableOrder(
+                is_string($payload['oid'] ?? null) ? $payload['oid'] : null
+            );
+        }
+
+        $idempotencyKey = $this->idempotencyKey($order, $result);
+
+        // Loaded here rather than left to be lazy-loaded further down. The
+        // notification reads `$order->user`, and a lazy load inside a
+        // notification is a query issued while the gateway is waiting for our
+        // response — and under `preventLazyLoading` it is an outright failure,
+        // so the buyer would be marked paid and never told.
+        $order->loadMissing(['user', 'edition']);
+
+        // A duplicate callback must not capture twice.
+        if (Payment::query()->where('idempotency_key', $idempotencyKey)->exists()) {
+            Log::info('cmi.callback.duplicate', [
+                'order' => $order->reference,
+                'idempotency_key' => $idempotencyKey,
+            ]);
+
+            return $order->refresh();
+        }
+
+        return DB::transaction(function () use ($order, $payload, $result, $authoritative, $idempotencyKey): Order {
+            $payment = $this->recordPayment($order, $payload, $result, $idempotencyKey);
+
+            if (! $result->isSuccessful()) {
+                $this->markFailed($order);
+
+                return $order->refresh();
+            }
+
+            // Amount cross-check, here rather than inside the driver.
+            //
+            // A signature proves the payload came from the gateway; it does
+            // not prove the gateway processed the amount *we* asked for. If the
+            // signed amount is not the order's own total, the transaction is
+            // not one we may settle — and accepting it would let a customer
+            // pay 100 MAD against a 7 500 MAD order and receive a place.
+            //
+            // Living in the settlement service rather than in CmiGateway is
+            // deliberate: a check that only the production driver performs is
+            // a check that the local rehearsal never exercises, which is how a
+            // test driver ends up validating a path the real gateway never
+            // takes.
+            if (isset($payload['amount'])) {
+                $claimed = (int) round(
+                    ((float) $payload['amount']) * (10 ** \App\Support\Money::exponent((string) $order->currency))
+                );
+
+                if ($claimed !== $order->total) {
+                    throw PaymentException::amountMismatch($order->total, $claimed);
+                }
+            }
+
+            // A non-authoritative result (the browser return) is recorded but
+            // does not settle. The server-to-server callback is the only thing
+            // that can mark an order paid, because the customer can close the
+            // browser before it arrives and a return URL can be forged.
+            if (! $authoritative) {
+                $this->markAwaitingPayment($order);
+
+                return $order->refresh();
+            }
+
+            $this->markPaid($order, $payment);
+
+            return $order->refresh();
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+
+    /**
+     * A stable key for "this gateway response for this order".
+     *
+     * Built from the transaction id where there is one, so a genuine second
+     * authorisation of the same order is still recorded; falling back to a
+     * constant means a re-sent callback for a failed attempt is collapsed,
+     * which is the case that actually happens.
+     */
+    private function idempotencyKey(Order $order, VerifiedPayment $result): string
+    {
+        $basis = ($result->transactionId !== null && $result->transactionId !== '')
+            ? $result->transactionId
+            : 'no-transaction-id';
+
+        return substr(
+            hash('sha256', $order->uuid.'|'.$basis.'|'.($result->returnCode ?? '')),
+            0,
+            64
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function recordPayment(Order $order, array $payload, VerifiedPayment $result, string $idempotencyKey): Payment
+    {
+        return Payment::query()->create([
+            'order_id' => $order->getKey(),
+            'driver' => (string) config('cmi.driver', 'test'),
+            'gateway_transaction_id' => $result->transactionId,
+            'gateway_reference' => $result->reference,
+            'idempotency_key' => $idempotencyKey,
+            'status' => $result->status,
+            'amount' => $result->amount ?? $order->total,
+            'currency' => $order->currency,
+            'currency_numeric' => $order->currency_numeric,
+            'masked_pan' => $result->maskedPan,
+            'card_brand' => $result->cardBrand,
+            'card_issuer' => $result->cardIssuer,
+            'auth_code' => $result->authCode,
+            'return_code' => $result->returnCode,
+            'error_message' => $result->errorMessage,
+            // The full payload is kept for dispute evidence. It holds no card
+            // number: CMI returns only the masked form.
+            'raw_payload' => $payload,
+            'authorised_at' => $result->isSuccessful() ? now() : null,
+            'failed_at' => $result->isSuccessful() ? null : now(),
+        ]);
+    }
+
+    private function markPaid(Order $order, Payment $payment): void
+    {
+        // Already settled by an earlier callback: do not re-run the side
+        // effects, which would send a second confirmation email.
+        if ($order->status === OrderStatus::Paid) {
+            return;
+        }
+
+        $order->transitionTo(OrderStatus::Paid);
+
+        $payment->forceFill([
+            'status' => PaymentStatus::Authorised,
+            'captured_at' => now(),
+        ])->save();
+
+        $this->issueInvoice($order);
+        $this->notify($order, 'paid');
+    }
+
+    private function markAwaitingPayment(Order $order): void
+    {
+        if ($order->status === OrderStatus::Pending) {
+            $order->transitionTo(OrderStatus::AwaitingPayment);
+        }
+    }
+
+    private function markFailed(Order $order): void
+    {
+        if ($order->status->canTransitionTo(OrderStatus::Failed)) {
+            $order->transitionTo(OrderStatus::Failed);
+        }
+
+        $this->notify($order, 'failed');
+    }
+
+    /**
+     * Allocate the invoice number and render the PDF.
+     *
+     * Failures are swallowed on purpose: the payment is settled and the money
+     * is at the bank, so a PDF renderer error must not roll that back or show
+     * the customer an error page. The order is paid and the invoice can be
+     * regenerated from the admin panel.
+     */
+    private function issueInvoice(Order $order): void
+    {
+        try {
+            $this->invoices->generate($order);
+        } catch (Throwable $e) {
+            report($e);
+
+            Log::error('invoice.generation_failed', [
+                'order' => $order->reference,
+                'reason' => $e::class,
+            ]);
+        }
+    }
+
+    private function notify(Order $order, string $event): void
+    {
+        // Queued so a slow mail server cannot hold the gateway's callback
+        // open. A failure to notify is an operator problem, not a payment
+        // problem, so it is logged and swallowed.
+        try {
+            Mail::to($order->user?->email)
+                ->queue(new \App\Mail\OrderStatusChanged($order, $event));
+        } catch (Throwable $e) {
+            report($e);
+
+            Log::error('order.notification_failed', [
+                'order' => $order->reference,
+                'event' => $event,
+            ]);
+        }
+    }
+
+    /**
+     * Find the order a verified result refers to.
+     *
+     * Resolved from the gateway's own reference rather than from a route
+     * parameter, so a callback that names an order we do not hold is
+     * recognised as such instead of being attached to whatever order the URL
+     * happened to carry.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function resolveOrder(array $payload, VerifiedPayment $result): ?Order
+    {
+        // The result's own reference first, then the payload's `oid`. The
+        // fallback matters: a driver that leaves the reference unset on a
+        // failure would otherwise make a declined payment unattributable, and
+        // the order would sit in `pending` looking abandoned.
+        $reference = $result->reference
+            ?? (is_string($payload['oid'] ?? null) ? $payload['oid'] : null);
+
+        if ($reference === null || $reference === '') {
+            return null;
+        }
+
+        return Order::query()->where('uuid', $reference)->first();
+    }
+}

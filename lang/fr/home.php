@@ -3,6 +3,16 @@
 declare(strict_types=1);
 
 return [
+    // --- Homepage counters -------------------------------------------------
+    // The three figures the brief names for 2026: 300 delegates, 18 workshops
+    // and 2 days. The values themselves come from the edition row and the
+    // published programme (see HomeController), never from here — these are
+    // only the labels.
+    'stats' => [
+        'attendees' => 'Participants',
+        'workshops' => 'Ateliers',
+        'days'      => 'Jours',
+    ],
     'about_subtitle'     => 'Une conférence pour',
     'about_title'        => 'À propos',
     'audience_title'     => 'Public cible',

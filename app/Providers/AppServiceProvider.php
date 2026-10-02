@@ -8,6 +8,9 @@ use App\Models\Edition;
 use App\Services\Otp\LogOtpChannel;
 use App\Services\Otp\SmsOtpChannel;
 use App\Services\Otp\TelegramOtpChannel;
+use App\Services\Payment\CmiGateway;
+use App\Services\Payment\PaymentGateway;
+use App\Services\Payment\TestGateway;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -32,6 +35,17 @@ class AppServiceProvider extends ServiceProvider
                 OtpDriver::Sms->value => $this->app->make(SmsOtpChannel::class),
                 OtpDriver::Telegram->value => $this->app->make(TelegramOtpChannel::class),
                 default => $this->app->make(LogOtpChannel::class),
+            };
+        });
+
+        // Likewise for the payment gateway. The checkout depends on the
+        // contract, never on a concrete driver, so PAYMENT_DRIVER=test
+        // rehearses the whole flow offline and the controller code is
+        // identical in both cases.
+        $this->app->singleton(PaymentGateway::class, function (): PaymentGateway {
+            return match (config('cmi.driver')) {
+                'cmi' => $this->app->make(CmiGateway::class),
+                default => $this->app->make(TestGateway::class),
             };
         });
     }

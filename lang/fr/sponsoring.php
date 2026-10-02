@@ -7,6 +7,7 @@ return [
     'contact'            => 'Nous contacter',
     'from'               => 'À partir de :amount',
     'no_sponsors'        => 'La liste des partenaires sera communiquée prochainement.',
+    'previous'           => 'Partenaires des éditions précédentes',
     'tier.bronze'        => 'Bronze',
     'tier.gold'          => 'Or',
     'tier.institutional' => 'Institutionnel',
