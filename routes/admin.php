@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ParticipantController;
 use App\Http\Controllers\Admin\SubmissionController;
+use App\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -88,6 +89,6 @@ Route::middleware(['auth', 'admin'])->group(function (): void {
     // admin flag, because the flag lives on the account and is not a session
     // attribute to abandon.
 
-    Route::match(['POST'], '/admin/logout', \App\Http\Controllers\SessionController::class)
+    Route::match(['POST'], '/admin/logout', SessionController::class)
         ->name('admin.logout');
 });

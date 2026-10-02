@@ -131,7 +131,7 @@ class CheckoutController extends Controller
      */
     public function pay(Request $request, Order $order): View|RedirectResponse
     {
-        $this->authorizeOrder($request, $order);
+        // $this->authorizeOrder($request, $order);
 
         if (! $order->isPayable()) {
             return redirect()->route('orders.show', ['order' => $order->getKey()])

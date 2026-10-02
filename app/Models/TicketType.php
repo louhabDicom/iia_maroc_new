@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Casts\TranslatedList;
 use App\Casts\TranslatedString;
 use App\Enums\OrderStatus;
+use App\Support\Money;
+use Database\Factories\TicketTypeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class TicketType extends Model
 {
-    /** @use HasFactory<\Database\Factories\TicketTypeFactory> */
+    /** @use HasFactory<TicketTypeFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -34,7 +37,7 @@ class TicketType extends Model
         return [
             'name' => TranslatedString::class,
             'description' => TranslatedString::class,
-            'includes' => \App\Casts\TranslatedList::class,
+            'includes' => TranslatedList::class,
             'price_member' => 'integer',
             'price_standard' => 'integer',
             'is_active' => 'boolean',
@@ -96,7 +99,7 @@ class TicketType extends Model
     /** Minor units -> localised display string, e.g. "7 500,00 MAD". */
     public function formatAmount(int $minorUnits): string
     {
-        return \App\Support\Money::format($minorUnits, $this->currency);
+        return Money::format($minorUnits, $this->currency);
     }
 
     public function priceForLabel(bool $isMember): string

@@ -2,11 +2,11 @@
    ARABCIA — application layer
    --------------------------------------------------------------------------
    Loaded AFTER assets/css/style.css, so everything here wins on equal
-   specificity. The template's own stylesheet carries the design; this file
+   specificity. The template's own stylesheet carries the layout; this file
    carries the three things the template could not know about:
 
-     1. the brand palette, taken from the 2024 build's _variables.scss
-        (primary #fc097c, gold #f9d464, cyan #00acee, deep purple #250449);
+     1. the brand palette, taken from the client's 2026 Brand Guidelines
+        (primary #2c308b, periwinkle #7384ff, terracotta #df8663);
      2. Bootstrap 5's `.btn-*`/`.form-control` re-skinned to that palette, so
         the pages that are still server-rendered forms look like the rest of
         the site rather than default blue;
@@ -19,19 +19,50 @@
    ========================================================================== */
 
 :root {
-    --arab-primary: #fc097c;
-    --arab-primary-dark: #d82e7b;
-    --arab-gold: #f9d464;
-    --arab-cyan: #00acee;
-    --arab-lime: #a1c514;
-    --arab-purple: #250449;
-    --arab-purple-deep: #09033b;
-    --arab-navy: #0063c6;
-    --arab-body: #4c4d56;
-    --arab-heading: #1a0a1e;
-    --arab-footer-bg: #13181c;
-    --arab-muted: #666;
-    --arab-gold-rgb: 161, 197, 20;
+    /* --- Core palette, per the 2026 Brand Guidelines ------------------------
+       Sampled from the guidelines' own colour page and cross-checked against
+       the pixels of the supplied logo artwork, which renders as #2c308b and
+       #424143, and the pattern, which renders as #7384ff. */
+    --arab-primary: #2c308b;        /* indigo — primary brand colour        */
+    --arab-primary-dark: #2a206f;   /* deep purple — hover / pressed states */
+    --arab-gold: #df8663;           /* terracotta — warm accent            */
+    --arab-cyan: #586be1;           /* indigo, lighter — informational      */
+    --arab-lime: #7384ff;           /* periwinkle — bright accent          */
+    --arab-purple: #2a206f;         /* deep purple — dark surfaces         */
+    --arab-purple-deep: #221f1f;    /* near-black neutral — footers, night  */
+    --arab-navy: #2c308b;           /* indigo — links and headings         */
+    --arab-body: #424143;           /* dark neutral — body copy             */
+    --arab-heading: #221f1f;        /* near-black neutral — headings       */
+    --arab-footer-bg: #221f1f;
+    --arab-muted: #6b6b6f;
+
+    /* Tinted surfaces, derived from the palette above rather than invented:
+       the accent at a low alpha reads as a pale wash of the same hue. */
+    --arab-accent-wash: #fdf4ef;    /* terracotta wash  */
+    --arab-brand-wash: #f4f5fd;     /* indigo wash       */
+    --arab-grey: #f4f5fd;
+
+    /* --- Status colours ------------------------------------------------------
+       Deliberately NOT brand colours. These signal order and payment state, and
+       the brand palette has no green: recolouring "success" to the periwinkle
+       would leave it indistinguishable from "info", which is also blue. A
+       visitor confirming a payment needs to read the state at a glance, so
+       these stay semantic and are only toned to sit beside the palette. */
+    --arab-success: #2f7a4f;
+    --arab-success-rgb: 47, 122, 79;
+    --arab-warning: #9a5b12;
+    --arb-warning-rgb: 154, 91, 18;
+    --arb-danger: #a3282f;
+    --arb-danger-rgb: 163, 40, 47;
+
+    /* --- RGB channels, for use as rgb(var(--x) / <alpha>) ------------------
+       The 2024 file called this --arab-gold-rgb but stored the *lime* channel
+       (161, 197, 20 = #a1c514) under that name, so every rule tinting with it
+       was tinting lime. These are named after what they actually hold. */
+    --arab-accent-rgb: 223, 134, 99;   /* #df8663 terracotta */
+    --arb-lime-rgb: 115, 132, 255;    /* #7384ff periwinkle */
+    --arb-cyan-rgb: 88, 107, 225;     /* #586be1 indigo     */
+    --arb-navy-rgb: 44, 48, 139;      /* #2c308b primary    */
 }
 
 /* --- Typography ---------------------------------------------------------- */
@@ -236,10 +267,12 @@ label {
     white-space: nowrap;
 }
 
-.app-badge--success { background: rgb(var(--arab-gold-rgb) / 20%); color: #3d5200; }
-.app-badge--warning { background: #fff3cd; color: #8a6100; }
-.app-badge--danger { background: rgb(220 53 69 / 12%); color: #842029; }
-.app-badge--info { background: rgb(0 172 238 / 12%); color: #005b7a; }
+/* Status badges. The tints are the status colour at a low alpha and the text is
+   the same hue darkened, so each pair holds contrast without a second colour. */
+.app-badge--success { background: rgb(var(--arab-success-rgb) / 12%); color: var(--arab-success); }
+.app-badge--warning { background: rgb(var(--arb-warning-rgb) / 12%); color: var(--arb-warning); }
+.app-badge--danger { background: rgb(var(--arb-danger-rgb) / 12%); color: var(--arb-danger); }
+.app-badge--info { background: rgb(var(--arb-cyan-rgb) / 12%); color: var(--arb-navy); }
 .app-badge--muted { background: #f0f0f2; color: var(--arab-body); }
 
 /* The selected item in a year switcher. -- */
@@ -264,9 +297,9 @@ label {
 /* A circular confirmation mark. */
 .app-tick {
     align-items: center;
-    background: rgb(var(--arab-gold-rgb) / 18%);
+    background: rgb(var(--arab-success-rgb) / 12%);
     border-radius: 50%;
-    color: #4c6b00;
+    color: var(--arab-success);
     display: inline-flex;
     height: 64px;
     justify-content: center;

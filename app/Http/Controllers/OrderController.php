@@ -122,6 +122,6 @@ class OrderController extends Controller
      */
     private function authorizeOrder(Request $request, Order $order): void
     {
-        // abort_if($order->user_id !== $request->user()?->getKey(), 403);
+        abort_if($order->user_id !== $request->user()?->getKey(), 403);
     }
 }

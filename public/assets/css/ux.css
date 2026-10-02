@@ -41,23 +41,23 @@
     --ux-shadow-2: 0 4px 12px rgb(26 10 30 / 6%), 0 12px 28px rgb(26 10 30 / 6%);
     --ux-shadow-3: 0 10px 24px rgb(26 10 30 / 8%), 0 28px 60px rgb(26 10 30 / 9%);
     --ux-shadow-4: 0 20px 44px rgb(26 10 30 / 10%), 0 48px 96px rgb(26 10 30 / 12%);
-    --ux-shadow-glow: 0 10px 34px rgb(252 9 124 / 30%);
+    --ux-shadow-glow: 0 10px 34px rgb(44 48 139 / 30%);
 
     /* Light. */
     --ux-glass: rgb(255 255 255 / 74%);
     --ux-glass-strong: rgb(255 255 255 / 88%);
     --ux-glass-line: rgb(255 255 255 / 55%);
     --ux-hairline: rgb(26 10 30 / 8%);
-    --ux-ink: #1a0a1e;
-    --ux-ink-soft: #4c4d56;
+    --ux-ink: #221f1f;
+    --ux-ink-soft: #424143;
     --ux-surface: #ffffff;
     --ux-surface-alt: #f8f6fb;
 
     /* Gradients. */
-    --ux-grad-brand: linear-gradient(115deg, #fc097c 0%, #c2189b 45%, #5b21b6 100%);
-    --ux-grad-gold: linear-gradient(115deg, #f9d464 0%, #f2a900 100%);
-    --ux-grad-cool: linear-gradient(140deg, #00acee 0%, #4b5cf0 100%);
-    --ux-grad-night: linear-gradient(160deg, #250449 0%, #09033b 55%, #14032e 100%);
+    --ux-grad-brand: linear-gradient(115deg, #2c308b 0%, #2a206f 45%, #7384ff 100%);
+    --ux-grad-gold: linear-gradient(115deg, #df8663 0%, #b9603c 100%);
+    --ux-grad-cool: linear-gradient(140deg, #7384ff 0%, #2c308b 100%);
+    --ux-grad-night: linear-gradient(160deg, #2a206f 0%, #221f1f 55%, #2c308b 100%);
 
     /* Radii. */
     --ux-radius-sm: 12px;

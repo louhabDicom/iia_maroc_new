@@ -15,7 +15,9 @@ use App\Models\SpeakerSubmission;
 use App\Models\SponsoringPackage;
 use App\Models\SponsorshipEnquiry;
 use App\Models\User;
+use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -115,7 +117,7 @@ class AdminAreaTest extends TestCase
 
     // --- Access -------------------------------------------------------------
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('guestRoutes')]
+    #[DataProvider('guestRoutes')]
     public function test_a_guest_is_sent_to_sign_in(string $uri): void
     {
         // Not 403: an unauthenticated visitor is not forbidden, they are not
@@ -127,16 +129,16 @@ class AdminAreaTest extends TestCase
     public static function guestRoutes(): array
     {
         return [
-            'dashboard'   => ['/admin'],
-            'orders'      => ['/admin/orders'],
+            'dashboard' => ['/admin'],
+            'orders' => ['/admin/orders'],
             'participants' => ['/admin/participants'],
             'submissions' => ['/admin/submissions'],
-            'enquiries'   => ['/admin/enquiries'],
-            'messages'    => ['/admin/messages'],
+            'enquiries' => ['/admin/enquiries'],
+            'messages' => ['/admin/messages'],
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('guestRoutes')]
+    #[DataProvider('guestRoutes')]
     public function test_a_signed_in_member_is_refused(string $uri): void
     {
         // 403 and not a redirect to the dashboard. Sending a member to a page
@@ -250,7 +252,7 @@ class AdminAreaTest extends TestCase
         $this->actingAs($this->admin())
             ->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee(\App\Support\Money::format(850000));
+            ->assertSee(Money::format(850000));
 
         unset($paid, $cancelled, $pending);
     }
@@ -267,7 +269,7 @@ class AdminAreaTest extends TestCase
         $this->actingAs($this->admin())
             ->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertDontSee(\App\Support\Money::format(999900));
+            ->assertDontSee(Money::format(999900));
     }
 
     // --- Orders -------------------------------------------------------------

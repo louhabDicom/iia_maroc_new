@@ -15,6 +15,7 @@ use App\Models\SpeakerSubmission;
 use App\Models\SponsorshipEnquiry;
 use App\Support\Money;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 
 /**
  * The staff overview.
@@ -111,8 +112,8 @@ class DashboardController extends Controller
         ]);
     }
 
-    /** @return \Illuminate\Support\Collection<int, object> */
-    private function salesByType(Edition $edition): \Illuminate\Support\Collection
+    /** @return Collection<int, object> */
+    private function salesByType(Edition $edition): Collection
     {
         return $edition->ticketTypes()
             ->withSum('orders', 'member_count')
@@ -140,8 +141,8 @@ class DashboardController extends Controller
             });
     }
 
-    /** @return \Illuminate\Support\Collection<string, int> */
-    private function ordersByStatus(Edition $edition): \Illuminate\Support\Collection
+    /** @return Collection<string, int> */
+    private function ordersByStatus(Edition $edition): Collection
     {
         // A single grouped query, then keyed by the enum's backing value, so
         // absent statuses are zero rather than missing from the loop.

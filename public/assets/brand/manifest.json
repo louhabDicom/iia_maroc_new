@@ -1,0 +1,146 @@
+{
+  "logo-emblem": {
+    "file": "assets/brand/logo-emblem.png",
+    "width": 180,
+    "height": 250,
+    "aspect": 0.72,
+    "pdf_points": [
+      77.35,
+      107.25
+    ],
+    "bytes": 13183,
+    "colours": [
+      "#2c2f8a",
+      "#2b2e89",
+      "#2c2e89",
+      "#2b2f89"
+    ],
+    "role": "Standalone emblem. Header, footer, favicon source."
+  },
+  "logo-english": {
+    "file": "assets/brand/logo-english.png",
+    "width": 360,
+    "height": 201,
+    "aspect": 1.791,
+    "pdf_points": [
+      155.05,
+      86.45
+    ],
+    "bytes": 23662,
+    "colours": [
+      "#2c2f8a",
+      "#424143",
+      "#414042",
+      "#2b2e89"
+    ],
+    "role": "English lockup (2nd version) for en pages."
+  },
+  "logo-french": {
+    "file": "assets/brand/logo-french.png",
+    "width": 360,
+    "height": 205,
+    "aspect": 1.7561,
+    "pdf_points": [
+      155.05,
+      87.89
+    ],
+    "bytes": 23832,
+    "colours": [
+      "#2c2f8a",
+      "#424143",
+      "#414042",
+      "#2b2e8a"
+    ],
+    "role": "French lockup (3rd version) for fr pages."
+  },
+  "logo-arabic-main": {
+    "file": "assets/brand/logo-arabic-main.png",
+    "width": 800,
+    "height": 251,
+    "aspect": 3.1873,
+    "pdf_points": [
+      346.57,
+      108.45
+    ],
+    "bytes": 38864,
+    "colours": [
+      "#2c2f8a",
+      "#424143",
+      "#414142",
+      "#414042"
+    ],
+    "role": "Arabic lockup (main version), includes dates/location."
+  },
+  "pattern-tile-a": {
+    "file": "assets/brand/pattern-tile-a.png",
+    "width": 600,
+    "height": 600,
+    "aspect": 1.0,
+    "pdf_points": [
+      165.81,
+      165.81
+    ],
+    "bytes": 13932,
+    "colours": [
+      "#7384ff",
+      "#7283ff",
+      "#7284ff",
+      "#7283fe"
+    ],
+    "role": "Pattern composite tile A - hero / section motif."
+  },
+  "pattern-tile-b": {
+    "file": "assets/brand/pattern-tile-b.png",
+    "width": 600,
+    "height": 600,
+    "aspect": 1.0,
+    "pdf_points": [
+      165.81,
+      165.81
+    ],
+    "bytes": 27674,
+    "colours": [
+      "#7384ff",
+      "#7283ff",
+      "#7284ff",
+      "#7383ff"
+    ],
+    "role": "Pattern composite tile B - hero / section motif."
+  },
+  "pattern-tile-c": {
+    "file": "assets/brand/pattern-tile-c.png",
+    "width": 600,
+    "height": 599,
+    "aspect": 1.0017,
+    "pdf_points": [
+      166.17,
+      165.81
+    ],
+    "bytes": 10287,
+    "colours": [
+      "#7384ff",
+      "#7284ff",
+      "#7383ff",
+      "#7283ff"
+    ],
+    "role": "Pattern composite tile C - hero / section motif."
+  },
+  "pattern-modules": {
+    "file": "assets/brand/pattern-modules.png",
+    "width": 560,
+    "height": 569,
+    "aspect": 0.9842,
+    "pdf_points": [
+      133.0,
+      135.0
+    ],
+    "bytes": 14659,
+    "colours": [
+      "#7384ff",
+      "#7284ff",
+      "#7383ff",
+      "#7283ff"
+    ],
+    "role": "Four-module pattern unit - compact decorative motif."
+  }
+}
