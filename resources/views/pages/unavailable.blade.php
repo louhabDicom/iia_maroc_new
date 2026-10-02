@@ -14,8 +14,12 @@
     <div class="section-padding-05">
         <div class="container">
             <div class="empty-state">
-                <img src="{{ asset('assets/images/logo/logo-iia-maroc.jpg') }}"
-                     alt="{{ __('site.host_institute_short') }}"
+                {{-- Same locale-aware lockup as the header, so the page still
+                     reads as branded while an edition is closed. --}}
+                <img src="{{ \App\Support\Brand::logoUrl() }}"
+                     width="{{ \App\Support\Brand::logo()['width'] }}"
+                     height="{{ \App\Support\Brand::logo()['height'] }}"
+                     alt="{{ __('site.site_name') }}"
                      style="max-height: 90px; margin-bottom: 24px;">
 
                 <h1 class="title" style="font-size: 34px; color: var(--arab-heading);">

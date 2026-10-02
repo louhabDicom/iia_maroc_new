@@ -37,17 +37,17 @@
 
     /* Depth. Five steps, named by size rather than by number so a rule can
        say what it means. */
-    --ux-shadow-1: 0 1px 2px rgb(26 10 30 / 5%), 0 2px 6px rgb(26 10 30 / 4%);
-    --ux-shadow-2: 0 4px 12px rgb(26 10 30 / 6%), 0 12px 28px rgb(26 10 30 / 6%);
-    --ux-shadow-3: 0 10px 24px rgb(26 10 30 / 8%), 0 28px 60px rgb(26 10 30 / 9%);
-    --ux-shadow-4: 0 20px 44px rgb(26 10 30 / 10%), 0 48px 96px rgb(26 10 30 / 12%);
+    --ux-shadow-1: 0 1px 2px rgb(34 31 31 / 5%), 0 2px 6px rgb(34 31 31 / 4%);
+    --ux-shadow-2: 0 4px 12px rgb(34 31 31 / 6%), 0 12px 28px rgb(34 31 31 / 6%);
+    --ux-shadow-3: 0 10px 24px rgb(34 31 31 / 8%), 0 28px 60px rgb(34 31 31 / 9%);
+    --ux-shadow-4: 0 20px 44px rgb(34 31 31 / 10%), 0 48px 96px rgb(34 31 31 / 12%);
     --ux-shadow-glow: 0 10px 34px rgb(44 48 139 / 30%);
 
     /* Light. */
     --ux-glass: rgb(255 255 255 / 74%);
     --ux-glass-strong: rgb(255 255 255 / 88%);
     --ux-glass-line: rgb(255 255 255 / 55%);
-    --ux-hairline: rgb(26 10 30 / 8%);
+    --ux-hairline: rgb(34 31 31 / 8%);
     --ux-ink: #221f1f;
     --ux-ink-soft: #424143;
     --ux-surface: #ffffff;
@@ -142,7 +142,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 }
 
 .ux-aurora__field--magenta {
-    background: radial-gradient(circle, #fc097c 0%, transparent 70%);
+    background: radial-gradient(circle, #7384ff 0%, transparent 70%);
     height: 44vmax;
     inset-block-start: -12vmax;
     inset-inline-start: -8vmax;
@@ -158,7 +158,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 }
 
 .ux-aurora__field--gold {
-    background: radial-gradient(circle, #f9d464 0%, transparent 70%);
+    background: radial-gradient(circle, #df8663 0%, transparent 70%);
     bottom: -14vmax;
     height: 34vmax;
     inset-inline-start: 28vmax;
@@ -346,7 +346,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 @media (prefers-reduced-motion: no-preference) {
     .ux-btn:hover,
     .ux-btn:focus-visible {
-        box-shadow: 0 14px 40px rgb(252 9 124 / 42%);
+        box-shadow: 0 14px 40px rgb(44 48 139 / 42%);
         /* The magnetic offset is preserved and the lift is added on top, so the
            two effects compose instead of one cancelling the other. */
         transform: translate(var(--mx, 0px), calc(var(--my, 0px) - 3px));
@@ -565,7 +565,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
    what makes white-on-photo readable) and a brand tint for identity. */
 .ux-hero::before {
     background:
-        linear-gradient(180deg, rgb(9 3 59 / 82%) 0%, rgb(37 4 73 / 70%) 55%, rgb(9 3 59 / 88%) 100%),
+        linear-gradient(180deg, rgb(34 31 31 / 82%) 0%, rgb(42 32 111 / 70%) 55%, rgb(34 31 31 / 88%) 100%),
         var(--ux-grad-night);
     content: '';
     inset: 0;
@@ -639,7 +639,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 .ux-hero__eyebrow::before {
     background: var(--arab-gold);
     border-radius: 50%;
-    box-shadow: 0 0 0 0 rgb(249 212 100 / 70%);
+    box-shadow: 0 0 0 0 rgb(223 134 99 / 70%);
     content: '';
     height: 8px;
     width: 8px;
@@ -651,9 +651,9 @@ html:not(.no-js) .ux-reveal.is-revealed {
     }
 
     @keyframes ux-pulse {
-        0%   { box-shadow: 0 0 0 0 rgb(249 212 100 / 60%); }
-        70%  { box-shadow: 0 0 0 14px rgb(249 212 100 / 0%); }
-        100% { box-shadow: 0 0 0 0 rgb(249 212 100 / 0%); }
+        0%   { box-shadow: 0 0 0 0 rgb(223 134 99 / 60%); }
+        70%  { box-shadow: 0 0 0 14px rgb(223 134 99 / 0%); }
+        100% { box-shadow: 0 0 0 0 rgb(223 134 99 / 0%); }
     }
 }
 
@@ -699,7 +699,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 
 .page-hero::before {
     background:
-        linear-gradient(180deg, rgb(9 3 59 / 80%) 0%, rgb(37 4 73 / 74%) 100%),
+        linear-gradient(180deg, rgb(34 31 31 / 80%) 0%, rgb(42 32 111 / 74%) 100%),
         var(--ux-grad-night);
     content: '';
     inset: 0;
@@ -906,7 +906,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 
 .ux-tag {
     align-items: center;
-    background: rgb(252 9 124 / 10%);
+    background: rgb(44 48 139 / 10%);
     border-radius: 999px;
     color: var(--arab-primary-dark);
     display: inline-flex;
@@ -921,9 +921,9 @@ html:not(.no-js) .ux-reveal.is-revealed {
 
 /* --muted is for context rather than emphasis: a room name beside a bright
    session-format tag must not compete with it. */
-.ux-tag--muted { background: rgb(26 10 30 / 6%); color: var(--ux-ink-soft); }
-.ux-tag--gold { background: rgb(249 212 100 / 22%); color: #6b5200; }
-.ux-tag--cyan { background: rgb(0 172 238 / 14%); color: #005b7a; }
+.ux-tag--muted { background: rgb(34 31 31 / 6%); color: var(--ux-ink-soft); }
+.ux-tag--gold { background: rgb(223 134 99 / 22%); color: #8a4529; }
+.ux-tag--cyan { background: rgb(88 107 225 / 14%); color: #2a206f; }
 .ux-tag--solid { background: var(--ux-grad-brand); color: #fff; }
 
 /* A row of tags. Wraps rather than scrolls, because a horizontal scroller of
@@ -1081,7 +1081,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 .ux-person__media {
     aspect-ratio: 1 / 1;
     background:
-        linear-gradient(150deg, rgb(252 9 124 / 10%), rgb(91 33 182 / 12%)),
+        linear-gradient(150deg, rgb(44 48 139 / 10%), rgb(44 48 139 / 12%)),
         var(--ux-surface-alt);
     overflow: hidden;
     position: relative;
@@ -1225,7 +1225,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
     align-items: center;
     background: var(--ux-grad-brand);
     border-radius: 14px;
-    box-shadow: 0 6px 16px rgb(252 9 124 / 24%);
+    box-shadow: 0 6px 16px rgb(44 48 139 / 24%);
     color: #fff;
     display: inline-flex;
     flex: 0 0 auto;
@@ -1236,7 +1236,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 }
 
 .ux-feature__icon--gold { background: var(--ux-grad-gold); box-shadow: 0 6px 16px rgb(242 169 0 / 26%); color: #4a3400; }
-.ux-feature__icon--cool { background: var(--ux-grad-cool); box-shadow: 0 6px 16px rgb(0 172 238 / 26%); }
+.ux-feature__icon--cool { background: var(--ux-grad-cool); box-shadow: 0 6px 16px rgb(88 107 225 / 26%); }
 
 .ux-feature__body { min-width: 0; }
 
@@ -1282,7 +1282,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 
 /* A soft fade into the next band rather than a hard edge. */
 .ux-section--fade-out::after {
-    background: linear-gradient(180deg, transparent, rgb(26 10 30 / 4%));
+    background: linear-gradient(180deg, transparent, rgb(34 31 31 / 4%));
     bottom: 0;
     content: '';
     height: 40%;
@@ -1486,7 +1486,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 
 .ux-tile__icon {
     align-items: center;
-    background: linear-gradient(150deg, rgb(252 9 124 / 12%), rgb(91 33 182 / 14%));
+    background: linear-gradient(150deg, rgb(44 48 139 / 12%), rgb(44 48 139 / 14%));
     border-radius: 16px;
     color: var(--arab-primary);
     display: inline-flex;
@@ -1583,7 +1583,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 
 @media (prefers-reduced-motion: no-preference) {
     .ux-logo-card:hover {
-        border-color: rgb(252 9 124 / 35%);
+        border-color: rgb(44 48 139 / 35%);
         box-shadow: var(--ux-shadow-3);
         transform: translateY(-4px);
     }
@@ -1630,7 +1630,7 @@ html:not(.no-js) .ux-reveal.is-revealed {
 
 .ux-empty__mark {
     align-items: center;
-    border: 2px dashed rgb(252 9 124 / 30%);
+    border: 2px dashed rgb(44 48 139 / 30%);
     border-radius: 50%;
     color: var(--arab-primary);
     display: flex;

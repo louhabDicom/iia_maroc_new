@@ -76,7 +76,9 @@ return new class extends Migration
             $table->foreignId('track_id')->nullable()->constrained('tracks')->nullOnDelete();
             $table->foreignId('room_id')->nullable()->constrained('rooms')->nullOnDelete();
 
-            // opening | keynote | plenary | panel | workshop | innovation_lab | award | break
+            // registration | opening | keynote | plenary | panel | workshop | innovation_lab | award | break
+            // Mirrors App\Enums\SessionFormat; the column is a string rather than
+            // a database enum so a new format does not require a migration.
             $table->string('format', 32)->index();
             $table->json('title');
             $table->json('summary')->nullable();

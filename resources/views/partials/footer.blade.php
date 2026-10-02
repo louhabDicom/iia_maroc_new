@@ -12,7 +12,13 @@
     copyright bar — keeps the template's class names so the stylesheet applies
     unchanged.
 --}}
-<div class="footer-section" style="background-image: url({{ asset('assets/images/bg/footer_bg1.jpg') }});">
+{{-- The 2024 footer photograph (a 337 KB navy JPEG) is retired in favour of
+     the brand's near-black surface with one pattern motif on it. The motif is
+     placed once rather than repeated: the 2026 tiles are not seamless, so a
+     repeat would show the gaps as a grid of holes. The URL comes from config
+     via Brand::pattern(); the rule itself is in public/assets/css/app.css. --}}
+<div class="footer-section arab-pattern"
+     style="--arab-pattern-image: url('{{ \App\Support\Brand::pattern('modules') }}');">
 
     {{-- Registration call to action. Rendered only while registration is open:
          a prominent invitation to a closed edition is what generates the
@@ -34,6 +40,14 @@
         <div class="container">
             <div class="row text-center">
                 <div class="col-12">
+                    {{-- Locale-aware lockup, matching the header. --}}
+                    <div class="footer-logo mb-4">
+                        <img src="{{ \App\Support\Brand::logoUrl() }}"
+                             width="{{ \App\Support\Brand::logo()['width'] }}"
+                             height="{{ \App\Support\Brand::logo()['height'] }}"
+                             alt="{{ __('site.site_name') }}">
+                    </div>
+
                     <div class="social-title">
                         <h4 class="title">@lang('footer.follow_us')</h4>
                     </div>

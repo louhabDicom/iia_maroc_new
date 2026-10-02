@@ -42,6 +42,11 @@
     --arab-brand-wash: #f4f5fd;     /* indigo wash       */
     --arab-grey: #f4f5fd;
 
+    /* Input borders. Periwinkle lightened towards white, because the full
+       strength #7384ff reads as a 2px coloured outline around every field
+       rather than as a border. Derived from the accent, not a new hue. */
+    --arab-border: #abb5ff;
+
     /* --- Status colours ------------------------------------------------------
        Deliberately NOT brand colours. These signal order and payment state, and
        the brand palette has no green: recolouring "success" to the periwinkle
@@ -112,9 +117,12 @@ body.rtl h1, body.rtl h2, body.rtl h3, body.rtl h4, body.rtl h5, body.rtl h6 {
     color: #fff;
 }
 
-/* The 2024 "JE PARTICIPE!" call to action. */
+/* The 2024 "JE PARTICIPE!" call to action.
+   Recoloured from the old lime-to-blue ramp onto periwinkle-to-indigo. The
+   'Permanent Marker' face is left as it is: swapping the typeface is a
+   typography decision, and this pass was scoped to colour. */
 .btn-join {
-    background: linear-gradient(240deg, rgba(137, 254, 85, 1) 0%, rgba(0, 92, 201, 1) 100%);
+    background: linear-gradient(240deg, #7384ff 0%, #2c308b 100%);
     border: none;
     border-radius: 30px;
     color: #fff;
@@ -124,7 +132,7 @@ body.rtl h1, body.rtl h2, body.rtl h3, body.rtl h4, body.rtl h5, body.rtl h6 {
     font-weight: 700;
     letter-spacing: .5px;
     padding: 12px 34px;
-    text-shadow: 1px 1px 1px rgba(161, 197, 20, .8);
+    text-shadow: 1px 1px 2px rgb(34 31 31 / 45%);
     transition: all .3s linear;
 }
 
@@ -134,11 +142,75 @@ body.rtl h1, body.rtl h2, body.rtl h3, body.rtl h4, body.rtl h5, body.rtl h6 {
     box-shadow: 0 10px 25px rgba(0, 0, 0, .18);
 }
 
+/* --- Brand pattern motifs --------------------------------------------------
+   The 2026 pattern tiles are NOT seamless: about 161.9pt of artwork sits on a
+   177.1pt pitch, leaving roughly 15pt of blank space. Repeating one as a
+   background therefore shows those gaps as a regular grid of holes, so every
+   rule here is background-repeat: no-repeat with a single placed instance.
+
+   The artwork URL arrives as the --arab-pattern-image custom property, set
+   inline from Brand::pattern(), which keeps the asset location in
+   config/brand.php rather than hard-coded in a stylesheet. */
+
+.arab-pattern {
+    isolation: isolate;
+    position: relative;
+}
+
+.arab-pattern::before {
+    background-image: var(--arab-pattern-image, none);
+    background-position: var(--arab-pattern-position, right -40px top 60px);
+    background-repeat: no-repeat;
+    background-size: var(--arab-pattern-size, 300px);
+    content: '';
+    height: var(--arab-pattern-height, 320px);
+    opacity: var(--arab-pattern-opacity, .09);
+    pointer-events: none;
+    position: absolute;
+    width: var(--arab-pattern-width, 300px);
+    z-index: -1;
+}
+
+/* The footer motif sits behind a full-bleed dark surface, so it is pushed
+   further out and dimmed further: at .09 over near-black it reads as texture
+   rather than as a logo someone dropped in. */
+.footer-section.arab-pattern::before {
+    --arab-pattern-opacity: .1;
+    --arab-pattern-position: right -70px top 80px;
+    --arab-pattern-size: 360px;
+}
+
+/* --- Brand logos -----------------------------------------------------------
+   style.css caps the header logo's height only. That is deliberate and is what
+   keeps each locale's lockup at its own aspect ratio: the Arabic main version
+   is about three times as wide as the Latin pair, so a fixed width would
+   stretch two locales and crop the third. The width cap below is only a guard
+   for narrow viewports, where the widest lockup at a 70px height is ~223px and
+   would otherwise push into the navigation. */
+
+.header-logo img {
+    height: auto;
+    max-width: min(100%, 230px);
+}
+
+/* style.css caps .footer-logo at 170px, but a max-width on the wrapper does
+   not clip its child: without max-width:100% the footer <img> renders at its
+   intrinsic 360px and spills out of the box. */
+
+.footer-logo {
+    margin-inline: auto;
+}
+
+.footer-logo img {
+    height: auto;
+    max-width: 100%;
+}
+
 /* --- Forms --------------------------------------------------------------- */
 
 .form-control,
 .form-select {
-    border: 2px solid #8b92ca;
+    border: 2px solid var(--arab-border);
     border-radius: 30px;
     padding: 10px 20px;
 }
@@ -146,7 +218,7 @@ body.rtl h1, body.rtl h2, body.rtl h3, body.rtl h4, body.rtl h5, body.rtl h6 {
 .form-control:focus,
 .form-select:focus {
     border-color: var(--arab-primary);
-    box-shadow: 0 0 0 .2rem rgba(252, 9, 124, .15);
+    box-shadow: 0 0 0 .2rem rgba(44, 48, 139, .15);
 }
 
 .form-label {
@@ -169,7 +241,7 @@ label {
 .form-control,
 .form-select {
     background-color: #fff;
-    border: 2px solid #8b92ca;
+    border: 2px solid var(--arab-border);
     border-radius: 30px;
     color: var(--arab-heading);
     display: block;
@@ -183,7 +255,7 @@ label {
 .form-control:focus,
 .form-select:focus {
     border-color: var(--arab-primary);
-    box-shadow: 0 0 0 .2rem rgba(252, 9, 124, .15);
+    box-shadow: 0 0 0 .2rem rgba(44, 48, 139, .15);
     outline: none;
 }
 
@@ -380,8 +452,8 @@ label {
     padding: 14px 18px;
 }
 
-.app-notice--warning { background: #fff8e6; border-inline-start-color: #d99a00; }
-.app-notice--danger { background: rgb(220 53 69 / 8%); border-inline-start-color: #dc3545; }
+.app-notice--warning { background: rgb(var(--arb-warning-rgb) / 8%); border-inline-start-color: var(--arb-warning); }
+.app-notice--danger { background: rgb(var(--arb-danger-rgb) / 8%); border-inline-start-color: var(--arb-danger); }
 
 /* Section rhythm, so the heading-to-content spacing is identical on every
    standalone screen. */
@@ -404,15 +476,15 @@ label {
 }
 
 .alert-success {
-    background-color: rgba(161, 197, 20, .15);
-    border: 1px solid rgba(161, 197, 20, .5);
-    color: #3d5200;
+    background-color: rgb(var(--arb-success-rgb) / 12%);
+    border: 1px solid rgb(var(--arb-success-rgb) / 50%);
+    color: var(--arb-success);
 }
 
 .alert-danger {
-    background-color: rgba(220, 53, 69, .1);
-    border: 1px solid rgba(220, 53, 69, .35);
-    color: #842029;
+    background-color: rgb(var(--arb-danger-rgb) / 10%);
+    border: 1px solid rgb(var(--arb-danger-rgb) / 35%);
+    color: var(--arb-danger);
 }
 
 /* --- Header links from the 2024 build ------------------------------------ */
@@ -448,7 +520,7 @@ label {
 
 /* Login / register modal, ported from includes/header.php. */
 .btn-log-inscr {
-    background: linear-gradient(240deg, rgba(137, 254, 85, 1) 0%, rgba(0, 92, 201, 1) 100%);
+    background: linear-gradient(240deg, #7384ff 0%, #2c308b 100%);
     border: none;
     border-radius: 30px;
     color: #fff;
@@ -498,7 +570,7 @@ label {
 }
 
 #staticBackdrop .form-control {
-    border: 2.5px solid #8b92ca;
+    border: 2.5px solid var(--arab-border);
 }
 
 .error_span {
@@ -589,7 +661,7 @@ label {
 
 .speaker-card__empty {
     align-items: center;
-    background: var(--arab-grey, #f1f3ff);
+    background: var(--arab-grey, #f4f5fd);
     color: var(--arab-muted);
     display: flex;
     justify-content: center;
@@ -619,14 +691,14 @@ label {
 }
 
 .page-hero::before {
-    background: linear-gradient(90deg, rgba(37, 4, 73, .82) 0%, rgba(9, 3, 59, .62) 100%);
+    background: linear-gradient(90deg, rgba(42, 32, 111, .82) 0%, rgba(34, 31, 31, .62) 100%);
     content: '';
     inset: 0;
     position: absolute;
 }
 
 .rtl .page-hero::before {
-    background: linear-gradient(270deg, rgba(37, 4, 73, .82) 0%, rgba(9, 3, 59, .62) 100%);
+    background: linear-gradient(270deg, rgba(42, 32, 111, .82) 0%, rgba(34, 31, 31, .62) 100%);
 }
 
 .page-hero > .container {
@@ -691,9 +763,9 @@ label {
    final. Amber on white rather than a modal or a badge: it is information, and
    it should read as part of the page. */
 .notice-provisional {
-    background: #fff8e6;
-    border-inline-start: 4px solid #ffae4a;
-    color: #7a4b00;
+    background: var(--arab-accent-wash);
+    border-inline-start: 4px solid var(--arab-gold);
+    color: #7a3d1f;
     margin-top: 24px;
     padding: 14px 18px;
 }
@@ -726,7 +798,7 @@ label {
 .brand-item__logo:hover { opacity: 1; }
 
 .brand-item__name {
-    color: #4c4d56;
+    color: var(--arab-body);
     font-size: 18px;
     font-weight: 600;
     text-align: center;
@@ -760,7 +832,7 @@ label {
 
 .single-speaker .speaker-thumb__initials {
     align-items: center;
-    background: #f1f3ff;
+    background: var(--arab-brand-wash);
     color: #6b6f8d;
     display: flex;
     font-size: 32px;
@@ -787,7 +859,7 @@ label {
 }
 
 .single-speaker .speaker-bio {
-    color: #4c4d56;
+    color: var(--arab-body);
     font-size: 15px;
     margin: 12px 0 0;
 }
@@ -820,7 +892,7 @@ label {
 
 .programme-day-nav .nav-link {
     border-radius: 30px;
-    color: #4c4d56;
+    color: var(--arab-body);
     cursor: pointer;
     display: block;
     font-family: 'Ubuntu', sans-serif;
@@ -832,7 +904,7 @@ label {
     transition: all .3s linear;
 }
 
-.programme-day-nav .nav-link:hover { background: #f1f3ff; }
+.programme-day-nav .nav-link:hover { background: var(--arab-brand-wash); }
 
 .programme-day-nav .nav-link.active {
     background: var(--arab-lime);
@@ -886,7 +958,7 @@ label {
 }
 
 .schedule-card__track { color: #666; font-size: 14px; }
-.schedule-card__speakers { color: #4c4d56; font-size: 15px; margin: 6px 0 0; }
+.schedule-card__speakers { color: var(--arab-body); font-size: 15px; margin: 6px 0 0; }
 
 /* --- Pricing cards ------------------------------------------------------- */
 
@@ -985,7 +1057,7 @@ label {
 .offcanvas-body .main-menu { list-style: none; margin: 0; padding: 0; }
 .offcanvas-body .main-menu > li { border-bottom: 1px solid #eee; }
 .offcanvas-body .main-menu > li > a {
-    color: #1a0a1e;
+    color: var(--arab-heading);
     display: block;
     font-family: 'Ubuntu', sans-serif;
     font-size: 17px;

@@ -96,7 +96,7 @@ class EditionSeeder extends Seeder
         }
     }
 
-private function edition2026(): void
+    private function edition2026(): void
     {
         Edition::query()->updateOrCreate(
             ['year' => 2026],
@@ -383,13 +383,16 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
             );
         }
 
-        // The brief asks for 18 workshops and 6 innovation labs across the tracks.
-        // The three workshop axes are: IA & transformation, Résilience, Auditeur de demain.
-        // We create the axes as additional track entries for reference.
+        // The programme in the 2026 dossier organises its parallel workshops
+        // into three named "parcours", and those are the three tracks the
+        // programme grid uses. `AUDIT_TRANSFO` replaces the earlier `IA_TRANSFO`
+        // code because the client's wording for that parcours is "Audit Interne
+        // et transformation", not "IA et transformation"; keeping the old code
+        // under the new name would have left the two disagreeing.
         $axes = [
-            ['code' => 'IA_TRANSFO', 'name' => ['fr' => 'IA et transformation', 'en' => 'AI and transformation', 'ar' => 'IA والتحول'], 'sort_order' => 6],
+            ['code' => 'AUDIT_TRANSFO', 'name' => ['fr' => 'Audit Interne et transformation', 'en' => 'Internal audit and transformation', 'ar' => 'التدقيق الداخلي والتحول'], 'sort_order' => 6],
             ['code' => 'RESILIENCE', 'name' => ['fr' => 'Résilience', 'en' => 'Resilience', 'ar' => 'المتانة'], 'sort_order' => 7],
-            ['code' => 'AUDITOR_DAME', 'name' => ['fr' => 'Auditeur de demain', 'en' => 'Auditor of tomorrow', 'ar' => 'المدقق القادم'], 'sort_order' => 8],
+            ['code' => 'AUDITOR_DAME', 'name' => ['fr' => 'L\'auditeur de demain', 'en' => 'The auditor of tomorrow', 'ar' => 'المدقق القادم'], 'sort_order' => 8],
         ];
 
         foreach ($axes as $axis) {
@@ -401,6 +404,21 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
                 ]),
             );
         }
+
+        // updateOrCreate() matches on the code, so renaming a code leaves the
+        // old row behind rather than replacing it: re-seeding would otherwise
+        // keep a stale IA_TRANSFO track that no session references. Only codes
+        // this method owns are considered, and only for this edition.
+        //
+        // Safe to run before ProgrammeSeeder: conference_sessions.track_id is
+        // nullOnDelete, and the programme seeder rebuilds every session anyway.
+        Track::query()
+            ->where('edition_id', $edition->getKey())
+            ->whereNotIn('code', array_merge(
+                array_column($tracks, 'code'),
+                array_column($axes, 'code'),
+            ))
+            ->delete();
     }
 
     /**

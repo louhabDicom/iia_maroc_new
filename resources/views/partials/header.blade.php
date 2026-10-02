@@ -129,9 +129,19 @@
     <div class="container">
         <div class="header-wrap">
 
+            {{-- The conference lockup for the active language, from the 2026
+                 brand guidelines. The Arabic main version is much wider than
+                 the Latin pair, so width/height come from Brand::logo() and the
+                 CSS caps the height only: capping one dimension alone keeps
+                 every version at its own aspect ratio. site_name is already
+                 "ARABCIA 2026" in all three locales, so the alt text needs no
+                 translation of its own. --}}
             <div class="header-logo">
                 <a href="{{ route('home') }}">
-                    <img src="{{ asset('assets/images/logo/logo-iia-maroc.jpg') }}" alt="{{ __('site.host_institute_short') }}">
+                    <img src="{{ \App\Support\Brand::logoUrl() }}"
+                         width="{{ \App\Support\Brand::logo()['width'] }}"
+                         height="{{ \App\Support\Brand::logo()['height'] }}"
+                         alt="{{ __('site.site_name') }}">
                 </a>
             </div>
 
