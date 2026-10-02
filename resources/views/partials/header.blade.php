@@ -118,9 +118,7 @@
                          link so it is reachable by keyboard and works with scripting
                          off, and the modal is an enhancement layered on top. --}}
                     <a href="{{ route('login') }}"
-                       class="link-log-insc"
-                       data-bs-toggle="modal"
-                       data-bs-target="#loginModal">@lang('action.login')</a>
+      >@lang('action.login')</a>
                 @endauth
             </div>
         </div>

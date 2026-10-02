@@ -1,16 +1,27 @@
 <?php
 
 use App\Http\Middleware\EnsurePhoneIsVerified;
+use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\LocalizeUrls;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        // The staff area is a second route file rather than a `prefix` on the
+        // web group. It is registered inside the same `web` middleware stack —
+        // so it gets sessions, CSRF and bindings — but it is loaded separately
+        // so that the `{locale?}` prefix applied to the public site cannot
+        // reach it by accident.
+        then: function (): void {
+            Route::middleware('web')
+                ->group(base_path('routes/admin.php'));
+        },
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -39,6 +50,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'verified.phone' => EnsurePhoneIsVerified::class,
+            'admin' => EnsureUserIsAdmin::class,
         ]);
 
         $middleware->redirectGuestsTo(fn (Request $request) => route('login'));

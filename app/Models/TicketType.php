@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Casts\TranslatedString;
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * A billable ticket type for one edition.
@@ -47,6 +49,34 @@ class TicketType extends Model
     public function edition(): BelongsTo
     {
         return $this->belongsTo(Edition::class);
+    }
+
+    /**
+     * Orders written against this tariff.
+     *
+     * The inverse of `Order::ticketType()`, and the relation the admin
+     * dashboard aggregates over to report places sold per tariff. It is scoped
+     * to paid orders rather than to all of them, because "how many places were
+     * sold" is a question about money received: a cancelled order holds no
+     * places, and counting it would report demand that does not exist.
+     *
+     * Scoping a relation rather than filtering in the caller keeps that rule in
+     * one place — a second caller that forgets the filter silently overstates
+     * sales, which is exactly the kind of number nobody audits until it is
+     * wrong.
+     *
+     * @return HasMany<Order, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class)
+            ->where('status', OrderStatus::Paid);
+    }
+
+    /** @return HasMany<OrderItem, $this> */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
     }
 
     /** @param  Builder<TicketType>  $query */

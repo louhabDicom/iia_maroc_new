@@ -91,4 +91,27 @@ class SpeakerSubmission extends Model
             'review_notes' => $notes,
         ])->save();
     }
+
+    /**
+     * Badge colour for a status.
+     *
+     * Mirrors `OrderStatus::colour()`, and exists for the same reason: the
+     * reviewer queue is scanned for the one thing that needs attention, and
+     * colour is the fastest signal available. Kept here rather than in the
+     * admin view so the mapping is a property of the state, not of the screen
+     * that happens to show it.
+     *
+     * Unknown statuses fall through to `muted` rather than throwing. The column
+     * is a plain string with no foreign key, so a status written by hand or by
+     * an older release must render as something rather than 500 the queue.
+     */
+    public function colour(): string
+    {
+        return match ($this->status) {
+            self::STATUS_ACCEPTED => 'success',
+            self::STATUS_REJECTED, self::STATUS_WITHDRAWN => 'danger',
+            self::STATUS_WAITLISTED => 'info',
+            default => 'warning',
+        };
+    }
 }

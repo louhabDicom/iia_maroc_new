@@ -45,6 +45,24 @@ class UserFactory extends Factory
             // carries the attributes the factory set, and strict mode turns a
             // read of anything else into a MissingAttributeException.
             'locale' => 'fr',
+
+            // The rest of the columns the application reads by name. Same
+            // reasoning as `locale`, applied across the row.
+            //
+            // `is_admin` is the important one: `User::isAdmin()` reads it, and
+            // `EnsureUserIsAdmin` calls that on every request to /admin. Without
+            // it here, a factory-built delegate blows up with
+            // MissingAttributeException instead of being refused — so the test
+            // that proves members cannot reach the staff area would itself 500.
+            'is_admin' => false,
+            'country_id' => null,
+            'city' => 'Rabat',
+            'organisation' => fake()->company(),
+            'job_title' => fake()->jobTitle(),
+            'avatar_path' => null,
+            'preferences' => null,
+            'last_login_at' => now(),
+            'last_verification_sent_at' => null,
         ];
     }
 

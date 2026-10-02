@@ -81,6 +81,22 @@ class ContactMessage extends Model
         ])->save();
     }
 
+    /**
+     * Badge colour for a status.
+     *
+     * Spam is red rather than muted: it is the one state an operator wants to
+     * recognise and remove from the queue at a glance, and giving it the same
+     * treatment as "in progress" would hide it among the things to work.
+     */
+    public function colour(): string
+    {
+        return match ($this->status) {
+            self::STATUS_ANSWERED => 'success',
+            self::STATUS_SPAM => 'danger',
+            default => 'warning',
+        };
+    }
+
     /** @return array<int, string> */
     public static function subjectTypes(): array
     {

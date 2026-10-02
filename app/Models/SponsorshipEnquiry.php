@@ -23,7 +23,8 @@ class SponsorshipEnquiry extends Model
 
     protected $fillable = [
         'edition_id', 'package_id', 'company', 'contact_name', 'contact_email',
-        'contact_phone', 'website_url', 'message', 'status', 'handled_by', 'handled_at',
+        'contact_phone', 'website_url', 'message', 'internal_notes',
+        'status', 'handled_by', 'handled_at',
     ];
 
     protected function casts(): array
@@ -64,5 +65,21 @@ class SponsorshipEnquiry extends Model
             'handled_by' => $handler->getKey(),
             'handled_at' => now(),
         ])->save();
+    }
+
+    /**
+     * Badge colour for a status.
+     *
+     * A pipeline rather than a verdict, so `won` is the only green and `lost`
+     * the only red; everything still in flight stays amber. See
+     * `SpeakerSubmission::colour()` for why this lives on the model.
+     */
+    public function colour(): string
+    {
+        return match ($this->status) {
+            self::STATUS_WON => 'success',
+            self::STATUS_LOST => 'danger',
+            default => 'warning',
+        };
     }
 }
