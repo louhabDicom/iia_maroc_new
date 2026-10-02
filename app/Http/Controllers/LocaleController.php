@@ -41,9 +41,9 @@ class LocaleController extends Controller
 
         $path = '/'.implode('/', $segments);
 
-        // Default language (Arabic) is unprefixed.
-        $prefix = $target->prefix();
-        $path = $prefix === null ? $path : '/'.$prefix.$path;
+        // Every language, Arabic included, gets its own prefix: /ar/programme,
+        // /fr/programme, /en/programme. The home page is /ar, /fr, /en.
+        $path = rtrim('/'.$target->value.$path, '/');
 
         // Keep the query string (e.g. ?day=2026-12-17).
         $query = $this->returnQuery($request);
