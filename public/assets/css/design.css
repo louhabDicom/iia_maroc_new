@@ -29,23 +29,46 @@
 
 :root {
     /* --- Palette ---------------------------------------------------------
-       The brand colours, unchanged from the 2026 guidelines
-       (#2a206f #2c308b #586be1 #df8663 #7384ff #221f1f #424143). The three
-       tints below are derived from those, not invented: each is the accent
-       at a low alpha, so they read as a wash of the same hue.
+       The 2026 brand palette, as specified:
+         mauve       #2a1f6e  buttons, links, content text
+         periwinkle  #7384ff  the year, and every light accent on a dark band
+         orange      #e39374  the single warm accent
+         mauve-deep  #201062  the degraded end of every dark surface
 
-       `--d-navy` is the one genuinely new value. The brand's darkest surface
-       (#221f1f) is a warm near-black, which is right for body copy but too
-       neutral to carry a footer. It is a desaturated, slightly bluer relative
-       of #2a206f so the footer belongs to the same brand. */
-    --d-navy: #1c1940;
-    --d-navy-deep: #151232;
-    --d-indigo: #2c308b;
-    --d-indigo-dark: #2a206f;
+       #2c1181 is the background mauve itself; #201062 is the same hue carried
+       down in lightness, so a gradient between them reads as one surface
+       falling into shadow rather than as two colours meeting. That pair drives
+       the hero, the "why" band, the programme and the footer, which is what
+       makes four separate bands read as one page.
+
+       `--d-lilac` is aliased to the periwinkle rather than kept as its own
+       value: the two were never distinct enough to tell apart on screen, and
+       two names for one colour is how a palette drifts. */
+    --d-indigo: #2a1f6e;
+    --d-indigo-dark: #201062;
     --d-periwinkle: #7384ff;
-    --d-lilac: #586be1;
-    --d-clay: #df8663;
-    --d-clay-dark: #c56a45;
+    --d-lilac: #7384ff;
+    --d-clay: #e39374;
+    --d-clay-dark: #c97a5b;
+
+    /* The dark surface, and the two ends of it.
+
+       `--d-navy` is the degraded mauve #201062, not a neutral: the footer sits
+       directly under the programme band and a grey-black between two mauves
+       would read as a seam.
+
+       `#2c1181` is the background mauve itself and `--d-navy-lift` names it.
+       Together with `--d-navy` it is the pair every dark band on the site is a
+       gradient between — the landing hero, the programme, the footer, and the
+       scrim over a photograph on the standalone pages. Four bands, three
+       diagonal angles, one material.
+
+       The pair lives here rather than in the landing layer because the footer
+       needs it, and a shared component reaching into a page-scoped token is a
+       coupling that only works until the second page is built. */
+    --d-navy: #201062;
+    --d-navy-deep: #190b4a;
+    --d-navy-lift: #2c1181;
 
     /* "Mint" is reserved for a single job: saying something is available or
        open. Using it for decoration would put a green next to the indigo and
@@ -53,9 +76,16 @@
     --d-mint: #2fbf9f;
     --d-mint-wash: #e8f8f4;
 
-    --d-ink: #221f1f;
-    --d-ink-soft: #424143;
-    --d-muted: #6b6b6f;
+    /* The brand carries its mauve into the text, not just the chrome: titles
+       and body copy are both the specified #2a1f6e, and hierarchy comes from
+       size, weight and the two typefaces rather than from a second ink. The
+       brief names one content colour, so `--d-ink` and `--d-ink-soft` resolve
+       to the same value on purpose — they are kept as separate names because
+       the template and the standalone pages both address them, and collapsing
+       them would be a larger refactor than a restyle. */
+    --d-ink: #2a1f6e;
+    --d-ink-soft: #2a1f6e;
+    --d-muted: #6a6386;
 
     --d-surface: #ffffff;
     --d-surface-alt: #f6f5fb;
@@ -64,6 +94,27 @@
     --d-line-strong: #cbc7de;
 
     --d-white: #fff;
+
+    /* --- Typefaces --------------------------------------------------------
+       Two families, named once.
+
+       `--f-body` is Aptos, the brand's text face. `--f-title` is Archivo, the
+       brand's display face, used at 700 (Bold) for every heading.
+
+       Neither family covers Arabic, and Arabic is this site's default
+       language, so Cairo sits after both in the stack and takes over the
+       moment a glyph is missing. Font fallback is per-character, not
+       per-block: putting the Latin face first and the Arabic face second means
+       a French heading is Archivo, an Arabic heading is Cairo, and a mixed
+       line of both is set in each without the template marking anything up.
+       The bundled AvenirArabic / THESANSARABIC faces follow Cairo so the page
+       still reads if the CDN is blocked.
+
+       Aptos ships with Microsoft 365 and is not redistributable, so it is
+       referenced by name rather than downloaded; Archivo is loaded from Google
+       Fonts in the layout alongside Cairo. */
+    --f-body: 'Aptos', 'Cairo', 'AvenirArabic', 'THESANSARABIC', system-ui, sans-serif;
+    --f-title: 'Archivo', 'Cairo', 'AvenirArabic', 'THESANSARABIC', system-ui, sans-serif;
 
     /* --- Spacing: 8px base ------------------------------------------------
        One scale, named by step rather than by pixel value, so a rule says
@@ -153,31 +204,30 @@ body {
     /* 16px floor. The template sets `body { font-size: 14px }`, which is below
        the WCAG legibility floor for body copy and the reason long paragraphs
        read as cramped. This wins because design.css loads last. */
+    font-family: var(--f-body);
     font-size: var(--t-base);
     line-height: var(--lh-body-latin);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
 }
 
-/* Arabic: the bundled faces are the fallback, Cairo is the primary (loaded in
-   the layout). The heavier weights matter more in Arabic than in Latin because
-   the script has fewer distinguishing strokes at small sizes, so a heading set
-   at 400 reads as body copy. */
+/* Arabic: the same two brand families, with Cairo behind them. The heavier
+   line-height matters more in Arabic than in Latin because the script has more
+   descenders and diacritics, and 1.75 is where mixed Arabic/Latin text stops
+   looking cramped. Latin stays at 1.65. */
 body.rtl {
-    font-family: 'Cairo', 'AvenirArabic', 'THESANSARABIC', system-ui, sans-serif;
     line-height: var(--lh-body);
-}
-
-body:not(.rtl) {
-    font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6,
 .section-title .title,
 .page-hero .title {
     color: var(--d-ink);
-    font-family: inherit;
-    font-weight: 800;
+    /* Archivo Bold. The template's own headings inherit the body face, which is
+       how the 2024 build ended up with bold Inter and no brand display
+       typography at all. */
+    font-family: var(--f-title);
+    font-weight: 700;
     letter-spacing: -.015em;
     line-height: var(--lh-heading);
     text-wrap: balance;
@@ -280,11 +330,12 @@ img {
 
 /* Latin runs inside Arabic text keep the Latin face and their own direction, so
    "ARABCIA 2026" inside an Arabic sentence is not reshaped into Arabic
-   letterforms. */
+   letterforms. Archivo first, exactly as the body stack, so a Latin run inside
+   Arabic is the same typeface the rest of the Latin site uses. */
 [lang="en"],
 [lang="fr"],
 .latin {
-    font-family: 'Inter', 'Roboto', system-ui, sans-serif;
+    font-family: var(--f-body);
     unicode-bidi: isolate;
 }
 
@@ -523,7 +574,7 @@ img {
 
 .d-header.is-stuck .d-header__bar {
     backdrop-filter: blur(16px) saturate(180%);
-    background: rgb(255 255 255 / 88%);
+background: linear-gradient(135deg, rgb(44 17 129 / 88%) 0%, rgb(32 16 98 / 88%) 100%);
     box-shadow: 0 1px 0 var(--d-line), 0 8px 24px rgb(28 25 64 / 8%);
 }
 
@@ -819,10 +870,10 @@ img {
 .d-hero__scrim {
     background:
         linear-gradient(to var(--scrim-dir, bottom),
-            rgb(21 18 50 / 92%) 0%,
-            rgb(28 25 64 / 70%) 45%,
-            rgb(44 48 139 / 40%) 100%),
-        linear-gradient(120deg, #1c1940 0%, #2a206f 55%, #2c308b 100%);
+            rgb(32 16 98 / 92%) 0%,
+            rgb(44 17 129 / 70%) 45%,
+            rgb(115 132 255 / 40%) 100%),
+        linear-gradient(120deg, var(--d-navy-lift) 0%, #26116e 55%, var(--d-indigo) 100%);
     inset: 0;
     position: absolute;
 }
@@ -1647,17 +1698,54 @@ html[dir="ltr"] {
 
 /* A high-contrast dark surface. The logo sits on a light plate because every
    logo in this brand is dark ink — on near-black it would be invisible, and a
-   footer with an invisible logo is worse than one with a boxed one. */
+   footer with an invisible logo is worse than one with a boxed one.
+
+   The footer carries the same #2c1181 → #201062 pair as the hero and the
+   programme, on a third angle (168deg). Three bands, three diagonals, one
+   material: the footer then reads as the bottom of the same page rather than as
+   a separate darker object dropped under it, and the top edge does not show a
+   seam where the programme's #201062 end meets a flat block of the same colour. */
 .d-footer {
-    background: var(--d-navy);
+    background-color: var(--d-navy-lift);
+    background-image: linear-gradient(168deg, var(--d-navy-lift) 0%, #26116e 54%, var(--d-navy) 100%);
     color: rgb(255 255 255 / 76%);
+
+    /* The aurora is an absolutely positioned child, so the footer has to be the
+       containing block for it — and `overflow: hidden` has to clip the blurred
+       fields, which are sized in vmax and would otherwise bleed into the
+       bottom of the viewport. `isolation` keeps the blend modes inside. */
+    isolation: isolate;
+    overflow: hidden;
+    position: relative;
+
     padding-block: var(--sp-8) var(--sp-5);
+}
+
+/* The aurora fills the band rather than being a sibling of it. Every other dark
+   band on the site places the component first and the content after it; here it
+   is pinned to the box so the footer can keep its own gradient underneath. */
+.d-footer > .ux-aurora {
+    inset: 0;
+    position: absolute;
+}
+
+/* Everything that is not the aurora. One stacking context, declared once. */
+.d-footer__inner {
+    position: relative;
+    z-index: 1;
 }
 
 .d-footer__grid {
     display: grid;
     gap: var(--sp-7) var(--sp-5);
     grid-template-columns: 1.4fr 1fr 1fr 1.4fr;
+}
+
+/* Grid children default to min-width:auto, so a long unbroken string — a mail
+   host, a street address in Arabic — refuses to shrink and punches a horizontal
+   scrollbar into the page. The grid is the layout; these are its items. */
+.d-footer__col {
+    min-width: 0;
 }
 
 @media (max-width: 991.98px) {
@@ -1672,11 +1760,35 @@ html[dir="ltr"] {
     }
 }
 
+/* The column heading.
+
+   Set in the same face and rhythm as `ux-head__title` on the page above, so the
+   last thing a visitor reads is the same material as the first thing they did.
+   A footer that sets its headings in a different face is what makes a page feel
+   like it has been assembled rather than designed. */
 .d-footer__title {
     color: #fff;
-    font-size: var(--t-base);
-    font-weight: 800;
+    font-family: 'Ubuntu', 'THESANSARABIC', sans-serif;
+    font-size: var(--t-lg);
+    font-weight: 700;
+    letter-spacing: -.015em;
+    line-height: 1.2;
     margin: 0 0 var(--sp-4);
+}
+
+/* The small uppercase label above each column heading, in the warm accent — the
+   same pairing `ux-head--on-dark .ux-eyebrow` uses, so the footer reads as a
+   continuation of the section pattern rather than a list that happens to be
+   dark. Reusing the token rather than a literal is what keeps it in step if the
+   accent is ever re-tuned. */
+.d-footer__eyebrow {
+    color: var(--arab-gold);
+    display: block;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    margin-block-end: var(--sp-2);
+    text-transform: uppercase;
 }
 
 .d-footer__logo {
@@ -1720,6 +1832,17 @@ html[dir="ltr"] {
     margin-block-end: var(--sp-4);
 }
 
+/* The venue name is the heading of the address block, so it is set in the
+   surface colour rather than the body colour. This is a rule rather than the
+   inline `style="color:#fff"` it replaces: an inline style cannot be restyled
+   by a theme change, cannot be seen by anyone reading the CSS to understand the
+   footer, and is invisible to the cascade. */
+.d-footer__address strong {
+    color: #fff;
+    display: inline-block;
+    margin-block-end: .2rem;
+}
+
 /* Social icons. 44px hit targets — an icon sized to look right next to text is
    roughly half the minimum comfortable touch target. */
 .d-social {
@@ -1743,6 +1866,27 @@ html[dir="ltr"] {
 
 .d-social a:hover {
     background: var(--d-periwinkle);
+}
+
+/* The social row carries its own label, because three unlabelled circles at the
+   bottom of a page are not identifiable by anyone who cannot see them. The
+   label is visible rather than screen-reader-only: the icons are marks, not
+   text, and a visitor who does not recognise a glyph has no way to recover
+   what the row is. */
+.d-footer__social {
+    margin-block-start: var(--sp-5);
+}
+
+.d-footer__social .d-social {
+    margin-block-start: var(--sp-3);
+}
+
+/* The columns arrive in sequence rather than all at once, which is what the
+   rest of the page does — 60ms apart is short enough to read as one movement
+   and long enough to notice the order. Set on the element as a custom property
+   because `ux-reveal` reads it for `transition-delay`. */
+.d-footer .ux-reveal {
+    transition-delay: var(--ux-reveal-delay, 0ms);
 }
 
 /* Newsletter. A real <label> — a placeholder is not a label, and a screen
@@ -1785,10 +1929,39 @@ html[dir="ltr"] {
     border-color: #ff9b8a;
 }
 
-.d-news__error {
-    color: #ffb4a6;
+/* The standing promise under the field — "we never share your address".
+
+   This was previously carried by `d-news__error`, which is set in a warning
+   tint. The consequence was that every footer on the site asserted its own
+   honesty in the colour reserved for a failed submission, so the reassuring
+   line and a real validation error were indistinguishable, and the only class
+   that made the form look broken was the one it always used.
+
+   Two classes, and only the second one is ever a failure. */
+.d-news__note {
+    color: rgb(255 255 255 / 52%);
     font-size: var(--t-xs);
+    line-height: 1.55;
     margin: 0;
+}
+
+/* A real rejection, announced. The rule on the inline-start edge is the same
+   device `ux-notice` uses, at footer scale. */
+.d-news__error {
+    align-items: flex-start;
+    color: #ffb4a6;
+    display: flex;
+    font-size: var(--t-xs);
+    gap: var(--sp-2);
+    line-height: 1.55;
+    margin: 0;
+}
+
+.d-news__error::before {
+    content: '\f06a';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    flex: 0 0 auto;
 }
 
 .d-footer__bottom {
@@ -1797,10 +1970,20 @@ html[dir="ltr"] {
     display: flex;
     flex-wrap: wrap;
     font-size: var(--t-sm);
-    gap: var(--sp-3);
+    gap: var(--sp-3) var(--sp-5);
     justify-content: space-between;
     margin-block-start: var(--sp-7);
     padding-block-start: var(--sp-5);
+}
+
+/* The two halves of the bottom bar centre against each other on a phone, where
+   `space-between` would otherwise push the copyright hard against one edge and
+   the links against the other with a long empty gap between them. */
+@media (max-width: 575.98px) {
+    .d-footer__bottom {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
 
 .d-footer__legal {
@@ -1810,6 +1993,21 @@ html[dir="ltr"] {
     list-style: none;
     margin: 0;
     padding: 0;
+}
+
+/* A middot between the legal links. `gap` alone leaves them as a wall of
+   undifferentiated links, which is exactly how three links that all point at
+   the same page read as three separate destinations. The separator is dropped
+   from the last item so the row does not end in punctuation. */
+.d-footer__legal li + li::before {
+    color: rgb(255 255 255 / 28%);
+    content: '\00b7';
+    margin-inline-end: var(--sp-4);
+}
+
+.d-footer__legal li {
+    display: inline-flex;
+    align-items: baseline;
 }
 
 /* --------------------------------------------------------------------------
@@ -2301,22 +2499,23 @@ body.drawer-open {
    Arabic is the default language here, so the mirror is the common case.
    -------------------------------------------------------------------------- */
 
-/* Three values this design needs that the brand palette does not have.
+/* The values this layer needs that the shared palette does not name.
 
-   `--h-amber` is the warm accent for a small label on a dark band. The existing
-   `--d-clay` is a desaturated salmon and reads as a status colour against
-   indigo; this one is light enough to stay a label.
+   `--h-amber` is the brand orange (#e39374) as a label or icon on a dark band.
+   `--h-flame` was a second, hotter orange for the programme rail; the 2026 brand
+   names exactly one warm accent, so both resolve to the same value and the rail
+   is the only place it is used at full strength.
 
-   `--h-flame` marks the programme rail. The rail is the one place a saturated
-   colour earns its place: it is the thing a delegate scans for.
-
-   `--h-deep` is the dark band surface, a shade deeper than `--d-navy` so the
-   band reads as the page's own ground rather than as the footer's. */
+   `--h-deep` / `--h-deep-2` alias the shared dark-surface pair rather than
+   restating it in hex. The landing layer keeps its own names because every rule
+   below is scoped `h-*` and reads better against the local vocabulary, but the
+   values have exactly one definition — change `--d-navy-lift` and the hero, the
+   programme and the footer all move together. */
 :root {
-    --h-amber: #f0a94b;
-    --h-flame: #f0733f;
-    --h-deep: #221d5e;
-    --h-deep-2: #322a80;
+    --h-amber: #e39374;
+    --h-flame: #e39374;
+    --h-deep: var(--d-navy-lift);
+    --h-deep-2: var(--d-navy);
     --h-mist: #f5f5fa;
     --h-hair: #ecebf6;
 }
@@ -2354,13 +2553,19 @@ body.drawer-open {
     width: 1.05em;
 }
 
+/* The solid button carries the brand mauve rather than white on the light
+   bands, so a primary action is the same colour wherever it appears. The hero
+   overrides this back to white: its band is already mauve, and a mauve button
+   on mauve is the same 1.3:1 problem one section down. */
 .h-btn--solid {
-    background: #fff;
-    border-color: #fff;
-    color: var(--d-indigo-dark);
+    background: var(--d-indigo);
+    border-color: var(--d-indigo);
+    color: #fff;
 }
 
 .h-btn--solid:hover {
+    background: var(--d-indigo-dark);
+    border-color: var(--d-indigo-dark);
     box-shadow: 0 12px 28px rgb(0 0 0 / 26%);
     transform: translateY(-2px);
 }
@@ -2387,6 +2592,28 @@ body.drawer-open {
     color: #fff;
 }
 
+/* The outlined button as a LIGHT control.
+
+   `--outline` draws itself in the brand mauve, which is right on a white band
+   and unreadable on a dark one: #2a1f6e on #2c1181 is about 1.3:1, which is why
+   the programme's "تحميل" control was effectively invisible against the
+   programme band. Every outlined button that sits on a dark band takes this
+   variant instead.
+
+   Same shape, same radius, same weight — only the ink changes. The alternative
+   (lightening the band under the button) would put a pale rectangle on a dark
+   field, which reads as a hole rather than as a control. */
+.h-btn--outline-light {
+    border-color: rgb(255 255 255 / 62%);
+    color: #fff;
+}
+
+.h-btn--outline-light:hover {
+    background: #fff;
+    border-color: #fff;
+    color: var(--h-deep);
+}
+
 .h-btn--sm {
     padding: .6rem 1.15rem;
 }
@@ -2400,16 +2627,42 @@ body.drawer-open {
     transform: none;
 }
 
+/* Inside the hero only, the solid button returns to white. The shared rule paints
+   it the brand mauve, which on the light bands is exactly right — but this band
+   is already mauve, and a #2a1f6e button on #2c1181 is the same 1.3:1 collapse.
+   White is the one fill with room to lift off this band. */
+.h-hero .h-btn--solid {
+    background: #fff;
+    border-color: #fff;
+    color: var(--h-deep);
+}
+
+.h-hero .h-btn--solid:hover {
+    background: #fff;
+    border-color: #fff;
+    color: var(--h-deep);
+}
+
+.h-hero .h-btn--ghost:hover {
+    background: #fff;
+    border-color: #fff;
+    color: var(--h-deep);
+}
+
 /* --------------------------------------------------------------------------
    Hero
    -------------------------------------------------------------------------- */
 
+/* The band is the background mauve #2c1181 falling to its degraded #201062,
+   with two periwinkle blooms on top. The gradient is the surface; the radial
+   washes are the light, and they are what stop a two-stop mauve from looking
+   like a flat rectangle of colour. */
 .h-hero {
     background-color: var(--h-deep);
     background-image:
-        radial-gradient(120% 95% at 76% 16%, rgb(115 132 255 / 40%) 0%, transparent 58%),
-        radial-gradient(85% 70% at 14% 104%, rgb(88 107 225 / 34%) 0%, transparent 62%),
-        linear-gradient(132deg, #1b1749 0%, #262060 46%, var(--h-deep-2) 100%);
+        radial-gradient(120% 95% at 76% 16%, rgb(115 132 255 / 34%) 0%, transparent 58%),
+        radial-gradient(85% 70% at 14% 104%, rgb(115 132 255 / 22%) 0%, transparent 62%),
+        linear-gradient(132deg, #2c1181 0%, #26116e 46%, var(--h-deep-2) 100%);
     color: #fff;
     overflow: hidden;
     padding-block: calc(var(--header-h) + var(--sp-8)) var(--sp-9);
@@ -2426,9 +2679,7 @@ body.drawer-open {
     z-index: 3;
 }
 
-.rtl .h-hero__inner {
-    margin-inline-start: auto;
-}
+
 
 .h-hero__logos {
     align-items: center;
@@ -2458,13 +2709,14 @@ body.drawer-open {
     text-transform: uppercase;
 }
 
-/* The year is the same hue as the band, lit from the top. A second flat colour
-   would read as a different word rather than as part of the same name. */
+/* The year, in the brand periwinkle #7384ff, as specified.
+
+   A flat fill rather than the gradient the previous build used: the brief names
+   one colour for it, and a gradient across a four-glyph run reads as a
+   different word rather than as part of the same name. The lighter tint above
+   it is what carries the depth now — the band's own bloom, not the glyph. */
 .h-hero__year {
-    background-image: linear-gradient(180deg, #cdd4ff 0%, #8e9cf5 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--d-periwinkle);
 }
 
 .h-hero__kicker {
@@ -2976,9 +3228,13 @@ body.drawer-open {
    The programme
    -------------------------------------------------------------------------- */
 
+/* The programme band, in the same two mauve ends as the hero but falling the
+   other way on the diagonal (158deg rather than 132deg). The bands are the same
+   material; reversing the angle is what stops the seam between them from reading
+   as a join, because the light arrives from a different corner at each band. */
 .h-programme {
     background-color: var(--h-deep);
-    background-image: linear-gradient(158deg, #1d1852 0%, #262060 58%, var(--h-deep-2) 100%);
+    background-image: linear-gradient(158deg, #2c1181 0%, #26116e 58%, var(--h-deep-2) 100%);
     color: #fff;
     overflow: hidden;
     padding-block: clamp(3.25rem, 7vw, 5.5rem);
@@ -3080,8 +3336,11 @@ body.drawer-open {
     transform: translateY(-2px);
 }
 
+/* The selected day. It is a lighter card on the dark band, so it lifts rather
+   than darkens: on a band that already runs #2c1181 → #201062, a further step
+   down would disappear into the band instead of reading as "you are here". */
 .h-day--current {
-    background-image: linear-gradient(168deg, #2b2569 0%, #1b1749 100%);
+    background-image: linear-gradient(168deg, var(--d-indigo) 0%, #231a5c 100%);
     color: #fff;
 }
 
@@ -3113,9 +3372,13 @@ body.drawer-open {
     overflow: hidden;
 }
 
+/* A periwinkle wash rather than the old blue-lilac, so the card's header is
+   visibly a tint of the brand rather than a leftover from the previous palette.
+   It fades to plain white at the far end so the Arabic date and time — the two
+   things a delegate actually reads here — land on a clean field. */
 .h-schedule__head {
     align-items: center;
-    background-image: linear-gradient(100deg, #e6eafa 0%, #f4f5fd 52%, #fff 100%);
+    background-image: linear-gradient(100deg, #e6e9ff 0%, #f2f4ff 52%, #fff 100%);
     display: flex;
     gap: var(--sp-4);
     padding: var(--sp-5) var(--sp-6);

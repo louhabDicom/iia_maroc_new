@@ -92,31 +92,46 @@
     {{-- ------------------------------------------------------------------
         Web fonts.
 
-        Cairo for Arabic, Inter for Latin. Cairo is loaded rather than one of
-        the bundled faces because the bundled Arabic faces are licensed for
-        display use and are weak below 20px: at body size their stroke weight
-        gives way and a paragraph reads as grey. Cairo was designed for exactly
-        this range. AvenirArabic and THESANSARABIC stay in the stack as local
-        fallbacks, so the page is still readable if the CDN is blocked — which
-        matters on a slow connection, not only an offline one.
+        Cairo for Arabic, Archivo for Latin display. Cairo is loaded rather
+        than one of the bundled faces because the bundled Arabic faces are
+        licensed for display use and are weak below 20px: at body size their
+        stroke weight gives way and a paragraph reads as grey. Cairo was
+        designed for exactly this range. AvenirArabic and THESANSARABIC stay
+        in the stack as local fallbacks, so the page is still readable if the
+        CDN is blocked — which matters on a slow connection, not only an offline
+        one.
 
-        Only the Arabic face is requested on Arabic pages and only the Latin
-        face on Latin pages. Requesting both on every page would be ~60KB of
-        font the page cannot use, blocking first paint for an Arabic visitor.
+        Aptos is the brand's body face but ships with Microsoft 365 and cannot
+        be redistributed, so it is referenced by name in `--f-body` and is not
+        requested here. A visitor without Aptos installed resolves to Cairo or
+        the bundled Arabic face; that is a documented limitation, not a bug.
 
-        `display=swap` means text paints immediately in the fallback and swaps
-        when the face arrives, rather than showing an invisible page for the
-        length of the request.
+        Archivo IS requested, in both branches, because the 2026 brand sets
+        Latin headings in Archivo Bold and an Arabic page still contains Latin
+        headings — the brand wordmark, the edition year, "ARABCIA", the Roman
+        numerals in the programme. It is also loaded on RTL pages for that same
+        reason: font fallback in `--f-title` is per-character, so a Latin run
+        inside an Arabic heading picks up Archivo without any markup. Loading it
+        only in the LTR branch would leave every Latin heading on an Arabic
+        page — the default language of this site — silently falling back.
+
+        Only Cairo is requested conditionally, on Arabic pages, where it is
+        actually used. `display=swap` means text paints immediately in the
+        fallback and swaps when the face arrives, rather than showing an
+        invisible page for the length of the request.
     ------------------------------------------------------------------ --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+    {{-- Archivo, the brand display face: 400/600/700 so bold headings are a real
+         700 weight rather than a synthesised one, which browsers render by
+         smearing the 400 and it reads muddy at heading sizes. --}}
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&display=swap">
+
     @if ($isRtl ?? false)
         <link rel="stylesheet"
               href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
-    @else
-        <link rel="stylesheet"
-              href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap">
     @endif
 
     {{-- Icon fonts: Font Awesome 5 and the template's own flaticon set. --}}

@@ -44,6 +44,7 @@
 
         <li>
             <a href="{{ route($item['route']) }}"
+                   style="color:wheat"
                class="{{ $isBar ? 'd-nav__link' : '' }}"
                @if ($isCurrent) aria-current="page" @endif>
                 {{ $item['label'] }}
@@ -61,6 +62,7 @@
         @if (Route::has('archive'))
             <li>
                 <a href="{{ route('archive') }}"
+                style="color:wheat"
                    @if (request()->routeIs('archive*')) aria-current="page" @endif>
                     {{ __('nav.archive') }}
                 </a>

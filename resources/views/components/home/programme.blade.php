@@ -180,7 +180,10 @@
             </div>
 
             <p class="h-programme__download">
-                <a href="{{ $downloadUrl }}" class="h-btn h-btn--outline">
+                {{-- `--outline-light`, not `--outline`: this control sits on the dark
+                     programme band, where the brand-mauve outline is about 1.3:1
+                     against the background and effectively invisible. --}}
+                <a href="{{ $downloadUrl }}" class="h-btn h-btn--outline-light">
                     <span>@lang('home.landing.programme.download')</span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4.5 19.5h15"></path>
