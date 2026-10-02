@@ -1,24 +1,24 @@
+{{--
+    The language control — a segmented control, AR / FR / EN.
+
+    It is a form because switching language writes to the session: a GET that
+    mutates state can be triggered by a third-party page. Each option is a real
+    <button name="switch_to">, so the request is a POST with a CSRF token and
+    the control works with scripting disabled.
+
+    The current page path is sent along (`return_path`), relative to the app
+    root, so the controller does not depend on the Referer header. The
+    controller validates it as a plain relative path before using it.
+--}}
 @props([
     'variant' => 'bar',
 ])
 
-@php
-    // The current page's path WITHOUT the install subfolder and WITHOUT the
-    // locale prefix: "programme", "speakers", or "" for the home page.
-    // request()->segments() is relative to the app root, so
-    // /iia_maroc_new/public/fr/programme gives ['fr', 'programme'].
-    $segments = request()->segments();
-    if (isset($segments[0]) && array_key_exists($segments[0], $availableLocales)) {
-        array_shift($segments);
-    }
-    $returnPath = implode('/', $segments);
-@endphp
-
 <form method="POST" action="{{ route('locale.switch') }}" class="d-lang">
     @csrf
 
-    {{-- Clean return path, so the controller never has to parse the referer. --}}
-    <input type="hidden" name="return_path" value="{{ $returnPath }}">
+    {{-- request()->path() excludes the install subfolder: "fr/programme" or "/" --}}
+    <input type="hidden" name="return_path" value="{{ request()->path() }}">
     <input type="hidden" name="return_query" value="{{ request()->getQueryString() }}">
 
     <ul class="d-lang__list">

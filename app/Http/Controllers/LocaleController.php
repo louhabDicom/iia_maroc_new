@@ -12,16 +12,16 @@ use Illuminate\Validation\Rule;
 /**
  * The language switcher.
  *
- * It changes language and returns the visitor to the page they came from, which
- * means it has to remember the current path. Which URL that is, and how it is
- * decided, is the whole of this class's responsibility — see safeReturnPath().
+ * Changes language and returns the visitor to the page they came from.
+ * The return path comes from the form itself (`return_path`, sent by the
+ * switcher partial), validated as a plain relative path. The referer is only a
+ * fallback, because behind some hosts/proxies it cannot be matched to the
+ * request host and every switch would land on the home page.
  */
 class LocaleController extends Controller
 {
     public function __invoke(Request $request): RedirectResponse
     {
-        // Validating against the enum keeps a crafted value from ever reaching
-        // the session or a translation path.
         $validated = $request->validate([
             'switch_to' => ['required', 'string', Rule::enum(Locale::class)],
         ]);
@@ -32,30 +32,25 @@ class LocaleController extends Controller
 
         $segments = array_values(array_filter(explode('/', $path), fn ($segment) => $segment !== ''));
 
-        // Strip any existing prefix, so switching does not accumulate:
-        // /fr/programme -> /en/programme, never /en/fr/programme.
-        //
-        // The WHOLE first segment is compared, not its first two letters:
-        // substr($segment, 0, 2) would read "archive" as "ar" and drop it.
+        // Strip any existing prefix: /fr/programme -> /en/programme, never
+        // /en/fr/programme. The WHOLE segment is compared, not its first two
+        // letters, so "archive" is not mistaken for "ar".
         if (isset($segments[0]) && Locale::tryFrom(strtolower($segments[0])) !== null) {
             array_shift($segments);
         }
 
         $path = '/'.implode('/', $segments);
 
-        // The default language is unprefixed, so switching *to* it strips the
-        // segment and switching *from* it adds one. `prefix()` is the single
-        // source of truth for that rule, shared with the router's own pattern.
+        // Default language (Arabic) is unprefixed.
         $prefix = $target->prefix();
         $path = $prefix === null ? $path : '/'.$prefix.$path;
 
-        // The chosen language is sticky: it survives a prefix-less URL instead
-        // of snapping back to the default on the next click.
-        //
-        // The flag is a separate top-level key, NOT `locale.explicit`. Session
-        // writes use dot notation as an array path, so `put('locale.explicit', …)`
-        // would replace the `locale` string with `['explicit' => true]` and the
-        // locale would be lost.
+        // Keep the query string (e.g. ?day=2026-12-17).
+        $query = $this->returnQuery($request);
+        if ($query !== '') {
+            $path .= '?'.$query;
+        }
+
         $request->session()->put('locale', $target->value);
         $request->session()->put('locale_explicit', true);
 
@@ -69,30 +64,20 @@ class LocaleController extends Controller
     }
 
     /**
-     * The page to return the visitor to, as a path on this site, RELATIVE to the
-     * application root.
-     *
-     * This endpoint is reachable by anyone without a session, so whatever
-     * address it redirects to is attacker-influenced. An unvalidated referer
-     * here is an open redirect, so the guard is a same-ORIGIN check done by
-     * comparing hosts (not by string-matching config('app.url')): a staging
-     * domain, www vs apex, http vs https behind a proxy or a different port are
-     * configuration differences, not attacks, and must not cost a visitor their
-     * place on the page. `$request->getHost()` is the host this request was
-     * accepted for, so a crafted `Referer: https://evil.test/` still fails.
-     *
-     * The session's stored previous URL is preferred over the Referer header,
-     * because it is recorded by this application rather than supplied by the
-     * client. Returns '/' when neither is same-origin.
-     *
-     * SUBFOLDER INSTALLS: when the app is served from a subfolder (for example
-     * https://diprojets.com/iia_maroc_new/public), the referer's path contains
-     * that subfolder. redirect()/url() add it back themselves, so it is removed
-     * here — otherwise it is doubled: /iia_maroc_new/public/iia_maroc_new/public.
-     * On a domain root the base path is empty and nothing changes.
+     * The page to return to, as a path RELATIVE to the application root
+     * (no install subfolder, so redirect() can add it exactly once).
      */
     private function safeReturnPath(Request $request): string
     {
+        // 1. The path the form sent. Accept only a plain relative path: no
+        //    scheme, no host, no "//", no backslash, no "..".
+        $sent = $request->input('return_path');
+
+        if (is_string($sent) && $this->isPlainPath($sent)) {
+            return '/'.ltrim($sent, '/');
+        }
+
+        // 2. Fallback: the stored previous URL / referer, same host only.
         $candidates = array_filter([
             $request->hasSession() ? $request->session()->previousUrl() : null,
             $request->headers->get('referer'),
@@ -119,5 +104,26 @@ class LocaleController extends Controller
         }
 
         return '/';
+    }
+
+    private function returnQuery(Request $request): string
+    {
+        $query = $request->input('return_query');
+
+        // Query strings are data, not a destination: only printable URL-safe
+        // characters, so nothing can smuggle a new target in.
+        return is_string($query) && preg_match('/^[A-Za-z0-9_\-=&%.,:+\[\]]*$/', $query)
+            ? $query
+            : '';
+    }
+
+    private function isPlainPath(string $path): bool
+    {
+        return $path === ''
+            || (
+                preg_match('#^[A-Za-z0-9/_\-.%]*$#', $path) === 1
+                && ! str_contains($path, '..')
+                && ! str_contains($path, '//')
+            );
     }
 }
