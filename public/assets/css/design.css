@@ -459,7 +459,7 @@ img {
 
 .d-btn--on-dark {
     border-color: rgb(255 255 255 / 55%);
-    color: #231a5c;
+    color: white;
 }
 
 .d-btn--on-dark:hover {
@@ -4491,6 +4491,855 @@ html[dir="rtl"] .h-hero {
 
     .h-slot__toggle svg,
     .h-lineup__all svg {
+        transition: none;
+    }
+}
+
+/* ==========================================================================
+   18. Inner pages on the design system
+
+   These four pages — programme, speakers, venue, contact — used to be built
+   from the 2024 `ux-*` layer. They are rebuilt here on the same primitives as
+   the rest of the file, so a section on one of them and a section on the home
+   page are made of the same material.
+
+   SCOPE. Every rule below is a NEW class. Nothing that exists elsewhere in this
+   file, and nothing in style.css / app.css / ux.css, is redefined, because the
+   same primitives are shared with the pages that are not in scope (pricing,
+   archive, cart, checkout, orders, unavailable) and with the home page's own
+   `h-*` layer. A restyle that reaches outside its four pages is not a restyle,
+   it is a regression.
+
+   `.d-page` is the page-level wrapper those four views carry. It is a hook for
+   page-scoped rules and for later work, not a layout.
+   ========================================================================== */
+
+.d-page {
+    background: var(--d-surface);
+}
+
+/* --------------------------------------------------------------------------
+   18a. Inner page hero
+   -------------------------------------------------------------------------- */
+
+/* A photograph with the brand gradient laid over it, rather than the flat
+   mauve of the 2024 band. The scrim is the same two ends as every other dark
+   surface on the site (`--d-navy-lift` → `--d-navy`) so the hero reads as the
+   top of this page rather than as a picture pasted above it. */
+.d-page-hero {
+    background-color: var(--d-navy-lift);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: rgb(255 255 255 / 84%);
+    overflow: hidden;
+    padding-block: calc(var(--sp-9) + var(--header-h)) var(--sp-8);
+    position: relative;
+}
+
+.d-page-hero::before {
+    background-image: linear-gradient(168deg,
+        rgb(44 17 129 / 88%) 0%,
+        rgb(44 17 129 / 74%) 48%,
+        rgb(32 16 98 / 92%) 100%);
+    content: '';
+    inset: 0;
+    position: absolute;
+    z-index: 1;
+}
+
+/* Same treatment as the aurora on the 2024 hero: the field sits above the scrim
+   but below the copy, so text is never washed out by it. */
+.d-page-hero > .ux-aurora {
+    z-index: 2;
+}
+
+.d-page-hero__inner {
+    max-width: 52rem;
+    position: relative;
+    z-index: 3;
+}
+
+.d-page-hero__eyebrow {
+    align-items: center;
+    color: var(--d-clay);
+    display: flex;
+    font-size: var(--t-xs);
+    font-weight: 800;
+    gap: var(--sp-2);
+    letter-spacing: .14em;
+    margin: 0 0 var(--sp-3);
+    text-transform: uppercase;
+}
+
+/* The "this is the current edition" pulse. It belongs at the very top of a page
+   and nowhere else, which is why it is a rule on the hero eyebrow rather than a
+   reusable class. */
+.d-page-hero__eyebrow::before {
+    animation: d-pulse 2.4s var(--ease) infinite;
+    background: currentColor;
+    border-radius: 50%;
+    content: '';
+    height: 8px;
+    width: 8px;
+}
+
+@keyframes d-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .35; transform: scale(.7); }
+}
+
+.d-page-hero__title {
+    color: #fff;
+    font-size: var(--t-3xl);
+    margin: 0;
+}
+
+/* Arabic needs a little more air above the title than Latin: the script has
+   more ascenders, and at the same margin the lede sits closer to the heading
+   than the reading wants. */
+.rtl .d-page-hero__title {
+    line-height: 1.35;
+}
+
+.d-page-hero__lede {
+    color: rgb(255 255 255 / 80%);
+    font-size: var(--t-lg);
+    line-height: 1.7;
+    margin: var(--sp-4) 0 0;
+    max-width: 44rem;
+}
+
+.d-page-hero__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-5);
+    list-style: none;
+    margin: var(--sp-5) 0 0;
+    padding: 0;
+}
+
+.d-page-hero__facts li {
+    align-items: center;
+    display: inline-flex;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    gap: var(--sp-2);
+}
+
+.d-page-hero__facts i {
+    color: var(--d-periwinkle);
+}
+
+.d-page-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-6);
+}
+
+.d-page-hero__crumbs {
+    margin-block-start: var(--sp-6);
+}
+
+.d-page-hero__crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.d-page-hero__crumbs li {
+    align-items: center;
+    color: rgb(255 255 255 / 62%);
+    display: inline-flex;
+    font-size: var(--t-xs);
+    gap: var(--sp-2);
+}
+
+/* The separator is a pseudo-element rather than a literal "/", so it follows
+   the writing direction without a second RTL rule. */
+.d-page-hero__crumbs li + li::before {
+    content: '/';
+    opacity: .5;
+}
+
+.d-page-hero__crumbs a {
+    color: rgb(255 255 255 / 82%);
+    text-decoration: none;
+}
+
+.d-page-hero__crumbs a:hover,
+.d-page-hero__crumbs a:focus-visible {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.d-page-hero__crumbs [aria-current="page"] {
+    color: #fff;
+    font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   18b. Programme
+   -------------------------------------------------------------------------- */
+
+/* The provisional notice is stated once, above the day tabs, in a panel rather
+   than as loose text: it is a standing caveat about the whole page, and it needs
+   to read as chrome rather than as a paragraph someone can scroll past. */
+.d-note {
+    align-items: flex-start;
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-inline-start: 4px solid var(--d-clay);
+    border-radius: var(--r-md);
+    color: var(--d-muted);
+    display: flex;
+    font-size: var(--t-sm);
+    gap: var(--sp-3);
+    line-height: 1.7;
+    margin: 0;
+    padding: var(--sp-4) var(--sp-5);
+}
+
+.d-note i {
+    color: var(--d-clay);
+    flex: 0 0 auto;
+    margin-block-start: .35em;
+}
+
+/* Rows need to breathe, which breaks the per-row rail: `.d-timeline__row::before`
+   is a segment, so once the rows are separated the segments no longer join and
+   the line looks dashed. The rail is therefore re-attached here to the LIST —
+   one continuous line behind the whole programme — and the per-row segment is
+   switched off. Both rules are scoped to the programme page so the timeline
+   primitive keeps its original behaviour everywhere else. */
+.d-page--programme .d-timeline {
+    position: relative;
+}
+
+.d-page--programme .d-timeline::before {
+    background: var(--d-line);
+    content: '';
+    inset-block: 1.5rem;
+    inset-inline-start: 6.5rem;
+    position: absolute;
+    width: 2px;
+}
+
+.rtl .d-page--programme .d-timeline::before {
+    inset-inline-start: 5.5rem;
+}
+
+.d-page--programme .d-timeline__row::before {
+    content: none;
+}
+
+@media (max-width: 767.98px) {
+    .d-page--programme .d-timeline::before {
+        inset-inline-start: 4.5rem;
+    }
+}
+
+.d-timeline > * + * {
+    margin-block-start: var(--sp-5);
+}
+
+/* The body is the frame around the sessions rather than the card itself, so the
+   padding moves inward and parallel sessions sit flush inside one panel. */
+.d-timeline__body {
+    padding: 0;
+}
+
+.d-timeline__body-inner {
+    padding: var(--sp-5);
+}
+
+/* Parallel sessions. `auto-fit` rather than a fixed two columns, because a slot
+   with three rooms has to become three and a slot with one has to become one —
+   the 2024 grid forced two and left a hole. */
+.d-timeline__sessions {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+
+.d-session {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--sp-5);
+}
+
+.d-session__track {
+    color: var(--d-clay-dark);
+    font-size: var(--t-xs);
+    font-weight: 800;
+    letter-spacing: .08em;
+    margin: 0 0 var(--sp-2);
+    text-transform: uppercase;
+}
+
+.d-session__title {
+    font-size: var(--t-base);
+    line-height: 1.4;
+    margin: var(--sp-3) 0 var(--sp-2);
+}
+
+.d-session__summary {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.7;
+    margin: 0 0 var(--sp-3);
+}
+
+.d-session__speakers {
+    font-size: var(--t-sm);
+    font-weight: 600;
+    margin: 0 0 var(--sp-4);
+}
+
+/* Pushed to the bottom so a row of sessions lines up along its lower edge
+   whether or not one of them has a summary. */
+.d-session__foot {
+    margin-block-start: auto;
+    padding-block-start: var(--sp-3);
+}
+
+/* The published day sheets. Kept as full-width plates: the artwork is a wide
+   schedule and the one thing a delegate wants from it is to be able to read it,
+   so it gets the full column and opens full size. */
+.d-sheet {
+    margin: 0;
+}
+
+.d-sheet__media {
+    background: var(--d-surface-sunk);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-lg);
+    display: block;
+    overflow: hidden;
+    position: relative;
+}
+
+.d-sheet__media img {
+    display: block;
+    transition: transform var(--dur-3) var(--ease);
+    width: 100%;
+}
+
+.d-sheet__media:hover img,
+.d-sheet__media:focus-visible img {
+    transform: scale(1.03);
+}
+
+.d-sheet__zoom {
+    align-items: center;
+    background: rgb(42 31 110 / 82%);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    height: 2.75rem;
+    inset-block-end: var(--sp-3);
+    inset-inline-end: var(--sp-3);
+    justify-content: center;
+    position: absolute;
+    width: 2.75rem;
+}
+
+.d-sheet__caption {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-3);
+}
+
+.d-sheet__hint {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+}
+
+/* --------------------------------------------------------------------------
+   18c. Speakers
+   -------------------------------------------------------------------------- */
+
+/* The keynote list. One column, full width: the wide card is portrait beside the
+   text, and two of them side by side would squeeze the biography into a column
+   too narrow to read and undo the point of the variant. */
+.d-speakers--wide {
+    grid-template-columns: 1fr;
+}
+
+/* The keynote layout: portrait beside the text. The rule belongs to the variant,
+   not to `.d-speaker`, so the grid card keeps the centred column it was
+   designed for. */
+.d-speaker--wide {
+    align-items: center;
+    flex-direction: row;
+    gap: var(--sp-5);
+    padding: var(--sp-5);
+    text-align: start;
+}
+
+.d-speaker--wide .d-speaker__photo {
+    height: 8.5rem;
+    margin-block-end: 0;
+    width: 8.5rem;
+}
+
+@media (max-width: 575.98px) {
+    .d-speaker--wide {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* A keynote is the headline act on the page, so its portrait carries the warm
+   accent. It is the only warm edge on a card grid, which is what makes it
+   readable as a distinction rather than as decoration. */
+.d-speaker--keynote .d-speaker__photo {
+    border-color: var(--d-clay);
+}
+
+.d-speaker__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    padding: 2%;
+}
+
+.d-speaker__bio {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.75;
+    margin: var(--sp-3) 0 0;
+}
+
+.d-speaker__foot {
+    margin-block-start: auto;
+    padding-block-start: var(--sp-4);
+}
+
+.d-speaker__sessions {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    line-height: 1.6;
+    margin: var(--sp-2) 0 0;
+}
+
+/* --------------------------------------------------------------------------
+   18d. Generic content grids and features
+   -------------------------------------------------------------------------- */
+
+/* `auto-fit` + `minmax` so a list of rooms or officers reflows by available
+   width rather than by a hard-coded column count that assumes a width this page
+   no longer has. */
+.d-cards {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* An icon over a title over a paragraph: the rooms list, and anything else that
+   is a short labelled thing rather than a document. */
+.d-feature {
+    height: 100%;
+    padding: var(--sp-5);
+}
+
+.d-feature__icon {
+    align-items: center;
+    background: var(--d-surface-sunk);
+    border-radius: var(--r-md);
+    color: var(--d-indigo);
+    display: flex;
+    font-size: 1.15rem;
+    height: 3rem;
+    justify-content: center;
+    margin-block-end: var(--sp-4);
+    width: 3rem;
+}
+
+.d-feature__title {
+    font-size: var(--t-base);
+    margin: 0 0 var(--sp-1);
+}
+
+.d-feature__text {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.7;
+    margin: 0;
+}
+
+.d-feature__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-block-start: var(--sp-4);
+}
+
+/* The postal address. Kept as an <address> so a screen reader announces it as a
+   location, and set at reading size because it is the one block on the page a
+   delegate copies down. */
+.d-address {
+    color: var(--d-ink);
+    font-size: var(--t-base);
+    font-style: normal;
+    line-height: 1.8;
+    margin: var(--sp-5) 0 0;
+}
+
+/* A button that is an action inside prose rather than the section's main CTA. */
+.d-action {
+    align-items: center;
+    color: var(--d-indigo);
+    display: inline-flex;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    gap: var(--sp-2);
+    margin-block-start: var(--sp-5);
+    text-decoration: none;
+}
+
+.d-action i {
+    transition: transform var(--dur-2) var(--ease);
+}
+
+.d-action:hover,
+.d-action:focus-visible {
+    text-decoration: underline;
+}
+
+.d-action:hover i {
+    transform: translateX(3px);
+}
+
+/* A directional arrow is written once, pointing "forward", and flipped in RTL.
+   Composing the flip with the hover nudge in one declaration each is what stops
+   the two rules from cancelling each other out in one of the two directions. */
+.rtl .d-action i,
+.rtl .d-contact-card__arrow {
+    transform: scaleX(-1);
+}
+
+.rtl .d-action:hover i {
+    transform: translateX(-3px) scaleX(-1);
+}
+
+.rtl .d-contact-card__action:hover .d-contact-card__arrow {
+    transform: translateX(-3px);
+}
+
+/* A secondary line inside a fact: the country code under a city, or a note under
+   a value. It has to be quieter than the value but not so quiet it reads as
+   disabled text. */
+.d-facts__sub {
+    color: var(--d-muted);
+    display: block;
+    font-size: var(--t-xs);
+    font-weight: 500;
+    margin-block-start: 2px;
+}
+
+/* The "open directions" label sitting on the map. */
+.d-venue__map-cta {
+    inset-block-end: var(--sp-5);
+    inset-inline-start: 50%;
+    position: absolute;
+    transform: translateX(50%);
+}
+
+.rtl .d-venue__map-cta {
+    transform: translateX(-50%);
+}
+
+@media (max-width: 575.98px) {
+    .d-venue__map-cta {
+        inset-inline: var(--sp-4);
+        transform: none;
+        width: auto;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   18e. Contact
+   -------------------------------------------------------------------------- */
+
+/* One of the "how to reach us" cards. */
+.d-contact-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--sp-5);
+}
+
+.d-contact-card__label {
+    font-size: var(--t-base);
+    margin: var(--sp-4) 0 var(--sp-2);
+}
+
+.d-contact-card__value {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.7;
+    margin: 0;
+}
+
+.d-contact-card__value span {
+    display: block;
+}
+
+.d-contact-card__action {
+    align-items: center;
+    color: var(--d-indigo);
+    display: inline-flex;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    gap: var(--sp-2);
+    margin-block-start: auto;
+    padding-block-start: var(--sp-4);
+    text-decoration: none;
+}
+
+.d-contact-card__action:hover,
+.d-contact-card__action:focus-visible {
+    text-decoration: underline;
+}
+
+.d-contact-card__arrow {
+    transition: transform var(--dur-2) var(--ease);
+}
+
+.d-contact-card__action:hover .d-contact-card__arrow {
+    transform: translateX(3px);
+}
+
+.rtl .d-contact-card__action:hover .d-contact-card__arrow {
+    transform: translateX(-3px);
+}
+
+/* An organising-committee member. The avatar is a set of initials rather than a
+   silhouette, because there is no photograph of these officers on file and a
+   stock avatar would put a stranger's face under a real person's name. */
+.d-officer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--sp-5);
+}
+
+.d-officer__head {
+    align-items: center;
+    display: flex;
+    gap: var(--sp-4);
+}
+
+.d-officer__avatar {
+    align-items: center;
+    background: linear-gradient(135deg, var(--d-indigo), var(--d-periwinkle));
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    flex: 0 0 auto;
+    font-size: var(--t-sm);
+    font-weight: 800;
+    height: 3.25rem;
+    justify-content: center;
+    width: 3.25rem;
+}
+
+.d-officer__id {
+    min-width: 0;
+}
+
+.d-officer__name {
+    font-size: var(--t-base);
+    margin: 0;
+}
+
+.d-officer__role {
+    color: var(--d-indigo);
+    font-size: var(--t-sm);
+    font-weight: 600;
+    margin: 2px 0 0;
+}
+
+.d-officer__org {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    margin: 2px 0 0;
+}
+
+.d-officer__lines {
+    border-block-start: 1px solid var(--d-line);
+    display: grid;
+    gap: var(--sp-2);
+    list-style: none;
+    margin: var(--sp-4) 0 0;
+    padding-block-start: var(--sp-4);
+}
+
+.d-officer__lines a {
+    align-items: center;
+    color: var(--d-muted);
+    display: inline-flex;
+    font-size: var(--t-sm);
+    gap: var(--sp-2);
+    text-decoration: none;
+}
+
+.d-officer__lines a:hover,
+.d-officer__lines a:focus-visible {
+    color: var(--d-indigo);
+    text-decoration: underline;
+}
+
+.d-officer__lines i {
+    color: var(--d-periwinkle);
+}
+
+/* --------------------------------------------------------------------------
+   18f. Contact form
+   -------------------------------------------------------------------------- */
+
+/* The form sits on a raised panel rather than floating on the section. It is the
+   longest single block on the site and an unbounded column of inputs is hard to
+   scan down. */
+.d-form-panel {
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-2);
+    padding: var(--sp-6);
+}
+
+@media (max-width: 575.98px) {
+    .d-form-panel {
+        padding: var(--sp-5) var(--sp-4);
+    }
+}
+
+.d-form .form-label {
+    color: var(--d-ink);
+    font-size: var(--t-sm);
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Scoped to `.d-form` on purpose. `comment-form-input` also styles the comment
+   form and the newsletter, and those are not part of this brief. */
+.d-form .comment-form-input {
+    background: var(--d-surface);
+    border: 1px solid var(--d-line-strong);
+    border-radius: var(--r-md);
+    color: var(--d-ink);
+    font-family: inherit;
+    font-size: var(--t-base);
+    padding: .75rem 1rem;
+    transition: border-color var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease);
+    width: 100%;
+}
+
+.d-form .comment-form-input:focus {
+    border-color: var(--d-periwinkle);
+    box-shadow: 0 0 0 4px rgb(115 132 255 / 18%);
+    outline: none;
+}
+
+textarea.comment-form-input {
+    min-height: 9rem;
+    resize: vertical;
+}
+
+/* Bootstrap marks an invalid control with a red icon and nothing else, which on
+   a field whose border is the only other cue is not enough. The border carries
+   it here; the error text below the field says what is wrong. */
+.d-form .comment-form-input.is-invalid,
+.d-form .comment-form-input[aria-invalid="true"] {
+    border-color: #d4483e;
+    padding-inline-end: 2.5rem;
+}
+
+
+.d-form .form-text {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    margin-block: var(--sp-1) 0;
+}
+
+.d-form .field-error {
+    color: #b3261e;
+    font-size: var(--t-xs);
+    margin-block: var(--sp-1) 0;
+}
+
+.d-form .invalid-feedback {
+    color: #b3261e;
+    font-size: var(--t-xs);
+}
+
+/* --------------------------------------------------------------------------
+   18g. Closing call to action
+   -------------------------------------------------------------------------- */
+
+/* The one band on an inner page that is allowed to be dark: it closes the page
+   and it has to be the thing the eye lands on last. */
+.d-cta {
+    background-color: var(--d-navy-lift);
+    background-image: linear-gradient(168deg, var(--d-navy-lift) 0%, #26116e 54%, var(--d-navy) 100%);
+    color: rgb(255 255 255 / 78%);
+}
+
+.d-cta__inner {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-5) var(--sp-7);
+    justify-content: space-between;
+}
+
+.d-cta__body {
+    max-width: 42rem;
+}
+
+.d-cta__title {
+    color: #fff;
+    font-size: var(--t-2xl);
+    margin: 0;
+}
+
+.d-cta__text {
+    color: rgb(255 255 255 / 76%);
+    font-size: var(--t-base);
+    margin: var(--sp-3) 0 0;
+}
+
+.d-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+}
+
+/* --------------------------------------------------------------------------
+   18h. Reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .d-page-hero__eyebrow::before {
+        animation: none;
+    }
+
+    .d-sheet__media img {
         transition: none;
     }
 }

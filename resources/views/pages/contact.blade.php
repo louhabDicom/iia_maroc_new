@@ -5,15 +5,23 @@
 
 @section('content')
 
-    <x-page-hero
+<div class="d-page d-page--contact">
+
+    <x-design.page-hero
         :title="__('contact.title')"
         :eyebrow="$edition?->identityLabel()"
+        :lede="__('contact.hero_lede')"
         :crumbs="[__('nav.contact') => null]"
         :facts="$edition ? [
             ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
             ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
         ] : []"
-        image="assets/images/bg/map_bg.png" />
+        :cta-label="$edition?->mapUrl() ? __('contact.open_map') : null"
+        :cta-url="$edition?->mapUrl()"
+        :cta-url-external="(bool) $edition?->mapUrl()"
+        :secondary-label="__('programme.title')"
+        :secondary-url="route('programme')"
+        image="assets/images/bg/form_bg.jpg" />
 
     {{-- ---------------------------------------------------------------------
         Reach us directly.
@@ -29,34 +37,30 @@
         template free of the `@if` tower the 2024 build needed.
     --------------------------------------------------------------------- --}}
     @if ($directCards !== [])
-        <section class="ux-section section-padding-03" aria-labelledby="reach-heading">
+        <section class="d-section d-section--alt" aria-labelledby="reach-heading">
             <div class="container">
 
-                <x-section-head
+                <x-design.section-head
                     id="reach-heading"
                     :eyebrow="__('contact.direct')"
                     :title="__('contact.reach_us')"
-                    :lede="__('contact.reach_lede')"
-                    :level="2"
-                    align="center"
-                    class="mb-5" />
+                    :lede="__('contact.reach_lede')" />
 
-                <div class="row g-4" data-ux-stagger="80">
+                <ul class="d-cards" data-ux-stagger="80">
                     @foreach ($directCards as $card)
-                        <div class="col-lg-3 col-md-6 ux-reveal">
-                            <div class="ux-card ux-card--edge ux-card--lift h-100 p-4 ux-contact-card">
-
-                                <span class="ux-tile__icon" aria-hidden="true">
+                        <li>
+                            <div class="d-card d-card--hover d-contact-card">
+                                <span class="d-feature__icon" aria-hidden="true">
                                     <i class="fas {{ $card['icon'] }}"></i>
                                 </span>
 
-                                <h3 class="ux-contact-card__label">{{ $card['label'] }}</h3>
+                                <h2 class="d-contact-card__label">{{ $card['label'] }}</h2>
 
                                 {{-- `dir="ltr"`: an address, a mailbox and a
                                      telephone number are all reordered by the bidi
                                      algorithm when they sit inside Arabic text
                                      without it. --}}
-                                <p class="ux-contact-card__value" dir="ltr">
+                                <p class="d-contact-card__value" dir="ltr">
                                     @foreach ($card['lines'] as $line)
                                         <span>{{ $line }}</span>
                                     @endforeach
@@ -67,68 +71,68 @@
                                          `@if` inside a tag's attribute list is
                                          compiled as PHP and the whole page dies
                                          with a parse error. --}}
-                                    <a href="{{ $card['action']['href'] }}" class="ux-contact-card__action" @if ($card['action']['external']) rel="noopener noreferrer" target="_blank" @endif>
+                                    <a href="{{ $card['action']['href'] }}" class="d-contact-card__action" @if ($card['action']['external']) rel="noopener noreferrer" target="_blank" @endif>
                                         {{ $card['action']['label'] }}
-                                        <i class="fas fa-arrow-right ux-contact-card__arrow" aria-hidden="true"></i>
+                                        <i class="fas fa-arrow-right d-contact-card__arrow" aria-hidden="true"></i>
                                     </a>
                                 @endif
-
                             </div>
-                        </div>
+                        </li>
                     @endforeach
-                </div>
+                </ul>
             </div>
+        </section>
+    @endif
 
     {{-- ---------------------------------------------------------------------
         The organising committee.
 
-        The six named officers of IIA Maroc, with the direct line and mailbox the
-        organisers themselves publish on their own documents. This is the part of
-        the page that used to be missing entirely: the 2024 build asked a visitor
-        to write to a form and then gave them nobody to write to.
+        The named officers of IIA Maroc, with the direct line and mailbox the
+        organisers themselves publish on their own documents. This is the part
+        of the page that used to be missing entirely: the 2024 build asked a
+        visitor to write to a form and then gave them nobody to write to.
     --------------------------------------------------------------------- --}}
     @if ($team->isNotEmpty())
-        <section class="ux-section section-padding-03 ux-section--tint"
-                 aria-labelledby="committee-heading">
+        <section class="d-section" aria-labelledby="committee-heading">
             <div class="container">
 
-                <x-section-head
+                <x-design.section-head
                     id="committee-heading"
                     :eyebrow="__('site.host_institute')"
                     :title="__('contact.committee')"
                     :lede="__('contact.committee_lede')"
-                    :level="2"
-                    align="center"
-                    class="mb-5" />
+                    align="center" />
 
-                <ul class="row g-4 list-unstyled" data-ux-stagger="70">
+                {{-- A grid rather than a single column: a committee is looked up by
+                     name, and a person scanning for one officer should find them
+                     without reading three cards to get there. --}}
+                <ul class="d-cards" data-ux-stagger="70">
                     @foreach ($team as $member)
-                        <li class="col-lg-4 col-md-6 ux-reveal">
-                            <div class="ux-card ux-card--edge ux-card--lift h-100 p-4 ux-officer">
-
-                                <div class="ux-officer__head">
+                        <li>
+                            <article class="d-card d-card--hover d-officer">
+                                <div class="d-officer__head">
                                     {{-- Initials rather than a silhouette: there is
                                          no photograph of these officers on file, and
                                          a stock avatar would put a stranger's face
                                          under a real person's name. --}}
-                                    <span class="ux-officer__avatar" aria-hidden="true">
+                                    <span class="d-officer__avatar" aria-hidden="true">
                                         {{ $member->initials() }}
                                     </span>
 
-                                    <div class="ux-officer__id">
-                                        <h3 class="ux-officer__name">{{ $member->name }}</h3>
+                                    <div class="d-officer__id">
+                                        <h3 class="d-officer__name">{{ $member->name }}</h3>
 
                                         @if ($member->role)
-                                            <p class="ux-officer__role">{{ $member->role }}</p>
+                                            <p class="d-officer__role">{{ $member->role }}</p>
                                         @endif
 
                                         @if ($member->organisation)
-                                            <p class="ux-officer__org">{{ $member->organisation }}</p>
+                                            <p class="d-officer__org">{{ $member->organisation }}</p>
                                         @endif
                                     </div>
                                 </div>
 
-                                <ul class="ux-officer__lines list-unstyled">
+                                <ul class="d-officer__lines">
                                     @if ($member->phone)
                                         <li>
                                             <a href="tel:{{ preg_replace('/[^0-9+]/', '', $member->phone) }}" dir="ltr">
@@ -147,15 +151,11 @@
                                         </li>
                                     @endif
                                 </ul>
-
-                            </div>
+                            </article>
                         </li>
                     @endforeach
                 </ul>
             </div>
-        </section>
-    @endif
-
         </section>
     @endif
 
@@ -164,20 +164,20 @@
         who has just read who to email and then meets a form has been told to do
         the harder thing.
     --------------------------------------------------------------------- --}}
-    <div class="contact-form-section section-padding-03">
+    <section class="d-section d-section--alt" aria-labelledby="form-heading">
         <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-10 text-center mb-5">
-                    <span class="ux-eyebrow">@lang('contact.form_eyebrow')</span>
-                    <h2 class="title mt-2">@lang('contact.form_title')</h2>
-                    <p class="ux-section-lede">@lang('contact.form_lede')</p>
-                </div>
-            </div>
+
+            <x-design.section-head
+                id="form-heading"
+                :eyebrow="__('contact.form_eyebrow')"
+                :title="__('contact.form_title')"
+                :lede="__('contact.form_lede')"
+                align="center" />
 
             <div class="row justify-content-center">
                 <div class="col-lg-9">
-                    <div class="contact-form-wrap ux-card ux-card--edge p-4 p-md-5">
-                        <form method="POST" action="{{ route('contact.store') }}" class="contact-form">
+                    <div class="d-form-panel d-form">
+                        <form method="POST" action="{{ route('contact.store') }}">
                             @csrf
 
                             <div class="row g-4">
@@ -187,7 +187,6 @@
                                                autocomplete="name"
                                                value="{{ old('name') }}"
                                                @class(['comment-form-input', 'is-invalid' => $errors->has('name')])>
-                                        @error('name') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
                                     </x-form.field>
                                 </div>
 
@@ -198,7 +197,6 @@
                                                dir="ltr"
                                                value="{{ old('email') }}"
                                                @class(['comment-form-input', 'is-invalid' => $errors->has('email')])>
-                                        @error('email') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
                                     </x-form.field>
                                 </div>
 
@@ -217,6 +215,9 @@
                                         <input type="text" name="organisation" id="organisation"
                                                autocomplete="organization"
                                                value="{{ old('organisation') }}"
+                                               class="comment-form-input">
+                                    </x-form.field>
+                                </div>
 
                                 <div class="col-lg-6">
                                     <x-form.field name="subject_type" :label="__('contact.topic')"
@@ -233,7 +234,6 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        @error('subject_type') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
                                     </x-form.field>
                                 </div>
 
@@ -252,12 +252,11 @@
                                         <textarea name="message" id="message" rows="6" required
                                                   maxlength="5000"
                                                   @class(['comment-form-input', 'is-invalid' => $errors->has('message')])>{{ old('message') }}</textarea>
-                                        @error('message') <p class="invalid-feedback d-block">{{ $message }}</p> @enderror
                                     </x-form.field>
                                 </div>
 
                                 <div class="col-12 d-flex justify-content-center">
-                                    <button type="submit" class="ux-btn ux-btn--primary" data-ux-magnetic="0.18">
+                                    <button type="submit" class="d-btn d-btn--primary">
                                         <span>@lang('contact.submit')</span>
                                     </button>
                                 </div>
@@ -267,11 +266,8 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+</div>
 
 @endsection
-
-                                               class="comment-form-input">
-                                    </x-form.field>
-                                </div>
-

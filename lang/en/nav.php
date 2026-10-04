@@ -10,7 +10,7 @@ return [
     'join' => 'I’M JOINING!',
     'menu' => 'Menu',
     'presentation' => 'About',
-    'pricing' => 'Pricing',
+    'pricing' => 'Registration',
     'programme' => 'Programme',
     'registration' => 'Registration',
     'skip_to_content' => 'Skip to main content',

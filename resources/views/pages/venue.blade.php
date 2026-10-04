@@ -5,10 +5,12 @@
 
 @section('content')
 
+<div class="d-page d-page--venue">
+
     {{-- The venue page is the page a delegate opens on a phone, standing at a
          taxi rank, so "when, where, and how do I get there" is answered in the
          hero band itself rather than after a scroll. --}}
-    <x-page-hero
+    <x-design.page-hero
         :title="__('venue.title')"
         :eyebrow="$edition->identityLabel()"
         :lede="__('venue.venue_lede', [
@@ -28,17 +30,15 @@
         image="assets/images/bg/map_bg.png" />
 
     {{-- Venue details and map. --}}
-    <section class="ux-section section-padding-03 ux-section--defer"
-             aria-labelledby="venue-heading">
+    <section class="d-section" aria-labelledby="venue-heading">
         <div class="container">
-            <div class="row g-5 align-items-center">
+            <div class="d-venue">
 
-                <div class="col-lg-6 ux-reveal ux-reveal-left">
-                    <x-section-head
+                <div class="ux-reveal">
+                    <x-design.section-head
                         id="venue-heading"
                         :eyebrow="__('venue.venue_name')"
                         :title="$edition->venue_name"
-                        :level="2"
                         :lede="$edition->venueLine($locale)" />
 
                     {{-- An <address> element, so a screen reader announces this as a
@@ -46,54 +46,39 @@
                          attribution it implies is correct: this is the venue's own
                          postal address. --}}
                     @if ($edition->venue_address)
-                        <address class="mt-4 text-muted fs-5" style="font-style: normal;">
-                            {!! nl2br(e($edition->venue_address)) !!}
-                        </address>
+                        <address class="d-address">{!! nl2br(e($edition->venue_address)) !!}</address>
                     @endif
 
-                    <div class="row g-3 mt-4" data-ux-stagger="80">
-                        <div class="col-sm-6">
-                            <div class="ux-feature ux-reveal">
-                                <span class="ux-feature__icon ux-feature__icon--cool" aria-hidden="true">
-                                    <i class="fas fa-calendar-days"></i>
-                                </span>
-                                <div class="ux-feature__body">
-                                    <h3 class="ux-feature__title">{{ $edition->dateLine($locale) }}</h3>
-                                    <p class="ux-feature__text">{{ $edition->venueLine($locale) }}</p>
-                                </div>
-                            </div>
-                        </div>
+                    <ul class="d-facts">
+                        <li>
+                            <span class="d-facts__label">@lang('venue.date')</span>
+                            <span class="d-facts__value">{{ $edition->dateLine($locale) }}</span>
+                        </li>
 
-                        <div class="col-sm-6">
-                            <div class="ux-feature ux-reveal">
-                                <span class="ux-feature__icon ux-feature__icon--gold" aria-hidden="true">
-                                    <i class="fas fa-city"></i>
-                                </span>
-                                <div class="ux-feature__body">
-                                    <h3 class="ux-feature__title">{{ $edition->city }}</h3>
-                                    <p class="ux-feature__text">{{ $edition->country_iso2 }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        <li>
+                            <span class="d-facts__label">@lang('venue.city')</span>
+                            <span class="d-facts__value">
+                                {{ $edition->city }}
+                                <span class="d-facts__sub">{{ $edition->country_iso2 }}</span>
+                            </span>
+                        </li>
 
-                    {{-- A real telephone link. A delegate reading this on a phone
-                         can tap it, which is the entire reason the number is here. --}}
-                    @if ($edition->contact_phone)
-                        <div class="mt-4">
-                            <a href="tel:{{ preg_replace('/[^0-9+]/', '', $edition->contact_phone) }}"
-                               class="ux-btn ux-btn--ghost"
-                               dir="ltr">
-                                <span>
-                                    <i class="fas fa-phone me-2" aria-hidden="true"></i>
-                                    {{ $edition->contact_phone }}
+                        @if ($edition->contact_phone)
+                            {{-- A real telephone link. A delegate reading this on a phone
+                                 can tap it, which is the entire reason the number is here. --}}
+                            <li>
+                                <span class="d-facts__label">@lang('contact.phone')</span>
+                                <span class="d-facts__value">
+                                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', $edition->contact_phone) }}" dir="ltr">
+                                        {{ $edition->contact_phone }}
+                                    </a>
                                 </span>
-                            </a>
-                        </div>
-                    @endif
+                            </li>
+                        @endif
+                    </ul>
                 </div>
 
-                <div class="col-lg-6 ux-reveal ux-reveal-right">
+                <div class="ux-reveal">
                     @if ($edition->mapUrl())
                         {{-- The map is a link, not an embedded iframe. A third-party
                              iframe costs a cookie banner and several hundred
@@ -108,37 +93,30 @@
                         <a href="{{ $edition->mapUrl() }}"
                            rel="noopener noreferrer nofollow"
                            target="_blank"
-                           class="d-block position-relative ux-card ux-card--edge ux-card--lift overflow-hidden"
+                           class="d-venue__map"
                            aria-label="{{ __('venue.open_map') }}">
                             <img src="{{ asset('assets/images/bg/map_bg.png') }}"
                                  alt="{{ __('venue.map_title') }}"
-                                 class="w-100"
                                  width="720"
                                  height="480"
                                  loading="lazy"
-                                 decoding="async"
-                                 style="aspect-ratio: 3 / 2; object-fit: cover;">
+                                 decoding="async">
 
-                            {{-- The pin is an overlay rather than a second image: it
-                                 has to sit in the same place at every viewport, and
-                                 absolutely positioning it is what guarantees that. --}}
-                            <span class="position-absolute top-50 start-50 translate-middle"
-                                  aria-hidden="true"
-                                  style="color: var(--arab-primary); font-size: 2.6rem; filter: drop-shadow(0 4px 8px rgb(0 0 0 / 45%));">
+                            <span class="d-venue__pin" aria-hidden="true">
                                 <i class="fas fa-location-dot"></i>
                             </span>
 
-                            <span class="ux-btn ux-btn--primary position-absolute bottom-0 start-50 translate-middle"
-                                  style="margin-bottom: 1.5rem;">
+                            <span class="d-btn d-btn--primary d-venue__map-cta">
                                 <span>@lang('venue.map_cta')</span>
                             </span>
                         </a>
                     @else
                         {{-- No map configured: say so, rather than showing an empty
                              frame that suggests one was meant to be there. --}}
-                        <x-empty-state
-                            :message="__('state.not_available')"
-                            icon="fas fa-map-location-dot" />
+                        <div class="d-empty">
+                            <i class="fas fa-map-location-dot d-empty__icon" aria-hidden="true"></i>
+                            <p>@lang('state.not_available')</p>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -148,60 +126,52 @@
     {{-- Rooms. Only rendered when the edition has any: an empty list here tells a
          visitor nothing at all about the venue. --}}
     @if ($rooms->isNotEmpty())
-        <section class="ux-section section-padding-03 ux-section--tint ux-section--defer"
-                 aria-labelledby="rooms-heading">
+        <section class="d-section d-section--alt" aria-labelledby="rooms-heading">
             <div class="container">
 
-                <x-section-head
+                <x-design.section-head
                     id="rooms-heading"
                     :eyebrow="__('programme.room')"
                     :title="__('venue.rooms')"
                     :lede="__('venue.rooms_lede')"
-                    :level="2"
-                    align="center"
-                    class="mb-5" />
+                    align="center" />
 
-                <ul class="row g-3 list-unstyled" data-ux-stagger="60">
+                <ul class="d-cards" data-ux-stagger="60">
                     @foreach ($rooms as $room)
-                        <li class="col-sm-6 col-lg-4 ux-reveal">
-                            <div class="ux-feature ux-feature--stacked h-100">
-                                <span class="ux-feature__icon" aria-hidden="true">
+                        <li>
+                            <div class="d-card d-card--hover d-feature">
+                                <span class="d-feature__icon" aria-hidden="true">
                                     <i class="fas fa-door-open"></i>
                                 </span>
 
-                                <div class="ux-feature__body">
-                                    <h3 class="ux-feature__title">{{ $room->name }}</h3>
+                                <h3 class="d-feature__title">{{ $room->name }}</h3>
 
+                                <p class="d-feature__tags">
+                                    {{-- The code and the name are both shown: the code is what
+                                         is printed on the programme, the name is what staff
+                                         will say to you. --}}
                                     @if ($room->code)
-                                        {{-- The code and the name are both shown: the code
-                                             is what is printed on the programme, the
-                                             name is what staff will say to you. --}}
-                                        <p class="mt-2">
-                                            <span class="ux-tag ux-tag--muted">{{ $room->code }}</span>
-                                        </p>
+                                        <span class="d-tag">{{ $room->code }}</span>
                                     @endif
 
                                     @if ($room->capacity || ! is_null($room->floor))
-                                        <p class="ux-tags mt-3">
-                                            @if ($room->capacity)
-                                                <span class="ux-tag">
-                                                    <i class="fas fa-users" aria-hidden="true"></i>
-                                                    {{ trans_choice('venue.capacity', $room->capacity, ['count' => $room->capacity]) }}
-                                                </span>
-                                            @endif
+                                        @if ($room->capacity)
+                                            <span class="d-tag">
+                                                <i class="fas fa-users" aria-hidden="true"></i>
+                                                {{ trans_choice('venue.capacity', $room->capacity, ['count' => $room->capacity]) }}
+                                            </span>
+                                        @endif
 
-                                            @if (! is_null($room->floor))
-                                                {{-- The level is stored as a number, so the
-                                                     wording is translated here rather
-                                                     than baked into the row. --}}
-                                                <span class="ux-tag ux-tag--muted">
-                                                    <i class="fas fa-layer-group" aria-hidden="true"></i>
-                                                    {{ __('venue.floor', ['level' => $room->floor]) }}
-                                                </span>
-                                            @endif
-                                        </p>
+                                        @if (! is_null($room->floor))
+                                            {{-- The level is stored as a number, so the wording is
+                                                 translated here rather than baked into the row. --}}
+                                            <span class="d-tag">
+                                                <i class="fas fa-layer-group" aria-hidden="true"></i>
+                                                {{ __('venue.floor', ['level' => $room->floor]) }}
+                                            </span>
+                                        @endif
                                     @endif
-                                </div>
+                                </p>
                             </div>
                         </li>
                     @endforeach
@@ -210,7 +180,7 @@
         </section>
     @endif
 
-    {{-- Practical information. The three tiles are built from an array rather than
+    {{-- Practical information. The tiles are built from an array rather than
          written out three times, so adding a fourth (a WhatsApp line, a hotel
          partner) is one entry and not a copy-paste. --}}
     @php
@@ -239,59 +209,60 @@
     @endphp
 
     @if ($contactTiles !== [])
-        <section class="ux-section section-padding-03 ux-section--defer"
-                 aria-labelledby="practical-heading">
+        <section class="d-section" aria-labelledby="practical-heading">
             <div class="container">
 
-                <x-section-head
+                <x-design.section-head
                     id="practical-heading"
                     :eyebrow="__('venue.practical')"
                     :title="__('venue.practical')"
                     :lede="__('venue.practical_lede')"
-                    :level="2"
-                    align="center"
-                    class="mb-5" />
+                    align="center" />
 
-                <div class="row g-4 justify-content-center" data-ux-stagger="80">
+                <ul class="d-cards" data-ux-stagger="80">
                     @foreach ($contactTiles as $tile)
-                        <div class="col-lg-4 col-md-6 ux-reveal">
-                            <div class="ux-card ux-card--edge ux-card--lift h-100 p-4">
-                                <div class="ux-tile">
-                                    <span class="ux-tile__icon" aria-hidden="true">
-                                        <i class="fas {{ $tile['icon'] }}"></i>
-                                    </span>
+                        <li class="ux-reveal">
+                            <div class="d-card d-card--hover d-contact-card">
+                                <span class="d-feature__icon" aria-hidden="true">
+                                    <i class="fas {{ $tile['icon'] }}"></i>
+                                </span>
 
-                                    <div class="ux-feature__body">
-                                        <span class="ux-tile__label">{{ $tile['label'] }}</span>
+                                <span class="d-facts__label">{{ $tile['label'] }}</span>
 
-                                        {{-- `dir="ltr"` on the two machine-formatted
-                                             values: an email address and a phone number
-                                             are both reordered by the bidi algorithm on
-                                             the Arabic page if left to it. --}}
-                                        <p class="ux-tile__value"
-                                           @if ($tile['href']) dir="ltr" @endif>
-                                            @if ($tile['href'])
-                                                <a href="{{ $tile['href'] }}">{{ $tile['value'] }}</a>
-                                            @else
-                                                {{ $tile['value'] }}
-                                            @endif
-                                        </p>
-                                    </div>
-                                </div>
+                                {{-- `dir="ltr"` on the two machine-formatted values: an email
+                                     address and a phone number are both reordered by the bidi
+                                     algorithm on the Arabic page if left to it. --}}
+                                <p class="d-contact-card__value"
+                                   @if ($tile['href']) dir="ltr" @endif>
+                                    @if ($tile['href'])
+                                        <a href="{{ $tile['href'] }}">{{ $tile['value'] }}</a>
+                                    @else
+                                        {{ $tile['value'] }}
+                                    @endif
+                                </p>
                             </div>
-                        </div>
+                        </li>
                     @endforeach
-                </div>
+                </ul>
+
+                <p class="text-center mt-5">
+                    <a href="{{ route('contact') }}" class="d-action">
+                        @lang('contact.reach_us')
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </p>
             </div>
         </section>
     @endif
 
-    <x-cta-band
+    <x-design.cta-band
         :title="__('pricing.title')"
         :text="__('pricing.currency_note')"
         :primary-label="$edition->registration_open ? __('pricing.register') : null"
         :primary-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
         :secondary-label="__('nav.contact')"
         :secondary-url="route('contact')" />
+
+</div>
 
 @endsection

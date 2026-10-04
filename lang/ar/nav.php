@@ -10,7 +10,7 @@ return [
     'join' => 'سأشارك!',
     'menu' => 'القائمة',
     'presentation' => 'تقديم',
-    'pricing' => 'الأسعار',
+    'pricing' => 'تسجيل',
     'programme' => 'البرنامج',
     'registration' => 'التسجيل',
     'skip_to_content' => 'الانتقال إلى المحتوى الرئيسي',

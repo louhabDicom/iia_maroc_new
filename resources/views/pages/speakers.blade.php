@@ -5,10 +5,12 @@
 
 @section('content')
 
-    <x-page-hero
+<div class="d-page d-page--speakers">
+
+    <x-design.page-hero
         :title="__('speakers.title')"
         :eyebrow="$edition->identityLabel()"
-        :lede="$edition->introduction"
+        :lede="__('speakers.hero_lede')"
         :crumbs="[__('nav.speakers') => null]"
         :facts="[
             ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
@@ -24,11 +26,14 @@
          incrementally. Presenting unconfirmed names as final is how a speaker
          withdraws and the site is left wrong. --}}
     @if ($keynotes->isEmpty() && $speakers->isEmpty())
-        <div class="section-padding-04">
+        <section class="d-section">
             <div class="container">
-                <x-empty-state :message="__('speakers.subtitle')" />
+                <div class="d-empty">
+                    <i class="fas fa-user-slash d-empty__icon" aria-hidden="true"></i>
+                    <p>@lang('speakers.subtitle')</p>
+                </div>
             </div>
-        </div>
+        </section>
     @else
         {{-- The keynote band is rendered only when there ARE keynotes.
 
@@ -39,25 +44,20 @@
              With no keynotes the band is simply not there, and the line-up is
              the first thing the visitor sees. --}}
         @if ($keynotes->isNotEmpty())
-            <section class="ux-section section-padding-03 ux-section--defer"
-                     aria-labelledby="keynotes-heading">
+            <section class="d-section d-section--alt" aria-labelledby="keynotes-heading">
                 <div class="container">
 
-                    <x-section-head
+                    <x-design.section-head
                         id="keynotes-heading"
                         :eyebrow="__('speakers.keynotes')"
                         :title="__('speakers.keynotes')"
-                        :level="2"
-                        align="center"
-                        class="mb-5" />
+                        :lede="__('speakers.keynotes_lede')" />
 
                     {{-- The two line-ups are separate lists rather than one list with
                          a heading injected, so a screen reader can count each. --}}
-                    <ul class="row g-4 list-unstyled" data-ux-stagger="90">
+                    <ul class="d-speakers d-speakers--wide" data-ux-stagger="90">
                         @foreach ($keynotes as $speaker)
-                            <li class="col-12">
-                                <x-speaker-card :speaker="$speaker" variant="wide" />
-                            </li>
+                            <x-design.speaker-card :speaker="$speaker" variant="wide" class="ux-reveal" />
                         @endforeach
                     </ul>
                 </div>
@@ -66,37 +66,33 @@
 
         @if ($speakers->isNotEmpty())
             <section @class([
-                'ux-section section-padding-03 ux-section--defer',
+                'd-section',
                 // The tint is only a separator when there is something above it.
-                'ux-section--tint' => $keynotes->isEmpty(),
+                'd-section--alt' => $keynotes->isEmpty(),
             ])
                      aria-labelledby="speakers-heading">
                 <div class="container">
 
-                    <x-section-head
+                    <x-design.section-head
                         id="speakers-heading"
                         :eyebrow="__('speakers.title')"
-                        :title="__('speakers.title')"
-                        :level="2"
-                        :lede="__('speakers.subtitle')"
-                        align="center"
-                        class="mb-5" />
+                        :title="__('speakers.lineup_title')"
+                        :lede="__('speakers.lineup_lede')"
+                        align="center" />
 
                     {{-- `data-ux-stagger` delays each card's reveal by a few
                          hundredths so the grid arrives as a wave rather than as
                          one block appearing at once. --}}
-                    <ul class="row g-4 list-unstyled" data-ux-stagger="70">
+                    <ul class="d-speakers" data-ux-stagger="70">
                         @foreach ($speakers as $speaker)
-                            <li class="col-lg-4 col-md-6 col-12 ux-reveal">
-                                <x-speaker-card :speaker="$speaker" variant="grid" />
-                            </li>
+                            <x-design.speaker-card :speaker="$speaker" variant="grid" class="ux-reveal" />
                         @endforeach
                     </ul>
                 </div>
             </section>
         @endif
 
-        <x-cta-band
+        <x-design.cta-band
             :title="__('programme.title')"
             :text="__('programme.provisional_notice')"
             :primary-label="__('programme.title')"
@@ -104,5 +100,7 @@
             :secondary-label="__('nav.contact')"
             :secondary-url="route('contact')" />
     @endif
+
+</div>
 
 @endsection

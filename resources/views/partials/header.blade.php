@@ -182,12 +182,12 @@
             {{-- The one thing the header is asking for. Present at every width
                  with room for it; below that it moves into the drawer rather
                  than shrinking into unreadability. --}}
-            @if ($currentEdition?->registration_open)
+            <!-- @if ($currentEdition?->registration_open)
                 <a href="{{ auth()->check() ? route('pricing') : route('register') }}"
                    class="d-btn d-btn--primary d-btn--sm">
                     @lang('nav.registration')
                 </a>
-            @endif
+            @endif -->
 
             <button type="button"
                     class="d-burger"
