@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Models\DownloadGrant;
+use App\Models\Edition;
 use App\Models\PresentationFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -30,8 +31,17 @@ class DocumentController extends Controller
     /**
      * A published document for the current edition.
      */
-    public function download(Request $request, Document $document): BinaryFileResponse
+    public function download(Request $request): BinaryFileResponse
     {
+        // Resolved by name from the route rather than bound to the signature.
+        // The URI is `{locale?}/documents/{document}/download`, and action
+        // arguments are filled positionally, so `/fr/documents/12/download`
+        // handed `$document` the string 'fr' — which bound to nothing and threw.
+        // The download worked in Arabic and was broken in French and English.
+        $document = Document::query()
+            ->whereKey($this->routeId($request, 'document'))
+            ->firstOrFail();
+
         $this->authorizeDocument($document);
 
         $path = (string) $document->file_path;
@@ -55,11 +65,17 @@ class DocumentController extends Controller
      * `IIAConference#2024@`, a secret committed to the repository and printed
      * in the page source, guarding every delegate's slides.
      */
-    public function presentation(Request $request, PresentationFile $file): StreamedResponse|BinaryFileResponse
+    public function presentation(Request $request): StreamedResponse|BinaryFileResponse
     {
         $user = $request->user();
 
         abort_if($user === null, 403);
+
+        // By name, for the same positional reason as download() above: the URI
+        // is `{locale?}/presentations/{file}/download`.
+        $file = PresentationFile::query()
+            ->whereKey($this->routeId($request, 'file'))
+            ->firstOrFail();
 
         $grant = $user->downloadGrants()
             ->active()
@@ -87,6 +103,28 @@ class DocumentController extends Controller
     // --- Helpers ---------------------------------------------------------
 
     /**
+     * The value of a named route parameter.
+     *
+     * Every public route on this site leads with an optional `{locale?}`, and
+     * a controller action's arguments are filled positionally from the route's
+     * parameters. So `/fr/documents/12/download` arrives as ['fr', '12'], and a
+     * typed `Document $document` argument is handed 'fr'. The failure is silent
+     * — it looks like a missing record rather than a wiring mistake — and it
+     * only affects the language-prefixed URLs, which is why it survives in a
+     * site whose default locale happens to be the unprefixed one.
+     *
+     * Reading by name removes the coupling entirely.
+     */
+    private function routeId(Request $request, string $parameter): int
+    {
+        $value = $request->route($parameter);
+
+        abort_if($value === null, 404);
+
+        return (int) $value;
+    }
+
+    /**
      * Only published documents, for the edition they belong to.
      */
     private function authorizeDocument(Document $document): void
@@ -94,7 +132,7 @@ class DocumentController extends Controller
         abort_unless($document->is_published, 404);
 
         abort_unless(
-            $document->edition_id === \App\Models\Edition::current()?->getKey(),
+            $document->edition_id === Edition::current()?->getKey(),
             404,
         );
     }

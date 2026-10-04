@@ -61,6 +61,7 @@ return [
     // is for the delegate who needs a copy today and would rather not open a
     // reader.
     'print' => 'Print',
+    'confirm_and_pay' => 'Confirm the order',
     'print_hint' => 'Print this page to PDF from your browser’s print dialog.',
 
     // Shown before payment. The order can be opened, printed and paid at this
@@ -69,6 +70,40 @@ return [
     // circulation the bank will not honour. The delegate can still print this
     // page as a receipt, so the wording promises exactly that.
     'unpaid_notice' => 'This order has not been paid yet. You can print it as a receipt and pay it now; the numbered invoice becomes available once payment has gone through.',
+
+    // --- The invoice document ----------------------------------------------
+    // The heading, totals block and reassurance strip of the invoice page.
+    // `invoice_heading` takes the reference as a :reference placeholder rather
+    // than composing it in the view, so each language can place it in its own
+    // word order — French and Arabic put it differently.
+    'invoice_heading' => 'Invoice number :reference',
+    'paid_to' => 'Paid to',
+    'payment_method' => 'Payment method',
+    'payment_method_cmi' => 'Moroccan cards (CMI)',
+    'subtotal' => 'Subtotal',
+    'member_saving' => 'Member discount',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'contact_us' => 'Contact ARABCIA',
+    'vat' => 'VAT',
+    'total_incl' => 'Total incl. tax',
+    'offer' => 'Offer name',
+    'participant_name' => 'Participant name',
+    'date' => 'Date',
+    'price_incl' => 'Price incl. tax',
+    'download_invoice_short' => 'Print / Download',
+    'help_title' => 'Need a hand?',
+    'help_text' => 'For any question about your order or the payment, contact the ARABCIA team.',
+    'assurances' => [
+        'secure' => 'Secure payment',
+        'secure_text' => 'Your transactions are protected and secured by CMI.',
+        'cards' => 'Moroccan cards',
+        'cards_text' => 'Pay with Moroccan bank cards (CMI).',
+        'instant' => 'Instant invoice',
+        'instant_text' => 'Receive your invoice immediately after payment.',
+        'support' => 'Support',
+        'support_text' => 'Our team stays available should you need anything.',
+    ],
     'sign_in_to_checkout' => 'Sign in to complete your registration.',
     'enroll_to_checkout' => 'Set up your authenticator app before completing your registration.',
     'not_payable' => 'This order can no longer be paid.',

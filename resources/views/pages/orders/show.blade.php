@@ -22,117 +22,215 @@
     <section class="ux-section">
         <div class="container">
 
-            @if ($errors->any())
-                <div class="ux-notice ux-notice--danger mb-4" role="alert">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $message)
-                            <li>{{ $message }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            {{-- The invoice number is the page's real title, exactly as it is
+                 on the printed document. Hiding it inside the breadcrumb made a
+                 delegate hunt for the one string that identifies the order. --}}
+            <div class="ux-card ux-card--edge ux-radius-xl p-4 p-lg-5 ux-reveal ux-invoice">
 
-            @if (session('status'))
-                <div class="ux-notice ux-notice--success mb-4" role="status">
-                    {{ session('status') }}
-                </div>
-            @endif
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+                    <div>
+                        <h1 class="h3 mb-0">
+                            {{ __('order.invoice_heading', ['reference' => $order->reference]) }}
+                        </h1>
 
-            {{-- Before payment the page is fully usable — open, print, pay — so
-                 this says what is still missing (the numbered facture) rather
-                 than leaving the delegate to wonder whether they are looking at
-                 a receipt or the real thing. --}}
-            @unless ($order->status->isSettled())
-                <div class="ux-notice ux-notice--warning mb-4">
-                    {{ __('order.unpaid_notice') }}
-                </div>
-            @endunless
-
-            {{-- Reference, status and total in one band. An invoice is the one
-                 page a delegate returns to out of anxiety, so it answers its
-                 two questions before any scrolling. --}}
-            <div class="ux-card ux-card--edge ux-radius-xl p-4 mb-5 ux-reveal">
-                <div class="row g-4">
-
-                    <div class="col-12 col-md-6">
-                        <p class="ux-stat__label">@lang('order.reference')</p>
-                        <p class="ux-stat mb-0 font-monospace" dir="ltr">{{ $order->reference }}</p>
+                        @if ($order->invoice_number)
+                            <p class="ux-ink-soft small mt-2 mb-0" dir="ltr">
+                                {{ $order->invoice_number }}
+                            </p>
+                        @endif
                     </div>
 
-                    <div class="col-6 col-md-3">
-                        <p class="ux-stat__label">@lang('order.status')</p>
-                        <p class="mb-0 mt-1">
-                            {{-- Colour here is load-bearing: red has to read as
-                                 "this needs attention" at a glance. The state is
-                                 also carried by the label text, so it never
-                                 depends on the reader perceiving the hue. --}}
-                            @php($statusColour = $order->status->colour())
-                            <span @class([
-                                'ux-tag',
-                                'ux-tag--solid' => $statusColour === 'danger',
-                                'ux-tag--gold' => $statusColour === 'warning',
-                                'ux-tag--cyan' => $statusColour === 'info',
-                            ])>
-                                {{ $order->status->label($currentLocale->value) }}
-                            </span>
+                    {{-- Outlined, not filled: the badge states the state, and a
+                         solid block would compete with the total for the eye. --}}
+                    @php($statusColour = $order->status->colour())
+                    <span @class([
+                        'ux-invoice__status',
+                        'ux-invoice__status--'.$statusColour => in_array($statusColour, ['success', 'danger', 'warning', 'info'], true),
+                    ])>
+                        {{ $order->status->label($currentLocale->value) }}
+                    </span>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <p class="ux-stat__label mb-1">@lang('order.paid_to')</p>
+                        <p class="mb-0">
+                            @if (filled($order->billing['organisation'] ?? null))
+                                {{ $order->billing['organisation'] }}
+                            @else
+                                {{ trim(($order->billing['first_name'] ?? '').' '.($order->billing['last_name'] ?? '')) }}
+                            @endif
                         </p>
                     </div>
 
-                    <div class="col-6 col-md-3">
-                        <p class="ux-stat__label">@lang('order.total')</p>
-                        <p class="ux-stat mb-0" dir="ltr">{{ $order->formattedTotal() }}</p>
+                    <div class="col-md-6">
+                        <p class="ux-stat__label mb-1">@lang('order.payment_method')</p>
+                        <p class="mb-0">@lang('order.payment_method_cmi')</p>
                     </div>
-
                 </div>
 
-                <p class="ux-ink-soft small mt-3 mb-0">
-                    @lang('order.placed_on'):
-                    <time datetime="{{ $order->created_at->toIso8601String() }}">
-                        {{ $order->created_at->translatedFormat('d F Y H:i') }}
-                    </time>
-                </p>
-            </div>
+                {{-- One row per seat, not per line item: the delegate is being
+                     invoiced for named people, and an order of two standard
+                     seats and one member seat is three rows they can check. --}}
+                <div class="table-responsive">
+                    <table class="table ux-invoice__table align-middle mb-0">
+                        <caption class="visually-hidden">@lang('order.items')</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">@lang('order.offer')</th>
+                                <th scope="col">@lang('order.participant_name')</th>
+                                <th scope="col" class="d-none d-lg-table-cell">@lang('order.email')</th>
+                                <th scope="col" class="d-none d-lg-table-cell">@lang('order.phone')</th>
+                                <th scope="col" class="d-none d-md-table-cell">@lang('order.date')</th>
+                                <th scope="col" class="text-end">@lang('order.price_incl')</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                                    {{-- Seats with a named attendee, one row each. The
+                                         price shown is that seat's own unit
+                                         price, so a member discount shows up in
+                                         the rows rather than only in the total. --}}
+                                    @forelse ($order->participants as $participant)
+                                        @php
+                                            // Walk the order's lines in step with the
+                                            // attendees so each row can be priced at
+                                            // the rate that seat was actually sold at.
+                                            $line = $order->items->get($loop->index)
+                                                ?? $order->items->last();
+                                        @endphp
 
-            <div class="row g-4">
-                <div class="col-lg-8">
-
-                    <div class="ux-card ux-card--edge ux-radius-xl p-4 mb-4 ux-reveal">
-                        <h2 class="h5 ux-card__title">@lang('order.items')</h2>
-
-                        {{-- table-responsive, because the amount column is a
-                             currency string and a narrow phone otherwise
-                             squeezes the ticket name into a one-word column. --}}
-                        <div class="table-responsive">
-                            <table class="table align-middle mb-0">
-                                <caption class="visually-hidden">@lang('order.items')</caption>
-                                <thead>
-                                    <tr>
-                                        <th scope="col">@lang('order.ticket')</th>
-                                        <th scope="col" class="text-center">@lang('order.quantity')</th>
-                                        <th scope="col" class="text-end">@lang('order.amount')</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($order->items as $item)
                                         <tr>
-                                            <th scope="row" class="fw-normal">{{ $item->label }}</th>
-                                            <td class="text-center">{{ $item->totalQuantity() }}</td>
+                                            <th scope="row" class="fw-normal">{{ $line?->label ?? __('order.ticket') }}</th>
+                                            <td>
+                                                {{ $participant->full_name }}
+                                                @if ($participant->is_member)
+                                                    <span class="ux-tag ux-tag--gold ms-1">@lang('pricing.member')</span>
+                                                @endif
+                                                {{-- Contact details are stacked under
+                                                     the name on narrow screens, where
+                                                     their own columns are dropped. --}}
+                                                @if ($participant->email)
+                                                    <span class="d-lg-none d-block ux-ink-soft small" dir="ltr">
+                                                        {{ $participant->email }}
+                                                    </span>
+                                                @endif
+                                                @if ($participant->phone)
+                                                    <span class="d-lg-none d-block ux-ink-soft small" dir="ltr">
+                                                        {{ $participant->phone }}
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="d-none d-lg-table-cell" dir="ltr">{{ $participant->email }}</td>
+                                            <td class="d-none d-lg-table-cell" dir="ltr">{{ $participant->phone }}</td>
+                                            <td class="d-none d-md-table-cell">
+                                                {{ $order->created_at->translatedFormat('d/m/Y') }}
+                                            </td>
                                             <td class="text-end" dir="ltr">
-                                                {{ $item->formattedLineTotal($order->currency) }}
+                                                {{ $line?->formattedSeatPrice($order->currency) ?? '—' }}
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        {{-- Seats bought before the attendees were
+                                             named. Quantity carries the line here,
+                                             because there is no one to attach it
+                                             to — the totals below stay exact. --}}
+                                        @foreach ($order->items as $item)
+                                            <tr>
+                                                <th scope="row" class="fw-normal">{{ $item->label }}</th>
+                                                <td class="ux-ink-soft">@lang('order.participants_pending')</td>
+                                                <td class="d-none d-lg-table-cell"></td>
+                                                <td class="d-none d-lg-table-cell"></td>
+                                                <td class="d-none d-md-table-cell">
+                                                    {{ $order->created_at->translatedFormat('d/m/Y') }}
+                                                </td>
+                                                <td class="text-end" dir="ltr">
+                                                    <span class="d-md-none d-block ux-ink-soft small">
+                                                        × {{ $item->totalQuantity() }}
+                                                    </span>
+                                                    {{ $item->formattedLineTotal($order->currency) }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @endforelse
                                 </tbody>
-                                <tfoot>
-                                    <tr class="border-top">
-                                        <th scope="row" colspan="2" class="text-end">@lang('order.total')</th>
-                                        <td class="text-end" dir="ltr">
-                                            <span class="fw-bold">{{ $order->formattedTotal() }}</span>
-                                        </td>
-                                    </tr>
-                                </tfoot>
                             </table>
                         </div>
+
+                        {{-- Totals, offset to the reading edge rather than
+                             stretched full width: a column of three numbers
+                             spread across 900px is harder to add up than one
+                             held at a readable measure. --}}
+                        <div class="ux-invoice__totals mt-4">
+                            <dl class="mb-0">
+                                <div class="ux-invoice__row">
+                                    <dt>@lang('order.subtotal')</dt>
+                                    <dd dir="ltr">{{ \App\Support\Money::format($order->subtotal, $order->currency, $currentLocale->value) }}</dd>
+                                </div>
+
+                                @if ($order->discount_total > 0)
+                                    <div class="ux-invoice__row">
+                                        <dt>@lang('order.member_saving')</dt>
+                                        <dd dir="ltr">−{{ \App\Support\Money::format($order->discount_total, $order->currency, $currentLocale->value) }}</dd>
+                                    </div>
+                                @endif
+
+                                <div class="ux-invoice__row">
+                                    <dt>@lang('order.vat')</dt>
+                                    <dd dir="ltr">{{ \App\Support\Money::format($order->tax_total, $order->currency, $currentLocale->value) }}</dd>
+                                </div>
+
+                                <div class="ux-invoice__row ux-invoice__row--total">
+                                    <dt>@lang('order.total_incl')</dt>
+                                    <dd dir="ltr">{{ $order->formattedTotal() }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        {{-- The confirm step. Before payment this is the call to action; afterwards
+                             it disappears and the PDF takes its place. Print sits
+                             beside it in both states, so a delegate who wants a
+                             copy now is never told to come back later. --}}
+                         <div class="d-flex flex-wrap gap-3 align-items-center ux-print-hide mt-4">
+                            @if ($order->isPayable())
+                                <a href="{{ route('checkout.pay', ['order' => $order->id]) }}"
+                                   class="btn-join mb-0"
+                                   data-ux-magnetic="0.2">
+                                    @lang('order.confirm_and_pay')
+                                    <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
+                                </a>
+                            @endif
+
+                            @if ($order->status->isSettled())
+                                <form method="POST"
+                                      action="{{ route('orders.invoice', ['order' => $order->id]) }}"
+                                      class="m-0">
+                                    @csrf
+                                    <button type="submit" class="ux-btn ux-btn--ghost ux-btn--sm mb-0">
+                                        <span>@lang('order.download_invoice')</span>
+                                    </button>
+                                </form>
+                            @endif
+
+                            <button type="button"
+                                    class="ux-btn ux-btn--ghost ux-btn--sm mb-0 ms-auto"
+                                    onclick="window.print()">
+                                <i class="fas fa-print me-2" aria-hidden="true"></i>
+                                <span>@lang('order.download_invoice_short')</span>
+                            </button>
+                        </div>
+
+                        @unless ($order->status->isSettled() || $order->status->isFinal())
+                            <div class="mt-3 ux-print-hide">
+                                <form method="POST"
+                                      action="{{ route('orders.cancel', ['order' => $order->id]) }}"
+                                      onsubmit="return confirm(@js(__('order.cancel.confirm')));">
+                                    @csrf
+                                    <button type="submit" class="btn btn-link btn-sm text-danger px-0">
+                                        @lang('order.cancel.action')
+                                    </button>
+                                </form>
+                            </div>
+                        @endunless
                     </div>
 
                     {{-- Who the invoice is addressed to. A delegate who needs
@@ -174,159 +272,65 @@
                         </address>
                     </div>
 
-                    <div class="ux-card ux-card--edge ux-radius-xl p-4 ux-reveal">
-                        <h2 class="h5 ux-card__title">@lang('order.participants')</h2>
+                    {{-- The last payment attempt, kept because a delegate whose
+                         payment failed needs to see what was refused. --}}
+                    @php($latestPayment = $order->latestPaymentRecord())
 
-                        {{-- An order with no named attendees is not a broken
-                             page: it is one paid for before the delegates were
-                             entered, and the organiser collects that list
-                             separately. Say so rather than rendering nothing. --}}
-                        @if ($order->participants->isEmpty())
-                            <x-empty-state
-                                :message="__('order.participants_pending')"
-                                icon="fa-regular fa-user-clock" />
-                        @else
-                            <ul class="list-group list-group-flush">
-                                @foreach ($order->participants as $participant)
-                                    <li class="list-group-item bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2 px-0">
-                                        <div>
-                                            <span class="fw-semibold">{{ $participant->full_name }}</span>
-                                            @if ($participant->is_member)
-                                                <span class="ux-tag ux-tag--gold ms-2">@lang('pricing.member')</span>
-                                            @endif
-                                            @if ($participant->job_title)
-                                                <div class="ux-ink-soft small">{{ $participant->job_title }}</div>
-                                            @endif
-                                        </div>
-
-                                        {{-- The address is the only handle on an
-                                             attendee here, so it is a mailto
-                                             rather than inert grey text. --}}
-                                        @if ($participant->email)
-                                            <a href="mailto:{{ $participant->email }}"
-                                               class="small text-break ux-ink-soft">
-                                                {{ $participant->email }}
-                                            </a>
-                                        @endif
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </div>
+                    @if ($latestPayment)
+                        <div class="ux-notice ux-notice--warning mt-4">
+                            <p class="mb-0 small">
+                                <strong>@lang('order.payment.last_attempt'):</strong>
+                                <span dir="ltr">
+                                    {{ $latestPayment->formattedAmount() }} — {{ $latestPayment->status->value }}
+                                    @if ($latestPayment->cardLabel() !== '—')
+                                        <br>{{ $latestPayment->cardLabel() }}
+                                    @endif
+                                </span>
+                            </p>
+                        </div>
+                    @endif
                 </div>
-                <div class="col-lg-4">
-                    {{-- Sticky on a wide screen: the download button is the
-                         thing a delegate came back for, and it should not have
-                         to be scrolled to after reading a long attendee list.
-                         It is not sticky on a phone, where the column sits under
-                         the content anyway. --}}
-                    <div class="ux-card ux-card--glass ux-radius-xl p-4 text-center sticky-lg-top ux-reveal ux-reveal-right ux-invoice__summary">
-                        {{-- `ux-print-hide`: a button on a printed invoice is a
-                             rectangle of toner with no function. The figures it
-                             sits next to are kept. --}}
-                        <h2 class="h5 ux-card__title ux-print-hide">@lang('order.summary')</h2>
 
-                        <p class="ux-stat mb-4" dir="ltr">{{ $order->formattedTotal() }}</p>
-
-                        {{-- The invoice is only offered once settled. A paid
-                             order is refunded rather than cancelled, and the
-                             two are not interchangeable. --}}
-                        @if ($order->status->isSettled())
-                            <form method="POST"
-                                  action="{{ route('orders.invoice', ['order' => $order->id]) }}"
-                                  class="ux-print-hide">
-                                @csrf
-                                <button type="submit" class="btn-join w-100 text-center d-block">
-                                    @lang('order.download_invoice')
-                                </button>
-                            </form>
-
-                            {{-- Browser print. The PDF above is the document to
-                                 keep, but it only exists once the order is
-                                 settled; this gives a delegate a copy whatever
-                                 the state, and costs no round trip. --}}
-                            <button type="button"
-                                    class="ux-btn ux-btn--ghost ux-btn--sm w-100 mt-2 ux-print-hide"
-                                    onclick="window.print()">
-                                <span>@lang('order.print')</span>
-                            </button>
-
-                            @if ($order->invoice_number)
-                                <p class="ux-ink-soft small mt-2 mb-0" dir="ltr">
-                                    {{ $order->invoice_number }}
-                                </p>
-                            @endif
-                        @elseif ($order->isPayable())
-                            <a href="{{ route('checkout.pay', ['order' => $order->id]) }}"
-                               class="btn-join w-100 text-center d-block ux-print-hide">
-                                @lang('order.pay_now')
-                            </a>
-
-                            <button type="button"
-                                    class="ux-btn ux-btn--ghost ux-btn--sm w-100 mt-2 ux-print-hide"
-                                    onclick="window.print()">
-                                <span>@lang('order.print')</span>
-                            </button>
-                        @else
-                            <p class="ux-ink-soft mb-0">@lang('order.invoice.not_available')</p>
-
-                            <button type="button"
-                                    class="ux-btn ux-btn--ghost ux-btn--sm w-100 mt-2 ux-print-hide"
-                                    onclick="window.print()">
-                                <span>@lang('order.print')</span>
-                            </button>
-                        @endif
-
-                        @unless ($order->status->isSettled() || $order->status->isFinal())
-                            <form method="POST"
-                                  action="{{ route('orders.cancel', ['order' => $order->id]) }}"
-                                  class="mt-3 ux-print-hide"
-                                  onsubmit="return confirm(@js(__('order.cancel.confirm')));">
-                                @csrf
-                                <button type="submit" class="btn btn-outline-danger w-100">
-                                    @lang('order.cancel.action')
-                                </button>
-                            </form>
-                            @endunless
-
-                        {{-- Printed too: it explains the button above, and a
-                             reader holding a paper copy has no button left to
-                             rediscover it from. --}}
-                        <p class="ux-ink-soft small mt-3 mb-0">
-                            @lang('order.print_hint')
-                        </p>
-
-                            {{-- Resolved once. Reading it four times meant four
-                                 queries for one block of text, and property
-                                 syntax on a plain method is what made this a
-                                 fatal — see Order::latestPaymentRecord(). --}}
-                            @php($latestPayment = $order->latestPaymentRecord())
-
-                            @if ($latestPayment)
-                                <div class="mt-4 text-start border-top pt-3">
-                                    <p class="small text-muted mb-1">@lang('order.payment.last_attempt')</p>
-                                    <p class="small mb-0" dir="ltr">
-                                        {{ $latestPayment->formattedAmount() }}
-                                        — {{ $latestPayment->status->value }}
-                                        @if ($latestPayment->cardLabel() !== '—')
-                                            <br>{{ $latestPayment->cardLabel() }}
-                                        @endif
-                                    </p>
-                                </div>
-                            @endif
-                    </div>
-                </div>
             </div>
         </div>
     </section>
 
-    {{-- An invoice is the end of a purchase, not a dead end: what a delegate
-         wants next is the thing the ticket admits them to. --}}
+    {{-- Reassurance strip. An invoice page is where someone is about to enter
+         card details or ask their bank to explain a charge, so the four things
+         they are wondering about are answered before they leave. --}}
+    <section class="ux-section ux-section--tint">
+        <div class="container">
+            <div class="row g-4">
+                @foreach ([[
+                    ['fa-shield-halved', 'secure'],
+                    ['fa-credit-card', 'cards'],
+                    ['fa-file-invoice', 'instant'],
+                    ['fa-headset', 'support'],
+                ] as [$icon, $key])
+                    <div class="col-6 col-lg-3">
+                        <div class="ux-feature ux-feature--stacked h-100">
+                            <span class="ux-feature__icon ux-feature__icon--cool">
+                                <i class="fas {{ $icon }}" aria-hidden="true"></i>
+                            </span>
+                            <h3 class="ux-feature__title">
+                                {{ __("order.assurances.{$key}") }}
+                            </h3>
+                            <p class="ux-feature__text">
+                                {{ __("order.assurances.{$key}_text") }}
+                            </p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    {{-- Support, not a sales pitch: the only question left at this point is
+         about the order itself. --}}
     <x-cta-band
-        :title="__('nav.programme')"
-        :text="__('order.cta_lede')"
-        :primary-label="__('nav.programme')"
-        :primary-url="route('programme')"
-        :secondary-label="__('nav.venue')"
-        :secondary-url="route('venue')" />
+        :title="__('order.help_title')"
+        :text="__('order.help_text')"
+        :primary-label="__('order.contact_us')"
+        :primary-url="route('contact')" />
 @endsection
+

@@ -68,6 +68,7 @@ return [
     // is for the delegate who needs a copy today and would rather not open a
     // reader.
     'print' => 'Imprimer',
+    'confirm_and_pay' => 'Confirmer la commande',
     'print_hint' => 'Imprime cette page en PDF depuis la fenêtre d’impression de votre navigateur.',
 
     // Shown before payment. The order can be opened, printed and paid at this
@@ -76,6 +77,40 @@ return [
     // circulation the bank will not honour. The delegate can still print this
     // page as a receipt, so the wording promises exactly that.
     'unpaid_notice' => 'Cette inscription n’est pas encore réglée. Vous pouvez l’imprimer comme reçu et la payer maintenant ; la facture numérotée sera disponible après le paiement.',
+
+    // --- The invoice document ----------------------------------------------
+    // The heading, totals block and reassurance strip of the invoice page.
+    // `invoice_heading` takes the reference as a :reference placeholder rather
+    // than composing it in the view, so each language can place it in its own
+    // word order — French and Arabic put it differently.
+    'invoice_heading' => 'Facture numéro :reference',
+    'paid_to' => 'Payé à',
+    'payment_method' => 'Mode de paiement',
+    'payment_method_cmi' => 'Cartes marocaines (CMI)',
+    'subtotal' => 'Sous-total',
+    'member_saving' => 'Remise adhérent',
+    'email' => 'E-mail',
+    'phone' => 'Téléphone',
+    'contact_us' => 'Contacter ARABCIA',
+    'vat' => 'TVA',
+    'total_incl' => 'Total TTC',
+    'offer' => 'Nom de l’offre',
+    'participant_name' => 'Nom des participants',
+    'date' => 'Date',
+    'price_incl' => 'Prix TTC',
+    'download_invoice_short' => 'Imprimer / Télécharger',
+    'help_title' => 'Besoin d’aide ?',
+    'help_text' => 'Pour toute question concernant votre commande ou le paiement, contactez l’équipe ARABCIA.',
+    'assurances' => [
+        'secure' => 'Paiement sécurisé',
+        'secure_text' => 'Vos transactions sont protégées et sécurisées par CMI.',
+        'cards' => 'Cartes marocaines',
+        'cards_text' => 'Paiement par cartes bancaires marocaines (CMI).',
+        'instant' => 'Facture instantanée',
+        'instant_text' => 'Recevez votre facture immédiatement après votre paiement.',
+        'support' => 'Assistance',
+        'support_text' => 'Notre équipe reste à votre disposition en cas de besoin.',
+    ],
     'sign_in_to_checkout' => 'Connectez-vous pour finaliser votre inscription.',
     'enroll_to_checkout' => 'Configurez votre application d’authentification avant de finaliser votre inscription.',
     'not_payable' => 'Cette commande ne peut plus être payée.',

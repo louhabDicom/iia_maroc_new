@@ -3156,7 +3156,103 @@ html:not(.no-js) .ux-reveal.is-revealed {
         -webkit-text-fill-color: CanvasText;
     }
 }
+
 /* --------------------------------------------------------------------------
+   Invoice
+   --------------------------------------------------------------------------
+   The invoice is a document, so it is typeset like one: a filled header
+   carrying the number and the state, a ruled table of seats, and a totals
+   block held to a narrow measure at the reading edge.
+
+   The status pill is outlined rather than filled. A filled block at that size
+   would out-weigh the total it sits across from, and the whole point of the
+   page is the total.
+   -------------------------------------------------------------------------- */
+
+.ux-invoice__status {
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    color: var(--arab-body-color, inherit);
+    font-size: .875rem;
+    font-weight: 600;
+    padding: .4rem 1.1rem;
+    white-space: nowrap;
+}
+
+.ux-invoice__status--success { color: #1f7a4d; }
+.ux-invoice__status--danger  { color: #c0392b; }
+.ux-invoice__status--warning { color: #a86a12; }
+.ux-invoice__status--info    { color: #2f6fb5; }
+
+/* The table of seats. A solid header band is what makes it read as a document
+   rather than as a list, and the zebra striping is what lets the eye track
+   across six columns on a laptop. */
+.ux-invoice__table thead th {
+    background: var(--ux-grad-brand);
+    border-bottom: 0;
+    color: #fff;
+    font-size: .8125rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    padding: .9rem 1rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.ux-invoice__table thead th:first-child { border-start-start-radius: .5rem; }
+.ux-invoice__table thead th:last-child  { border-start-end-radius: .5rem; }
+
+.ux-invoice__table tbody tr:nth-child(odd) {
+    background: color-mix(in srgb, var(--ux-grad-brand) 4%, transparent);
+}
+
+.ux-invoice__table td,
+.ux-invoice__table tbody th {
+    border-color: var(--d-line, rgb(0 0 0 / 8%));
+    padding: .9rem 1rem;
+    vertical-align: middle;
+}
+
+/* Totals. Narrow and pushed to the inline end: a three-number column spread
+   across the full page width is harder to add up, not easier. */
+.ux-invoice__totals {
+    margin-inline-start: auto;
+    max-width: 24rem;
+}
+
+.ux-invoice__row {
+    align-items: baseline;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: .5rem 0;
+}
+
+.ux-invoice__row dt {
+    color: var(--arab-body-color, inherit);
+    font-weight: 400;
+    margin: 0;
+    opacity: .75;
+}
+
+.ux-invoice__row dd {
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.ux-invoice__row--total {
+    border-top: 1px solid var(--d-line-strong, rgb(0 0 0 / 18%));
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-top: .35rem;
+    padding-top: .85rem;
+}
+
+.ux-invoice__row--total dt {
+    font-weight: 700;
+    opacity: 1;
+}/* --------------------------------------------------------------------------
    Invoice — print
    --------------------------------------------------------------------------
    A delegate printing their invoice wants a document, not a screenshot of the

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Locale;
 use App\Enums\OrderStatus;
+use App\Http\Controllers\Concerns\ResolvesOwnedOrder;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Services\Payment\PaymentGateway;
@@ -32,6 +33,8 @@ use RuntimeException;
  */
 class CheckoutController extends Controller
 {
+    use ResolvesOwnedOrder;
+
     public function __construct(
         private readonly CheckoutService $checkout,
     ) {}
@@ -119,7 +122,16 @@ class CheckoutController extends Controller
             return back()->withInput()->withErrors(['participants' => $e->getMessage()]);
         }
 
-        return redirect()->route('checkout.pay', ['order' => $order->getKey()]);
+        // The delegate is shown the invoice before any money moves.
+        //
+        // This used to redirect straight to `checkout.pay`, which handed the
+        // order to CMI immediately. That made the invoice unreachable before
+        // payment: there was no screen to look at what had just been bought,
+        // check the seats, or print. The order already exists and is unpaid at
+        // this point, so `orders.show` renders the full document — status "non
+        // payée", the priced seats, the total — with the gateway one click
+        // behind its own confirm button.
+        return redirect()->route('orders.show', ['order' => $order->getKey()]);
     }
 
     /**
@@ -129,9 +141,13 @@ class CheckoutController extends Controller
      * no money moves and no row is written, so a reload is harmless. The order
      * already exists from the previous step.
      */
-    public function pay(Request $request, Order $order): View|RedirectResponse
+    public function pay(Request $request): View|RedirectResponse
     {
-        // $this->authorizeOrder($request, $order);
+        // Resolved through the buyer's own orders rather than bound from the
+        // route: the URI is `{locale?}/inscription/payer/{order}`, so a typed
+        // `Order $order` argument is handed the locale. The ownership test here
+        // was commented out, which left nothing behind to catch it.
+        $order = $this->findOrder($request);
 
         if (! $order->isPayable()) {
             return redirect()->route('orders.show', ['order' => $order->getKey()])
@@ -158,19 +174,6 @@ class CheckoutController extends Controller
     }
 
     // --- Helpers ---------------------------------------------------------
-
-    /**
-     * The order must belong to the signed-in buyer.
-     *
-     * Checked here because the route binding alone resolves any order in the
-     * database. The 2024 pages took the id from `$_GET['id']` with no
-     * ownership test at all, so any visitor could read, and cancel, anyone's
-     * order and see their participants' names and phone numbers.
-     */
-    private function authorizeOrder(Request $request, Order $order): void
-    {
-        abort_if($order->user_id !== $request->user()?->getKey(), 403);
-    }
 
     private function currentCart(Request $request): Cart
     {

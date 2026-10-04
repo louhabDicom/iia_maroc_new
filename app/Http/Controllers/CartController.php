@@ -122,8 +122,16 @@ class CartController extends Controller
     /**
      * Change a line's quantity, including down to zero to remove it.
      */
-    public function update(Request $request, int $cart, int $ticketType): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
+        // Read by name from the route, not as typed arguments. The URI is
+        // `{locale?}/panier/ligne/{cart}/{ticketType}`, and action arguments are
+        // filled positionally — so on `/fr/panier/ligne/5/7` the slots arrive as
+        // ['fr', '5', '7'] and `$cart` would be handed 'fr'. Under
+        // `strict_types` that is a TypeError, which is why editing or removing a
+        // basket line worked in Arabic and threw in French and English.
+        [$cart, $ticketType] = $this->cartRouteIds($request);
+
         $owned = $this->ownedCart($request, $cart);
 
         $line = $owned->items()->where('ticket_type_id', $ticketType)->first();
@@ -162,8 +170,10 @@ class CartController extends Controller
     /**
      * Remove a line.
      */
-    public function destroy(Request $request, int $cart, int $ticketType): RedirectResponse
+    public function destroy(Request $request): RedirectResponse
     {
+        [$cart, $ticketType] = $this->cartRouteIds($request);
+
         $this->ownedCart($request, $cart)
             ->items()
             ->where('ticket_type_id', $ticketType)
@@ -199,6 +209,25 @@ class CartController extends Controller
      * empty somebody else's basket by guessing an id — which is exactly what
      * `removeitem.php` did, taking `$_POST['id']` with no ownership test.
      */
+    /**
+     * The cart id and ticket id this route is pointing at.
+     *
+     * Taken by name because `{locale?}` leads the path — see update(). Both are
+     * cast explicitly: the route hands over strings, and the caller wants ints
+     * to compare against a primary key.
+     *
+     * @return array{0: int, 1: int}
+     */
+    private function cartRouteIds(Request $request): array
+    {
+        $cart = $request->route('cart');
+        $ticketType = $request->route('ticketType');
+
+        abort_if($cart === null || $ticketType === null, 404);
+
+        return [(int) $cart, (int) $ticketType];
+    }
+
     private function ownedCart(Request $request, int $cartId): Cart
     {
         $cart = Cart::query()

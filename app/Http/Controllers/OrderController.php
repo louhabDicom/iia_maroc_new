@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Locale;
 use App\Enums\OrderStatus;
+use App\Http\Controllers\Concerns\ResolvesOwnedOrder;
 use App\Models\Order;
 use App\Services\Registration\InvoiceService;
 use Illuminate\Contracts\View\View;
@@ -34,6 +35,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class OrderController extends Controller
 {
+    use ResolvesOwnedOrder;
+
     public function __construct(
         private readonly InvoiceService $invoices,
     ) {}
@@ -118,58 +121,5 @@ class OrderController extends Controller
 
         return redirect()->route('orders.index')
             ->with('status', __('order.cancel.done'));
-    }
-
-    /**
-     * The id of the order this route is pointing at.
-     *
-     * Read by name from the route rather than taken as a typed action argument,
-     * because a controller action's arguments are filled *positionally* from the
-     * route's parameters, and this URI is `{locale?}/commande/{order}`.
-     *
-     * With `{locale?}` leading the path, `/fr/commande/21` fills the slots as
-     * `['fr', '21']`, so an `Order $order` argument receives the string `'fr'`.
-     * The symptom was silent and looked like an authorization failure: the
-     * ownership check compared a locale against the signed-in user's id and
-     * aborted with 403, for the delegate's own invoice, on every prefixed URL.
-     *
-     * Taking only `Request` removes the positional coupling entirely.
-     */
-    private function orderKey(Request $request): string
-    {
-        $key = $request->route('order');
-
-        abort_if($key === null, 404);
-
-        return (string) $key;
-    }
-
-    /**
-     * Resolve an order from the signed-in buyer's own orders.
-     *
-     * The order is looked up *through the user's relation* rather than fetched
-     * and then compared. That is a stronger guarantee than a post-fetch check:
-     * there is no window in which a row belonging to somebody else is in hand,
-     * and the ownership rule cannot be forgotten by a new action added later.
-     *
-     * It also stops relying on implicit route-model binding, which did not
-     * resolve on the `{locale?}/commande/{order}` variant and passed the raw id
-     * through as a string.
-     *
-     * A miss is a 404, not a 403. "Forbidden" confirms the order exists, which
-     * turns this endpoint into an oracle for guessing which reference numbers
-     * are real; a 404 is the same answer whether the order belongs to someone
-     * else or was never issued.
-     */
-    private function findOrder(Request $request): Order
-    {
-        $user = $request->user();
-
-        abort_if($user === null, 403);
-
-        return $user->orders()
-            ->whereKey($this->orderKey($request))
-            ->with(['items', 'participants', 'payments'])
-            ->firstOrFail();
     }
 }

@@ -62,6 +62,7 @@ return [
     // is for the delegate who needs a copy today and would rather not open a
     // reader.
     'print' => 'طباعة',
+    'confirm_and_pay' => 'تأكيد الطلب',
     'print_hint' => 'اطبع هذه الصفحة إلى ملف PDF من نافذة الطباعة في متصفحك.',
 
     // Shown before payment. The order can be opened, printed and paid at this
@@ -70,6 +71,40 @@ return [
     // circulation the bank will not honour. The delegate can still print this
     // page as a receipt, so the wording promises exactly that.
     'unpaid_notice' => 'لم يتم تسديد هذا الطلب بعد. يمكنك طباعته كإيصال ودفعه الآن؛ وستصبح الفاتورة المرقّمة متاحة بعد إتمام الدفع.',
+
+    // --- The invoice document ----------------------------------------------
+    // The heading, totals block and reassurance strip of the invoice page.
+    // `invoice_heading` takes the reference as a :reference placeholder rather
+    // than composing it in the view, so each language can place it in its own
+    // word order — French and Arabic put it differently.
+    'invoice_heading' => 'الفاتورة رقم :reference',
+    'paid_to' => 'الدفع إلى',
+    'payment_method' => 'طريقة الدفع',
+    'payment_method_cmi' => 'البطاقات المغربية (CMI)',
+    'subtotal' => 'المجموع الفرعي',
+    'member_saving' => 'خصم Adriاء',
+    'email' => 'البريد الإلكتروني',
+    'phone' => 'الهاتف',
+    'contact_us' => 'اتصل بـ ARABCIA',
+    'vat' => 'الضريبة على القيمة المضافة',
+    'total_incl' => 'المجموع شامل الضريبة',
+    'offer' => 'اسم العرض',
+    'participant_name' => 'اسم المشاركين',
+    'date' => 'التاريخ',
+    'price_incl' => 'السعر شامل الضريبة',
+    'download_invoice_short' => 'طباعة / تحميل',
+    'help_title' => 'هل تحتاج إلى مساعدة؟',
+    'help_text' => 'لأي سؤال حول طلبك أو عملية الدفع، تواصل مع فريق ARABCIA.',
+    'assurances' => [
+        'secure' => 'دفع آمن',
+        'secure_text' => 'معاملاتك محمية ومؤمّنة من طرف CMI.',
+        'cards' => 'البطاقات المغربية',
+        'cards_text' => 'الدفع عبر البطاقات البنكية المغربية (CMI).',
+        'instant' => 'فاتورة فورية',
+        'instant_text' => 'تصل الفاتورة مباشرة بعد إتمام الدفع.',
+        'support' => 'المساعدة',
+        'support_text' => 'فريقنا رهن الإشارة متى احتجت إلى أي شيء.',
+    ],
     'sign_in_to_checkout' => 'يرجى تسجيل الدخول لإتمام التسجيل.',
     'enroll_to_checkout' => 'يرجى إعداد تطبيق المصادقة قبل إتمام التسجيل.',
     'not_payable' => 'لم يعد من الممكن دفع هذا الطلب.',

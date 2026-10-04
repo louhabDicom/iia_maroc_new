@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Exceptions\PaymentException;
+use App\Http\Controllers\Concerns\ResolvesOwnedOrder;
 use App\Models\Order;
 use App\Services\Payment\PaymentGateway;
 use App\Services\Payment\PaymentSettlementService;
@@ -35,6 +36,8 @@ use Illuminate\Support\Facades\Log;
  */
 class PaymentController extends Controller
 {
+    use ResolvesOwnedOrder;
+
     public function __construct(
         private readonly PaymentSettlementService $settlement,
     ) {}
@@ -98,9 +101,12 @@ class PaymentController extends Controller
      * better than the 2024 behaviour of silently redirecting to the home page
      * as though nothing had happened.
      */
-    public function return(Request $request, Order $order): View|RedirectResponse
+    public function return(Request $request): View|RedirectResponse
     {
-        $this->authorizeOrder($request, $order);
+        // Resolved through the buyer's own orders: the URI is
+        // `{locale?}/paiement/retour/{order}`, so a typed `Order $order`
+        // argument is handed the locale instead of the id.
+        $order = $this->findOrder($request);
 
         $payload = $request->post();
 
@@ -140,9 +146,9 @@ class PaymentController extends Controller
      * build's habit of leaving such rows as permanently 'encours' is what
      * blocked people from ever re-registering.
      */
-    public function cancel(Request $request, Order $order): View|RedirectResponse
+    public function cancel(Request $request): View|RedirectResponse
     {
-        $this->authorizeOrder($request, $order);
+        $order = $this->findOrder($request);
 
         return view('pages.payment.cancelled', [
             'order' => $order,
@@ -160,9 +166,13 @@ class PaymentController extends Controller
     {
         abort_unless(config('cmi.driver') === 'test', 404);
 
-        $order = Order::query()->where('uuid', $uuid)->firstOrFail();
-
-        $this->authorizeOrder($request, $order);
+        // Looked up through the buyer's own orders rather than by uuid alone.
+        // The uuid is a bearer secret printed into a URL, so without the
+        // ownership scope it would be enough to open someone else's rehearsal
+        // page — and this page is wired to settle orders.
+        $order = $request->user()->orders()
+            ->where('uuid', $uuid)
+            ->firstOrFail();
 
         return view('pages.payment.test-gateway', [
             'order' => $order,
@@ -187,14 +197,5 @@ class PaymentController extends Controller
     {
         return response($action, 200)
             ->header('Content-Type', 'text/plain; charset=UTF-8');
-    }
-
-    /**
-     * The order must belong to the signed-in buyer. The route binding alone
-     * resolves any order in the database, so the ownership test is explicit.
-     */
-    private function authorizeOrder(Request $request, Order $order): void
-    {
-        abort_if($order->user_id !== $request->user()?->getKey(), 403);
     }
 }

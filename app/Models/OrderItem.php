@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Casts\TranslatedString;
-use App\Enums\OrderStatus;
 use App\Support\Money;
+use Database\Factories\OrderItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OrderItem extends Model
 {
-    /** @use HasFactory<\Database\Factories\OrderItemFactory> */
+    /** @use HasFactory<OrderItemFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -60,5 +60,36 @@ class OrderItem extends Model
     public function formattedLineTotal(string $currency = 'MAD'): string
     {
         return Money::format($this->line_total, $currency);
+    }
+
+    /**
+     * The price of one member seat on this line.
+     *
+     * The invoice lists a row per attendee, so it has to price a single seat
+     * rather than repeat the line total. Both unit prices are frozen at
+     * checkout for the same reason `line_total` is: a rate read from the live
+     * ticket type would let a printed invoice disagree with what was charged.
+     */
+    public function formattedUnitPriceMember(string $currency = 'MAD'): string
+    {
+        return Money::format($this->unit_price_member, $currency);
+    }
+
+    public function formattedUnitPriceStandard(string $currency = 'MAD'): string
+    {
+        return Money::format($this->unit_price_standard, $currency);
+    }
+
+    /**
+     * The rate a single seat on this line was sold at.
+     *
+     * A member seat is cheaper, so the choice follows the line's own quantities
+     * rather than a flag passed in from the view.
+     */
+    public function formattedSeatPrice(string $currency = 'MAD'): string
+    {
+        return $this->member_quantity > 0
+            ? $this->formattedUnitPriceMember($currency)
+            : $this->formattedUnitPriceStandard($currency);
     }
 }
