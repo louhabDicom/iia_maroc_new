@@ -151,6 +151,34 @@
                 </a>
             @endauth
 
+            {{-- The account control.
+
+                 A guest gets a link to the sign-in page; a signed-in visitor
+                 gets a link to their own account. Both are rendered as the
+                 same pill so the bar does not change shape when someone signs
+                 in, and both hide below the phone breakpoint, where the drawer
+                 carries them instead — a control that is not visible is not a
+                 control.
+
+                 The signed-in label is `displayName()`, which is the person's
+                 own name and needs no translation. The visually hidden text
+                 names the destination, so the accessible name is "My account —
+                 Ahmed Bennani" rather than the name alone. --}}
+            @auth
+                <a href="{{ route('account') }}" class="d-btn d-btn--outline d-btn--sm d-header__account">
+                    <span class="visually-hidden">@lang('account.title')</span>
+                    <i class="fas fa-circle-user" aria-hidden="true"></i>
+                    <span class="d-header__account-name">{{ auth()->user()->displayName() }}</span>
+                </a>
+            @else
+                {{-- The visible label is the accessible name here, so there is no
+                     second copy of it for a screen reader to hear twice. --}}
+                <a href="{{ route('login') }}" class="d-btn d-btn--outline d-btn--sm d-header__account">
+                    <i class="fas fa-right-to-bracket" aria-hidden="true"></i>
+                    <span class="d-header__account-name">@lang('action.login')</span>
+                </a>
+            @endauth
+
             {{-- The one thing the header is asking for. Present at every width
                  with room for it; below that it moves into the drawer rather
                  than shrinking into unreadability. --}}
@@ -223,23 +251,33 @@
         </a>
     @endif
 
-    @guest
-        <div class="d-footer__list">
-            <a href="{{ route('login') }}">@lang('action.login')</a>
-            @if ($currentEdition?->registration_open)
-                <a href="{{ route('register') }}">@lang('action.register')</a>
-            @endif
-        </div>
-    @else
-        <div class="d-footer__list">
-            <a href="{{ route('account') }}">@lang('account.title')</a>
-            <a href="{{ route('orders.index') }}">@lang('order.orders')</a>
+    {{-- The account block, at the foot of the drawer.
 
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="d-footer__btn">@lang('action.logout')</button>
-            </form>
-        </div>
+         `d-drawer__list` rather than the footer's list class: the footer sits on
+         the mauve band and its links are white, so reusing that class here
+         would put white text on the drawer's white panel — an invisible menu.
+
+         Signing out is a POST, not a link, so it is a real form with a CSRF
+         token. A link would be a GET, and a GET that mutates state is
+         triggerable by a third-party page. --}}
+    @guest
+        <ul class="d-drawer__list d-drawer__list--account">
+            <li><a href="{{ route('login') }}">@lang('action.login')</a></li>
+            @if ($currentEdition?->registration_open)
+                <li><a href="{{ route('register') }}">@lang('action.register')</a></li>
+            @endif
+        </ul>
+    @else
+        <ul class="d-drawer__list d-drawer__list--account">
+            <li><a href="{{ route('account') }}">@lang('account.title')</a></li>
+            <li><a href="{{ route('orders.index') }}">@lang('order.orders')</a></li>
+            <li>
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="d-drawer__btn">@lang('action.logout')</button>
+                </form>
+            </li>
+        </ul>
     @endguest
 </div>
 

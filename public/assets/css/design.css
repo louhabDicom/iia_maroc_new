@@ -448,7 +448,7 @@ img {
 .d-btn--outline {
     background: transparent;
     border-color: currentColor;
-    color: var(--d-indigo);
+    color: white;
 }
 
 .d-btn--outline:hover {
@@ -459,7 +459,7 @@ img {
 
 .d-btn--on-dark {
     border-color: rgb(255 255 255 / 55%);
-    color: #fff;
+    color: #231a5c;
 }
 
 .d-btn--on-dark:hover {
@@ -565,7 +565,7 @@ img {
     gap: var(--sp-5);
     height: var(--header-h);
     margin-inline: auto;
-    max-width: var(--container);
+    max-width:  1400px;
     padding-inline: var(--sp-5);
     transition: background-color var(--dur-2) var(--ease),
         box-shadow var(--dur-2) var(--ease),
@@ -666,6 +666,60 @@ background: linear-gradient(135deg, rgb(44 17 129 / 88%) 0%, rgb(32 16 98 / 88%)
     display: flex;
     flex: 0 0 auto;
     gap: var(--sp-3);
+}
+
+/* --- The account control ------------------------------------------------
+   One pill for both states, so the bar does not change shape when someone
+   signs in. Below the tablet width the name is dropped and the glyph alone
+   remains: a full name beside eight nav links is what forces the bar to wrap,
+   and a wrapped header row is the defect the `white-space: nowrap` on
+   `.d-nav__link` exists to prevent. Below the phone width the whole control
+   goes, and the drawer carries sign-in and sign-out instead. */
+
+.d-header__account {
+    gap: var(--sp-2);
+    max-width: 11rem;
+}
+
+.d-header__account-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The bar has eight items in it. Rather than let them wrap — which produces a
+   ragged two-line header — the row tightens as the viewport narrows, and the
+   burger takes over below 1100px where there is genuinely no room. */
+
+@media (max-width: 1399.98px) {
+    .d-nav {
+        gap: 0;
+    }
+
+    .d-nav__link {
+        font-size: var(--t-xs);
+        padding-inline: 0.5rem;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .d-header__account-name {
+        display: none;
+    }
+
+    .d-header__account {
+        max-width: none;
+        padding-inline: 0.8rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* The language switcher and the account glyph both go: at this width the
+       bar has the brand and the burger, and both of these are in the drawer
+       already. */
+    .d-header__account {
+        display: none;
+    }
 }
 
 /* --- Language: a segmented control, not a dropdown ------------------------
@@ -2241,6 +2295,46 @@ html[dir="ltr"] {
 .d-drawer__list a[aria-current="page"] {
     background: var(--d-surface-sunk);
     color: var(--d-indigo);
+}
+
+/* The account block at the foot of the drawer. It is separated from the page
+   links by a rule rather than by more space, because the two lists answer two
+   different questions — "where can I go" and "who am I". */
+
+.d-drawer__list--account {
+    border-block-start: 1px solid var(--d-line);
+    padding-block-start: var(--sp-3);
+}
+
+/* The form has to be a block, or the submit button does not fill the row. */
+
+.d-drawer__list--account form {
+    display: block;
+}
+
+/* Sign-out as a button rather than a link, because it is a POST. Styled to be
+   indistinguishable from the links above it so the two do not read as two
+   different kinds of control. */
+
+.d-drawer__btn {
+    background: transparent;
+    border: 0;
+    border-radius: var(--r-md);
+    color: var(--d-ink);
+    cursor: pointer;
+    display: block;
+    font-family: inherit;
+    font-size: var(--t-lg);
+    font-weight: 700;
+    padding: var(--sp-3) var(--sp-4);
+    text-align: start;
+    transition: background-color var(--dur-1) var(--ease);
+    width: 100%;
+}
+
+.d-drawer__btn:hover,
+.d-drawer__btn:focus-visible {
+    background: var(--d-surface-alt);
 }
 
 /* The scrim. `visibility` rather than `display` so it can fade, and so it
@@ -3910,6 +4004,444 @@ html[dir="rtl"] .h-hero {
 .h-sponsors__cta {
     margin: var(--sp-7) 0 0;
     text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   21. Presentation page
+   --------------------------------------------------------------------------
+   Namespaced `p-`, on the same reasoning as the `h-` block above: these
+   classes are emitted by one page, so restyling them cannot reach the shared
+   bands the other pages are built from.
+
+   Logical properties throughout, like the rest of the file: Arabic is the
+   default language of this site, so the mirror is the common case and `left`
+   / `right` would be correct in exactly one direction.
+   -------------------------------------------------------------------------- */
+
+/* --- Band 1: the introduction -------------------------------------------
+   Two columns on a desktop, one on a phone. The copy column carries the
+   heading, the lede and the photograph; the cards stack beside it. */
+
+.p-intro,
+.p-organisations,
+.p-network,
+.p-sheet {
+    padding-block: var(--section-y);
+    position: relative;
+}
+.p-organisations{
+     background-image: url('../images/presentation/slide.png');
+        background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.p-intro {
+     background-image: url('../images/presentation/ban_presentation.png');
+}
+
+.p-intro__grid {
+    align-items: center;
+    display: grid;
+    gap: var(--sp-7);
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 992px) {
+    .p-intro__grid {
+        grid-template-columns: 1.15fr .85fr;
+    }
+}
+
+.p-intro__title {
+    color: var(--d-ink);
+    font-size: var(--t-2xl);
+    margin: 0;
+    text-wrap: balance;
+}
+
+.p-intro__lede {
+    color: var(--d-muted);
+    font-size: var(--t-base);
+    line-height: 1.7;
+    margin: var(--sp-4) 0 0;
+    max-width: 58ch;
+}
+
+/* A rounded, cropped photograph in the brand's own soft frame. */
+
+.p-intro__media {
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-2);
+    margin: var(--sp-6) 0 0;
+    overflow: hidden;
+}
+
+.p-intro__media img {
+    aspect-ratio: 4 / 3;
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* The three cards. `auto-fit` + `minmax` gives three columns on a desktop,
+   two on a tablet and one on a phone without three separate breakpoints. */
+
+.p-highlights {
+    display: grid;
+    list-style: none;
+    margin: 100px;
+    padding: 0;
+}
+
+.p-highlight {
+    padding: var(--sp-5);
+}
+
+/* A tinted rounded square rather than a bare glyph, so the icon reads as a
+   card element rather than as a stray character. */
+
+.p-highlight__icon {
+    align-items: center;
+    background: linear-gradient(150deg,
+        rgb(42 31 110 / 10%), rgb(115 132 255 / 16%));
+    border-radius: var(--r-md);
+    color: var(--d-indigo);
+    display: inline-flex;
+    font-size: 1.15rem;
+    height: 46px;
+    justify-content: center;
+    margin-block-end: var(--sp-3);
+    width: 46px;
+}
+
+.p-highlight__title {
+    color: var(--d-ink);
+    font-size: var(--t-base);
+    margin: 0;
+}
+
+.p-highlight__text {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.6;
+    margin: var(--sp-2) 0 0;
+}
+
+/* --- Band 2: the two institutions ---------------------------------------
+   Copy on one side, cards on the other. The cards column is declared second
+   so RTL — the common direction here — puts the copy first. */
+
+.p-split {
+    align-items: center;
+    display: grid;
+    gap: var(--sp-7);
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 992px) {
+    .p-split {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.p-orgs {
+    width: 130%;
+    display: grid;
+    gap: var(--sp-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.p-org {
+    display: grid;
+    gap: var(--sp-2) var(--sp-4);
+    grid-template-columns: 1fr auto;
+    padding: var(--sp-5);
+}
+
+/* The logo sits in a tinted well so a mark with a light background still
+   reads as a mark rather than as a white rectangle. */
+
+.p-org__mark {
+    align-items: center;
+    background: var(--d-surface-alt);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-md);
+    display: flex;
+    grid-column: 1 / -1;
+    height: 5rem;
+    justify-content: center;
+    overflow: hidden;
+    padding: var(--sp-3);
+}
+
+.p-org__mark img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+/* The fallback when no logo file is on disk: the initial, set large. */
+
+.p-org__mark--text {
+    color: var(--d-indigo);
+    font-family: var(--f-title);
+    font-size: var(--t-2xl);
+    font-weight: 700;
+}
+
+.p-org__body {
+    min-width: 0;
+}
+
+.p-org__name {
+    color: var(--d-ink);
+    font-size: var(--t-base);
+    margin: 0;
+}
+
+.p-org__role {
+    color: var(--d-periwinkle);
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: .1em;
+    margin: var(--sp-1) 0 0;
+    text-transform: uppercase;
+}
+
+.p-org__lede {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.6;
+    margin: var(--sp-3) 0 0;
+}
+
+/* A round arrow button in the card's own corner, matching the reference. */
+
+.p-org__link {
+    align-items: center;
+    align-self: center;
+    background: var(--d-surface-sunk);
+    border-radius: 50%;
+    color: var(--d-indigo);
+    display: inline-flex;
+    height: 40px;
+    justify-content: center;
+    text-decoration: none;
+    transition: background-color var(--dur-2) var(--ease),
+        color var(--dur-2) var(--ease);
+    width: 40px;
+}
+
+.p-org__link:hover {
+    background: var(--d-indigo);
+    color: #fff;
+}
+
+/* --- Band 3: the network ------------------------------------------------
+   The photograph leads in the DOM so RTL reads copy-first; the grid mirrors
+   with `grid-template-columns` alone. */
+
+.p-network {
+      background-image: url('../images/presentation//slide.png');
+
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.p-network__grid {
+    align-items: center;
+    display: grid;
+    gap: var(--sp-7);
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 992px) {
+    .p-network__grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.p-network__media {
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-2);
+    margin: 0;
+    overflow: hidden;
+}
+
+.p-network__media img {
+    aspect-ratio: 16 / 10;
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* --- Band 4: the technical sheet and the audience card -------------------
+   Two panels side by side. The sheet is the dark one because it is the block
+   a delegate copies figures out of; the audience card stays light so the two
+   do not compete for the eye. */
+
+.p-sheet {
+    background: var(--d-surface);
+}
+
+/* The same mauve pair every other dark band on the site is a gradient
+   between, so the panel reads as one material rather than as a new colour. */
+
+.p-sheet__panel {
+    background:
+        linear-gradient(120deg, var(--d-navy-lift) 0%, #26116e 55%, var(--d-indigo) 100%);
+    border-radius: var(--r-xl);
+    color: rgb(255 255 255 / 82%);
+    height: 100%;
+    overflow: hidden;
+    padding: var(--sp-6);
+    position: relative;
+}
+
+/* The clay accent: the one warm colour on an otherwise cool panel, and what
+   the reference sets the eyebrow glyph in. */
+
+.p-sheet__eyebrow {
+    color: var(--d-clay);
+    display: block;
+    font-size: 1.5rem;
+    line-height: 1;
+    margin-block-end: var(--sp-4);
+}
+
+.p-sheet__title {
+    color: #fff;
+    font-size: var(--t-lg);
+    margin: 0;
+}
+
+.p-sheet__lede {
+    color: rgb(255 255 255 / 70%);
+    font-size: var(--t-sm);
+    margin: var(--sp-2) 0 0;
+}
+
+/* A real <dl>, because these are label/value pairs rather than two columns of
+   prose. On a phone they stack: a 9rem label column would leave too little
+   room for the value to stay readable. */
+
+.p-sheet__rows {
+    margin: var(--sp-5) 0 0;
+}
+
+.p-sheet__row {
+    border-block-start: 1px solid rgb(255 255 255 / 12%);
+    display: grid;
+    gap: var(--sp-1) var(--sp-4);
+    grid-template-columns: 1fr;
+    padding-block: var(--sp-3);
+}
+
+@media (min-width: 576px) {
+    .p-sheet__row {
+        align-items: baseline;
+        grid-template-columns: 9rem 1fr;
+    }
+}
+
+.p-sheet__row dt {
+    align-items: center;
+    color: rgb(255 255 255 / 66%);
+    display: flex;
+    font-size: var(--t-xs);
+    gap: var(--sp-2);
+}
+
+.p-sheet__row dt i {
+    color: var(--d-periwinkle);
+    width: 1.1em;
+}
+
+.p-sheet__row dd {
+    color: #fff;
+    font-size: var(--t-sm);
+    margin: 0;
+}
+
+/* White rather than mauve: this button sits on a mauve panel, and the primary
+   treatment would be a mauve rectangle on mauve. */
+
+.p-sheet__cta {
+    background: #fff;
+    border-color: #fff;
+    color: var(--d-indigo-dark);
+    margin-block-start: var(--sp-5);
+}
+
+.p-sheet__cta:hover {
+    background: var(--d-clay);
+    border-color: var(--d-clay);
+    color: #fff;
+}
+
+/* The audience card: a tinted panel whose photograph runs off the bottom, so
+   the text sits on a solid field and the image is the finish. */
+
+.p-audience {
+    background: var(--d-surface-alt);
+    border-radius: var(--r-xl);
+    height: 100%;
+    overflow: hidden;
+    padding: var(--sp-6);
+    position: relative;
+}
+
+.p-audience__eyebrow {
+    color: var(--d-indigo);
+    display: block;
+    font-size: 1.5rem;
+    line-height: 1;
+    margin-block-end: var(--sp-4);
+}
+
+.p-audience__title {
+    color: var(--d-ink);
+    font-size: var(--t-xl);
+    margin: 0;
+}
+
+.p-audience__text {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.7;
+    margin: var(--sp-3) 0 0;
+}
+
+.p-audience__media {
+    border-radius: var(--r-lg);
+    margin: var(--sp-5) 0 0;
+    overflow: hidden;
+}
+
+.p-audience__media img {
+    aspect-ratio: 16 / 10;
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   22. Presentation page — reduced motion
+   --------------------------------------------------------------------------
+   The same reasoning as the landing page below: a control that drifts is
+   worse than one that does not move, because the eye cannot follow it.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .p-org__link {
+        transition: none;
+    }
 }
 
 /* --------------------------------------------------------------------------

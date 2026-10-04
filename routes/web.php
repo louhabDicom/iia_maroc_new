@@ -12,6 +12,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PresentationController;
 use App\Http\Controllers\PricingController;
 use App\Http\Controllers\ProgrammeController;
 use App\Http\Controllers\RegisterController;
@@ -101,6 +102,7 @@ $page = function (string $name, string $path, string|array|callable $action, arr
 // --- Public pages ----------------------------------------------------------
 
 $page('home', '', HomeController::class);
+$page('presentation', 'presentation', PresentationController::class);
 $page('programme', 'programme', ProgrammeController::class);
 $page('speakers', 'speakers', SpeakersController::class);
 

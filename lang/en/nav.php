@@ -9,6 +9,7 @@ return [
     'home'            => 'Home',
     'join'            => 'I’M JOINING!',
     'menu'            => 'Menu',
+    'presentation'    => 'About',
     'pricing'         => 'Pricing',
     'programme'       => 'Programme',
     'registration'    => 'Registration',

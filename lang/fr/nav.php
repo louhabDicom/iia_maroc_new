@@ -9,6 +9,7 @@ return [
     'home'            => 'Accueil',
     'join'            => 'JE PARTICIPE !',
     'menu'            => 'Menu',
+    'presentation'    => 'Présentation',
     'pricing'         => 'Tarifs',
     'programme'       => 'Programme',
     'registration'    => 'Inscription',

@@ -9,6 +9,7 @@ return [
     'home'            => 'الرئيسية',
     'join'            => 'سأشارك!',
     'menu'            => 'القائمة',
+    'presentation'    => 'تقديم',
     'pricing'         => 'الأسعار',
     'programme'       => 'البرنامج',
     'registration'    => 'التسجيل',

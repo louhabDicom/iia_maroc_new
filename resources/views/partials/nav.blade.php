@@ -23,6 +23,7 @@
 
     $items = array_values(array_filter([
         ['route' => 'home', 'label' => __('nav.home')],
+        ['route' => 'presentation', 'label' => __('nav.presentation')],
         ['route' => 'programme', 'label' => __('nav.programme')],
         ['route' => 'speakers', 'label' => __('nav.speakers')],
         ['route' => 'pricing', 'label' => __('nav.pricing')],
@@ -54,8 +55,8 @@
 
     {{-- The archive lives in the drawer only.
 
-         On the bar it was a ninth item competing with the seven real pages for
-         a row that is already tight, and it is something nobody arrives
+         On the bar it would be a ninth item competing with the eight real pages
+         for a row that is already tight, and it is something nobody arrives
          looking for. In the drawer it costs one line and is where a returning
          delegate looks for last year's programme. --}}
     @unless ($isBar)
