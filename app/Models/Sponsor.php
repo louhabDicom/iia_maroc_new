@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Database\Factories\SponsorFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -15,6 +17,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Sponsor extends Model
 {
+    /** @use HasFactory<SponsorFactory> */
+    use HasFactory;
+
     public const TIER_PLATINUM = 'platinum';
 
     public const TIER_GOLD = 'gold';
@@ -85,22 +90,22 @@ class Sponsor extends Model
      *
      * @param  Builder<Sponsor>  $query
      */
-public function scopeInDisplayOrder(Builder $query): void
-{
-    $cases = [];
-    $bindings = [];
+    public function scopeInDisplayOrder(Builder $query): void
+    {
+        $cases = [];
+        $bindings = [];
 
-    foreach (self::TIER_ORDER as $tier => $rank) {
-        $cases[] = 'WHEN ? THEN ?';
-        $bindings[] = $tier;
-        $bindings[] = $rank;
+        foreach (self::TIER_ORDER as $tier => $rank) {
+            $cases[] = 'WHEN ? THEN ?';
+            $bindings[] = $tier;
+            $bindings[] = $rank;
+        }
+
+        $query
+            ->orderByRaw('CASE `tier` '.implode(' ', $cases).' ELSE 99 END', $bindings)
+            ->orderBy('sort_order')
+            ->orderBy('name');
     }
-
-    $query
-        ->orderByRaw('CASE `tier` '.implode(' ', $cases).' ELSE 99 END', $bindings)
-        ->orderBy('sort_order')
-        ->orderBy('name');
-}
 
     public function tierRank(): int
     {

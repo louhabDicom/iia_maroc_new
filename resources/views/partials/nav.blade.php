@@ -24,11 +24,12 @@
     $items = array_values(array_filter([
         ['route' => 'home', 'label' => __('nav.home')],
         ['route' => 'presentation', 'label' => __('nav.presentation')],
+                ['route' => 'sponsors', 'label' => __('nav.sponsors')],
         ['route' => 'programme', 'label' => __('nav.programme')],
         ['route' => 'speakers', 'label' => __('nav.speakers')],
         ['route' => 'pricing', 'label' => __('nav.pricing')],
         ['route' => 'venue', 'label' => __('nav.venue')],
-        ['route' => 'sponsors', 'label' => __('nav.sponsors')],
+
         ['route' => 'contact', 'label' => __('nav.contact')],
     ], static fn (array $item): bool => Route::has($item['route'])));
 @endphp

@@ -120,7 +120,18 @@ $page('venue', 'lieu', VenueController::class);
 Route::get('/venue', VenueController::class)->name('venue-alt.ar');
 Route::get('/{locale?}/venue', VenueController::class)->name('venue-alt');
 
-$page('sponsors', 'partenaires', SponsorsController::class);
+// The canonical address is /sponsoring, which matches what the page is now
+// about and what the navigation calls it. /partenaires and /sponsors both stay
+// registered rather than redirected: they are printed in the 2024 sponsorship
+// deck and quoted in inbound links, and a page that 301s a visitor who followed
+// an old link is a worse outcome than a second name for the same page.
+//
+// Only the canonical name carries the `sponsors` prefix the templates link to;
+// the two legacy spellings are named for what they are, so `route:list` reads
+// honestly and nothing links to them by name.
+$page('sponsors', 'sponsoring', SponsorsController::class);
+Route::get('/partenaires', SponsorsController::class)->name('sponsors-legacy.ar');
+Route::get('/{locale?}/partenaires', SponsorsController::class)->name('sponsors-legacy');
 Route::get('/sponsors', SponsorsController::class)->name('sponsors-alt.ar');
 Route::get('/{locale?}/sponsors', SponsorsController::class)->name('sponsors-alt');
 

@@ -4059,6 +4059,7 @@ html[dir="rtl"] .h-hero {
     padding-block: var(--section-y);
     position: relative;
 }
+
 .p-organisations{
      background-image: url('../images/presentation/slide.png');
         background-position: center;

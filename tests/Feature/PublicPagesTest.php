@@ -11,10 +11,12 @@ use App\Models\Country;
 use App\Models\Edition;
 use App\Models\Organisation;
 use App\Models\Room;
+use App\Models\Sponsor;
 use App\Models\TicketType;
 use App\Models\Track;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -164,7 +166,13 @@ class PublicPagesTest extends TestCase
             'pricing alt' => ['/pricing'],
             'venue' => ['/lieu'],
             'venue alt' => ['/venue'],
-            'sponsors' => ['/partenaires'],
+            'sponsors' => ['/sponsoring'],
+            // The two spellings the 2024 site printed. They are registered
+            // rather than redirected so an old link keeps resolving to a page
+            // instead of to a redirect notice, and they are covered here for
+            // exactly that reason: a spelling nobody tests is a spelling that
+            // quietly stops working.
+            'sponsors legacy' => ['/partenaires'],
             'sponsors alt' => ['/sponsors'],
             'contact' => ['/contact'],
             'archive' => ['/archive'],
@@ -246,13 +254,112 @@ class PublicPagesTest extends TestCase
     {
         $this->seedEdition(withContent: false);
 
-        foreach (['/', '/programme', '/speakers', '/tarifs', '/lieu', '/partenaires', '/contact'] as $path) {
+        foreach (['/', '/programme', '/speakers', '/tarifs', '/lieu', '/sponsoring', '/partenaires', '/contact'] as $path) {
             $response = $this->get($path);
 
             // The path is in the message so a failure names the page rather than
             // the loop iteration.
             $response->assertOk("GET {$path} did not render with an edition that has no child rows.");
         }
+    }
+
+    /**
+     * How many reserved "logo to come" plates the page actually rendered.
+     *
+     * Counted on the rendered `<li>` attribute rather than on the bare class
+     * name because the page inlines its own stylesheet, where `.sp-plate--pending`
+     * appears as a selector too. Counting the bare class would report one hit
+     * from the CSS on a page that reserved nothing at all.
+     */
+    private function pendingPlatesOn(TestResponse $response): int
+    {
+        return substr_count(
+            $response->getContent(),
+            'sp-plate--pending" aria-hidden="true"'
+        );
+    }
+
+    /**
+     * The wall reserves a fixed number of "logo to come" plates.
+     *
+     * `range(1, 0)` is `[1, 0]` in PHP and not an empty array, so the count is
+     * asserted rather than assumed: a wall that is exactly full used to reserve
+     * two stray plates for. Over-subscribing is covered too, because clamping is
+     * the other direction this can fail.
+     */
+    #[DataProvider('sponsorCountsAndPendingPlates')]
+    public function test_the_logo_wall_reserves_the_remaining_plates(int $confirmed, int $pending): void
+    {
+        $edition = $this->seedEdition();
+
+        Sponsor::factory()
+            ->count($confirmed)
+            ->create(['edition_id' => $edition->getKey()]);
+
+        $response = $this->get('/fr/sponsoring')->assertOk();
+
+        $this->assertSame($pending, $this->pendingPlatesOn($response));
+    }
+
+    /**
+     * @return array<string, array{0: int, 1: int}>
+     */
+    public static function sponsorCountsAndPendingPlates(): array
+    {
+        return [
+            'none confirmed' => [0, 4],
+            'one confirmed' => [1, 3],
+            // The boundary: exactly full must reserve none at all.
+            'wall exactly full' => [4, 0],
+            'over-subscribed' => [6, 0],
+        ];
+    }
+
+    /**
+     * Sponsors from earlier editions render in the courtesy rail, never on the
+     * wall under sale.
+     *
+     * A "previous" tier sponsor is a real row in the same table, so a query that
+     * forgot the tier filter would print a company that already declined this
+     * edition as though it were a current sponsor.
+     */
+    public function test_previous_edition_sponsors_stay_off_the_current_wall(): void
+    {
+        $edition = $this->seedEdition();
+
+        Sponsor::factory()
+            ->previous()
+            ->create([
+                'edition_id' => $edition->getKey(),
+                'name' => 'Ancienne Compagnie',
+            ]);
+
+        $response = $this->get('/fr/sponsoring')->assertOk();
+
+        // The name is still on the page, in the rail.
+        $response->assertSee('Ancienne Compagnie');
+
+        // Four plates still reserved: the rail consumed none of the wall.
+        $this->assertSame(4, $this->pendingPlatesOn($response));
+    }
+
+    /**
+     * An unpublished sponsor is invisible, which frees its plate.
+     *
+     * `is_published` is the switch that takes a logo off the site without
+     * deleting the row, so the wall has to count what is visible rather than
+     * what exists.
+     */
+    public function test_an_unpublished_sponsor_does_not_occupy_a_plate(): void
+    {
+        $edition = $this->seedEdition();
+
+        Sponsor::factory()->count(4)->create(['edition_id' => $edition->getKey()]);
+        Sponsor::factory()->unpublished()->create(['edition_id' => $edition->getKey()]);
+
+        $response = $this->get('/fr/sponsoring')->assertOk();
+
+        $this->assertSame(0, $this->pendingPlatesOn($response));
     }
 
     public function test_programme_renders_when_sessions_exist(): void
