@@ -21,6 +21,8 @@ use App\Http\Controllers\SpeakersController;
 use App\Http\Controllers\SponsorsController;
 use App\Http\Controllers\VenueController;
 use App\Http\Controllers\VerificationController;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -136,6 +138,47 @@ Route::get('/archive/{year?}', [ArchiveController::class, '__invoke'])
 Route::get('/{locale?}/archive/{year?}', [ArchiveController::class, '__invoke'])
     ->where('year', '\d{4}')
     ->name('archive');
+
+// --- The /ar prefix --------------------------------------------------------
+//
+// Arabic is the default language of this site, so its canonical address is the
+// UNPREFIXED one: /presentation, never /ar/presentation. That is why
+// `Route::pattern('locale', 'en|fr')` above deliberately excludes `ar` — serving
+// both would leave every Arabic page with two addresses and hand a search
+// engine a duplicate to arbitrate.
+//
+// Correct for the index, wrong for a person. Somebody who types /ar, or follows
+// a link written that way, currently gets a 404 for a page that plainly exists.
+// The fix is deliberately NOT a second registration of every page — that is the
+// duplicate the canonical rule exists to prevent — but a single permanent
+// redirect that strips the prefix and hands the visitor to the address that is
+// already canonical. One rule covers every page, including pages added later,
+// and a crawler following it ends up on the address the rest of the file wants
+// indexed rather than on a second copy it would have to discount.
+
+Route::get('/ar/{path?}', function (Request $request, string $path = ''): RedirectResponse {
+    // `/ar` and `/ar/` both mean the Arabic home page, so an empty capture
+    // becomes the site root rather than an empty redirect.
+    $target = '/'.ltrim($path, '/');
+
+    // `.*` matches anything at all, including a traversal sequence, an absolute
+    // URL or a scheme — and `redirect()` passes its target straight to the
+    // `Location` header. So the capture is reduced to a plain in-app path before
+    // it is used, and anything that could leave the application is a 404 rather
+    // than a redirect to somewhere else on the internet.
+    if ($target !== '/' && preg_match('#^/(?:[a-z0-9\-]+/?)+$#i', $target) !== 1) {
+        abort(404);
+    }
+
+    // The query string is a visitor's state (?day=2, a filter), not part of the
+    // address, and dropping it would silently change which page they land on.
+    $query = $request->getQueryString();
+
+    return redirect($target.($query === null || $query === '' ? '' : '?'.$query), 301);
+})
+    ->where('path', '.*')
+    ->name('locale.ar');
+
 // --- Account creation and sign-in -----------------------------------------
 //
 // Guest-only, and inside the locale prefix so a code sent in Arabic is read on

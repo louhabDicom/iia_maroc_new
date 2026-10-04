@@ -336,7 +336,6 @@
     inset-block-end: -140px;
     width: 65%;
     height: 260px;
-    background: radial-gradient(ellipse at 35% 40%, #e4dfff 0, rgba(228, 223, 255, 0) 68%);
     pointer-events: none;
 }
 .p-intro .container { position: relative; z-index: 1; }

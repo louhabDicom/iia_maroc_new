@@ -702,6 +702,25 @@ background: linear-gradient(135deg, rgb(44 17 129 / 88%) 0%, rgb(32 16 98 / 88%)
     }
 }
 
+/* --- Below 1100px the bar becomes brand + actions --------------------------
+   THE ONE RULE THE RESPONSIVE HEADER WAS MISSING.
+
+   The burger appears here, but nothing ever hid the inline nav beside it — so
+   on a phone the bar still tried to lay out eight links next to the brand and
+   the language switcher, and the row overflowed instead of collapsing. The
+   links are not lost: `partials.nav` renders the same list into the drawer,
+   which is exactly why the two are generated from one array.
+
+   `display: none` rather than `visibility`: a hidden landmark left in the
+   accessibility tree is a navigation region with no visible content. */
+@media (max-width: 1099.98px) {
+    .d-header__nav {
+        display: none;
+    }
+}
+
+/* The account pill loses its name before it loses its glyph, so a signed-in
+   visitor still has a recognisable control at tablet width. */
 @media (max-width: 1199.98px) {
     .d-header__account-name {
         display: none;
@@ -713,11 +732,22 @@ background: linear-gradient(135deg, rgb(44 17 129 / 88%) 0%, rgb(32 16 98 / 88%)
     }
 }
 
+/* Below the phone width the bar is the brand and the burger, and nothing else.
+   The language switcher and the account control both live in the drawer at
+   these widths, so hiding them here removes a control without removing the
+   capability. */
 @media (max-width: 767.98px) {
-    /* The language switcher and the account glyph both go: at this width the
-       bar has the brand and the burger, and both of these are in the drawer
-       already. */
+    .d-header__bar {
+        gap: var(--sp-3);
+    }
+
     .d-header__account {
+        display: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .d-header__actions .d-lang {
         display: none;
     }
 }
