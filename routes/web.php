@@ -19,8 +19,8 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SpeakersController;
 use App\Http\Controllers\SponsorsController;
+use App\Http\Controllers\TotpController;
 use App\Http\Controllers\VenueController;
-use App\Http\Controllers\VerificationController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -220,30 +220,34 @@ Route::middleware('auth')->group(function () use ($page): void {
     Route::get('/{locale?}/account', [AccountController::class, 'show'])->name('account-alt');
 });
 
-// --- Phone verification ---------------------------------------------------
+// --- Authenticator app (TOTP) ----------------------------------------------
 //
-// Reachable while authenticated but unverified â€” that is the whole point, since
-// a half-finished registration has to be resumable. Every action reads the number
-// from the stored account rather than from the request, so a challenge can never
-// be aimed at a third party's handset.
+// Reachable while authenticated but not yet enrolled — that is the whole point,
+// since a half-finished registration has to be resumable. Nothing here reads an
+// identifier from the request: the account is whatever the session says it is,
+// so a challenge can never be aimed at a third party's device.
 //
-// Ordering is gated separately by the `verified.phone` middleware, applied per
-// route where it is needed. Applying it to this group would make
-// /verify-phone unreachable, because that page *is* the unverified state.
+// Ordering is gated separately by the `totp.confirmed` middleware, applied per
+// route where it is needed. Applying it to this group would make /totp/setup
+// unreachable, because that page *is* the un-enrolled state.
+//
+// The old /verify-phone/* addresses are gone rather than aliased. They named a
+// mechanism — proving a phone number — that no longer exists anywhere in the
+// application, so keeping them would promise a page that proves nothing.
 
 Route::middleware('auth')->group(function () use ($page): void {
-    $page('verification.notice', 'verify-phone', [VerificationController::class, 'show']);
-    $page('verification.done', 'verify-phone/done', [VerificationController::class, 'done']);
+    $page('totp.setup', 'totp/setup', [TotpController::class, 'show']);
+    $page('totp.recovery-codes', 'totp/setup/recovery-codes', [TotpController::class, 'recoveryCodes']);
+    $page('totp.done', 'totp/setup/done', [TotpController::class, 'done']);
 
-    Route::match(['POST'], '/verify-phone/verify', [VerificationController::class, 'verify'])
-        ->name('verification.verify.ar');
-    Route::post('/{locale?}/verify-phone/verify', [VerificationController::class, 'verify'])
-        ->name('verification.verify');
-
-    Route::match(['POST'], '/verify-phone/resend', [VerificationController::class, 'resend'])
-        ->name('verification.resend.ar');
-    Route::post('/{locale?}/verify-phone/resend', [VerificationController::class, 'resend'])
-        ->name('verification.resend');
+    Route::match(['POST'], '/totp/setup', [TotpController::class, 'confirm'])
+        // Throttled because this is the one endpoint where guessing pays: six
+        // digits is a small space, and there is no resend to wait out.
+        ->middleware('throttle:10,1')
+        ->name('totp.confirm.ar');
+    Route::post('/{locale?}/totp/setup', [TotpController::class, 'confirm'])
+        ->middleware('throttle:10,1')
+        ->name('totp.confirm');
 });
 
 // --- The basket -------------------------------------------------------------

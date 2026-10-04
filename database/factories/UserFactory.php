@@ -36,7 +36,12 @@ class UserFactory extends Factory
             // collision would fail as a constraint violation rather than a
             // readable assertion.
             'phone' => '+2126'.fake()->unique()->numerify('########'),
-            'phone_verified_at' => now(),
+            // A working authenticator by default, so a factory-built delegate is
+            // usable out of the box. `unconfirmedTotp()` is the state that has to
+            // be refused.
+            'totp_secret' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+            'totp_confirmed_at' => now(),
+            'totp_recovery_codes' => null,
             'password' => static::$password ??= Hash::make('password'),
             'terms_accepted_at' => now(),
             'remember_token' => Str::random(10),
@@ -77,12 +82,17 @@ class UserFactory extends Factory
     }
 
     /**
-     * A user who cannot order: no verified phone, no accepted terms.
+     * A user who cannot order: no authenticator, no accepted terms.
+     *
+     * The secret is set but *not* confirmed, because that is the state a real
+     * abandoned enrolment leaves behind — and it is the state the gate has to
+     * refuse. A state with no secret at all would pass for the wrong reason.
      */
-    public function unverifiedPhone(): static
+    public function unconfirmedTotp(): static
     {
         return $this->state(fn (array $attributes) => [
-            'phone_verified_at' => null,
+            'totp_secret' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+            'totp_confirmed_at' => null,
             'terms_accepted_at' => null,
         ]);
     }

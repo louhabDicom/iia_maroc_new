@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\EnsurePhoneIsVerified;
+use App\Http\Middleware\EnsureTotpIsConfirmed;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\LocalizeUrls;
 use App\Http\Middleware\SetLocale;
@@ -32,7 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Appending rather than prepending: the session must exist before
         // SetLocale can read a stored preference from it, and authentication has
-        // to run before EnsurePhoneIsVerified can see who is asking.
+        // to run before EnsureTotpIsConfirmed can see who is asking.
         $middleware->web(append: [
             SetLocale::class,
             LocalizeUrls::class,
@@ -49,7 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'verified.phone' => EnsurePhoneIsVerified::class,
+            'totp.confirmed' => EnsureTotpIsConfirmed::class,
             'admin' => EnsureUserIsAdmin::class,
         ]);
 

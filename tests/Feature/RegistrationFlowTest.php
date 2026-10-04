@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\EditionStatus;
 use App\Enums\MembershipStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
-use App\Exceptions\PaymentException;
 use App\Mail\OrderStatusChanged;
 use App\Models\Cart;
 use App\Models\Country;
@@ -198,9 +198,9 @@ class RegistrationFlowTest extends TestCase
         // rather than showing an empty form they cannot complete.
         $this->get('/inscription')->assertRedirect(route('pricing'));
 
-        // Signed in but the number is unverified: sent to verification, with a
-        // reason, rather than bounced to a bare 403.
-        $unverified = User::factory()->create(['phone_verified_at' => null]);
+        // Signed in but the authenticator is not confirmed: sent to enrolment,
+        // with a reason, rather than bounced to a bare 403.
+        $unverified = User::factory()->unconfirmedTotp()->create();
         $this->actingAs($unverified)->post('/panier', [
             'ticket_type_id' => $ticket->getKey(),
             'quantity' => 1,
@@ -208,7 +208,7 @@ class RegistrationFlowTest extends TestCase
         ]);
 
         $this->actingAs($unverified)->get('/inscription')
-            ->assertRedirect(route('verification.notice'));
+            ->assertRedirect(route('totp.setup'));
     }
 
     public function test_a_tampered_participant_count_is_refused(): void
@@ -523,7 +523,7 @@ class RegistrationFlowTest extends TestCase
 
     public function test_the_cmi_hash_excludes_hash_and_encoding_and_sorts_naturally(): void
     {
-        $hasher = new CmiHasher();
+        $hasher = new CmiHasher;
 
         $canonical = $hasher->canonicalise([
             'item10' => 'ten',
@@ -541,7 +541,7 @@ class RegistrationFlowTest extends TestCase
 
     public function test_a_pipe_in_a_value_cannot_forge_a_field_boundary(): void
     {
-        $hasher = new CmiHasher();
+        $hasher = new CmiHasher;
 
         // Escaping matters: an unescaped `|` in a name would let a caller
         // shift a value across a field boundary and produce a valid-looking
@@ -551,7 +551,7 @@ class RegistrationFlowTest extends TestCase
 
     public function test_verification_rejects_a_wrong_key_and_a_missing_hash(): void
     {
-        $hasher = new CmiHasher();
+        $hasher = new CmiHasher;
         $params = ['oid' => 'abc', 'amount' => '7500'];
         $hash = $hasher->hash($params, 'secret');
 
@@ -605,7 +605,7 @@ class RegistrationFlowTest extends TestCase
             'starts_on' => '2026-12-16',
             'ends_on' => '2026-12-17',
             'languages' => ['fr', 'en', 'ar'],
-            'status' => \App\Enums\EditionStatus::Published,
+            'status' => EditionStatus::Published,
             'is_current' => true,
             'registration_open' => true,
         ]);
@@ -618,7 +618,8 @@ class RegistrationFlowTest extends TestCase
     private function verifiedUser(): User
     {
         return User::factory()->create([
-            'phone_verified_at' => now(),
+            'totp_secret' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+            'totp_confirmed_at' => now(),
             'terms_accepted_at' => now(),
             'locale' => 'fr',
         ]);
@@ -711,7 +712,7 @@ class RegistrationFlowTest extends TestCase
         if ($overrideAmount !== null) {
             unset($payload['HASH']);
             $payload['amount'] = (string) $overrideAmount;
-            $payload['HASH'] = (new CmiHasher())->hash($payload, $this->storeKey());
+            $payload['HASH'] = (new CmiHasher)->hash($payload, $this->storeKey());
         }
 
         return $payload;
@@ -727,7 +728,7 @@ class RegistrationFlowTest extends TestCase
             'TransId' => 'TESTPROBE',
         ];
 
-        $payload['HASH'] = (new CmiHasher())->hash($payload, $this->storeKey());
+        $payload['HASH'] = (new CmiHasher)->hash($payload, $this->storeKey());
 
         return $payload;
     }

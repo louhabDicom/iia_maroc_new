@@ -49,15 +49,15 @@ class CheckoutController extends Controller
 
         $cart->load(['items.ticketType']);
 
-        // Not signed in, or not yet verified: the buyer is sent where they can
+        // Not signed in, or not yet enrolled: the buyer is sent where they can
         // fix it, with a reason, rather than bounced to a bare 403.
         if ($request->user() === null) {
             return redirect()->route('login')->with('status', __('order.sign_in_to_checkout'));
         }
 
         if (! $request->user()->canRegister()) {
-            return redirect()->route('verification.notice')
-                ->with('status', __('order.verify_to_checkout'));
+            return redirect()->route('totp.setup')
+                ->with('status', __('order.enroll_to_checkout'));
         }
 
         return view('pages.checkout', [

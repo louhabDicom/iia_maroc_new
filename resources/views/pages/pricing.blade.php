@@ -44,11 +44,11 @@
                             {{-- Told what to do about it here, with a link, rather than
                                  left to be discovered when the form refuses. --}}
                             <span>
-                                @if (auth()->user()->hasVerifiedPhone())
+                                @if (auth()->user()->hasConfirmedTotp())
                                     @lang('register.terms_required')
                                 @else
-                                    <a href="{{ route('verification.notice') }}" class="app-link">
-                                        @lang('verify.title')
+                                    <a href="{{ route('totp.setup') }}" class="app-link">
+                                        @lang('totp.title')
                                     </a>
                                 @endif
                             </span>

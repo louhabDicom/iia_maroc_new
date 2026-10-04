@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Support\Money;
 use Database\Seeders\EditionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PragmaRX\Google2FAQRCode\Google2FA;
 use Tests\TestCase;
 
 /**
@@ -83,7 +84,7 @@ class AccountFlowTest extends TestCase
             'locale' => 'fr',
         ]);
 
-        $response->assertRedirect(route('verification.notice'));
+        $response->assertRedirect(route('totp.setup'));
 
         $user = User::query()->where('email', 'amina@example.test')->firstOrFail();
 
@@ -91,11 +92,17 @@ class AccountFlowTest extends TestCase
         // lookup both see one value rather than three spellings of it.
         $this->assertSame('+212612345678', $user->phone);
         $this->assertNotNull($user->terms_accepted_at);
-        $this->assertNull($user->phone_verified_at, 'Registration must not self-verify the phone.');
 
-        // Signed in immediately so the flow is resumable, but not verified.
+        // Signed in immediately so the flow is resumable, but not enrolled: the
+        // account exists and the visitor still has to prove they hold an
+        // authenticator before they can order.
         $this->assertAuthenticatedAs($user);
-        $this->assertNotEmpty($this->channel->codes, 'A verification code must be issued.');
+        $this->assertFalse($user->hasConfirmedTotp());
+        $this->assertFalse($user->canRegister());
+
+        // And nothing was sent anywhere: there is no SMS in this flow, so there
+        // is no code, no gateway call and nothing to deliver late or not at all.
+        $this->assertSame(0, OtpCode::query()->count());
     }
 
     /**
@@ -156,51 +163,60 @@ class AccountFlowTest extends TestCase
         ]))->assertSessionHasErrors('email');
     }
 
-    // ------------------------------------------------------------ verification
+    // ------------------------------------------------------------- enrolment
 
-    public function test_the_correct_code_verifies_the_phone(): void
+    public function test_the_correct_code_enrols_the_authenticator(): void
     {
         $user = $this->register();
 
-        $response = $this->actingAs($user)->post('/verify-phone/verify', [
-            'code' => $this->channel->lastCode(),
-        ]);
+        $this->actingAs($user)->get('/totp/setup');
 
-        $response->assertRedirect(route('verification.done'));
+        $this->actingAs($user)->post('/totp/setup', [
+            'code' => $this->currentTotpCode($user),
+        ])->assertRedirect(route('totp.recovery-codes'));
 
-        $this->assertNotNull($user->fresh()->phone_verified_at);
+        $this->assertNotNull($user->fresh()->totp_confirmed_at);
     }
 
-    public function test_a_wrong_code_is_rejected_and_the_phone_stays_unverified(): void
+    public function test_a_wrong_code_is_rejected_and_the_account_stays_unenrolled(): void
     {
         $user = $this->register();
 
+        $this->actingAs($user)->get('/totp/setup');
+
         $this->actingAs($user)
-            ->post('/verify-phone/verify', ['code' => '000000'])
+            ->post('/totp/setup', ['code' => '000000'])
             ->assertSessionHasErrors('code');
 
-        $this->assertNull($user->fresh()->phone_verified_at);
+        $this->assertNull($user->fresh()->totp_confirmed_at);
+        $this->assertFalse($user->fresh()->canRegister());
     }
 
     /**
-     * The verify endpoint must take the number from the account, never from the
-     * request. A `phone` field here would be an open relay: anyone could spend
-     * this application's SMS credit on a third party's handset.
+     * The confirmation endpoint must take the secret from the account, never from
+     * the request. A `secret` field here would let anybody enrol an account they
+     * hold no code for, and a `phone` field would be an open relay aimed at a
+     * third party.
      */
-    public function test_the_verify_endpoint_ignores_a_phone_supplied_in_the_body(): void
+    public function test_the_confirm_endpoint_ignores_a_secret_supplied_in_the_body(): void
     {
         $user = $this->register();
-        $victim = '+212699999999';
+
+        $this->actingAs($user)->get('/totp/setup');
+
+        $theirSecret = 'MZXW6YTBOI======';
 
         $this->actingAs($user)
-            ->post('/verify-phone/verify', [
-                'code' => $this->channel->lastCode(),
-                'phone' => $victim,
+            ->post('/totp/setup', [
+                'code' => $this->currentTotpCode($user),
+                'secret' => $theirSecret,
+                'phone' => '+212699999999',
             ])
-            ->assertRedirect(route('verification.done'));
+            ->assertRedirect(route('totp.recovery-codes'));
 
-        $this->assertNotNull($user->fresh()->phone_verified_at);
-        $this->assertSame(0, OtpCodeCountFor($victim));
+        // Enrolled — but on *their own* secret, not the one in the body.
+        $this->assertNotSame($theirSecret, $user->fresh()->totp_secret);
+        $this->assertNotNull($user->fresh()->totp_confirmed_at);
     }
 
     // ------------------------------------------------------------------ sign in
@@ -300,7 +316,7 @@ class AccountFlowTest extends TestCase
         $edition = Edition::query()->where('year', 2026)->firstOrFail();
 
         $user = $this->register();
-        $user->forceFill(['phone_verified_at' => now()])->save();
+        $user->forceFill(['totp_confirmed_at' => now()])->save();
 
         Order::factory()->forEdition($edition)->create([
             'user_id' => $user->getKey(),
@@ -369,6 +385,13 @@ class AccountFlowTest extends TestCase
         $this->post('/register', $this->validRegistration())->assertRedirect();
 
         return User::query()->where('email', 'valid@example.test')->firstOrFail();
+    }
+
+    /** The code the visitor's phone would be showing at this instant. */
+    private function currentTotpCode(User $user): string
+    {
+        return app(Google2FA::class)
+            ->getCurrentOtp((string) $user->fresh()->totp_secret);
     }
 
     /** @return array<string, mixed> */

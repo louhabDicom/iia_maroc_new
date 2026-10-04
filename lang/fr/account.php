@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 return [
-    'orders'           => 'Mes inscriptions',
-    'phone_unverified' => 'Numéro non vérifié',
-    'phone_verified'   => 'Numéro vérifié',
-    'profile'          => 'Profil',
-    'title'            => 'Mon compte',
+    'orders' => 'Mes inscriptions',
+    'totp_not_enrolled' => 'Application à configurer',
+    'totp_enrolled' => 'Application configurée',
+    'profile' => 'Profil',
+    'title' => 'Mon compte',
 ];

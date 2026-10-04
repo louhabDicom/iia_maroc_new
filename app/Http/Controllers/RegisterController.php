@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\Locale;
-use App\Enums\OtpPurpose;
-use App\Exceptions\OtpDeliveryException;
+use App\Http\Middleware\EnsureTotpIsConfirmed;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Country;
 use App\Models\User;
-use App\Services\Otp\OtpService;
 use App\Services\Security\SecurityEventLogger;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -19,29 +17,28 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Account creation, gated by phone verification.
+ * Account creation, gated by an authenticator app.
  *
  * The shape of the flow is the important part:
  *
  *   1. POST /register  -> the account is created and the visitor is signed in
- *                         immediately, but `phone_verified_at` stays null.
- *   2. A code goes out to the number on the account.
- *   3. POST /verify-phone/verify -> the number is marked verified.
+ *                         immediately, but `totp_confirmed_at` stays null.
+ *   2. POST /totp/setup -> they scan a QR code, prove it works, and the number
+ *                         of an authenticator they hold is on the account.
  *
- * Signing the person in at step 1 rather than after step 3 is deliberate: a
+ * Signing the person in at step 1 rather than after step 2 is deliberate: a
  * half-finished registration should be resumable, and forcing them to re-enter
  * the form after a failed code would be a support burden for no security gain,
- * because {@see \App\Http\Middleware\EnsurePhoneIsVerified} already blocks
- * ordering until the number is proven.
+ * because {@see EnsureTotpIsConfirmed} already blocks
+ * ordering until enrolment is finished.
  *
- * What is *not* deliberate is reading the phone number for the challenge from
- * the request. It comes from the stored account, so the verify and resend
- * endpoints cannot be pointed at a third party's number.
+ * What is *not* deliberate is reading the phone number from the request and
+ * trusting it as proof of anything. It is stored as contact data and nothing
+ * more; the number on the account is never evidence that the person owns it.
  */
 class RegisterController extends Controller
 {
     public function __construct(
-        private readonly OtpService $otp,
         private readonly SecurityEventLogger $events,
     ) {}
 
@@ -62,7 +59,8 @@ class RegisterController extends Controller
             $user = User::create($request->accountAttributes());
 
             // Consent is recorded at the moment the box was ticked, not when the
-            // code was verified, so the audit trail shows when the person agreed.
+            // authenticator was confirmed, so the audit trail shows when the
+            // person agreed rather than when they finished setting up.
             $user->forceFill(['terms_accepted_at' => now()])->save();
 
             return $user;
@@ -80,22 +78,10 @@ class RegisterController extends Controller
             ],
         ]);
 
-        // A delivery failure must not leave the visitor staring at an error with
-        // no way forward: the account exists, so send them to the verify page,
-        // which offers a resend.
-        try {
-            $this->otp->issue(
-                OtpPurpose::Registration,
-                $user->phone,
-                $user->locale,
-                $request->ip(),
-            );
-        } catch (OtpDeliveryException $e) {
-            return redirect()
-                ->route('verification.notice')
-                ->with('otp_unavailable', true);
-        }
-
-        return redirect()->route('verification.notice');
+        // Straight to enrolment. There is nothing to send and nothing to fail
+        // here — no gateway, no per-message cost, no delivery timeout to handle —
+        // so the awkward case the SMS path had to plan for, a code that never
+        // arrived, simply does not exist.
+        return redirect()->route('totp.setup');
     }
 }

@@ -29,11 +29,14 @@
                             </p>
                         </div>
 
-                        @if ($user->hasVerifiedPhone())
-                            <span class="app-badge app-badge--success">@lang('account.phone_verified')</span>
+                        @if ($user->hasConfirmedTotp())
+                            <span class="app-badge app-badge--success">@lang('account.totp_enrolled')</span>
                         @else
-                            <a href="{{ route('verification.notice') }}" class="btn btn-primary">
-                                @lang('account.phone_unverified')
+                            {{-- A button, not a badge: this is the one thing left to
+                                 do before the account can order, so it has to be
+                                 actionable from the page they land on. --}}
+                            <a href="{{ route('totp.setup') }}" class="btn btn-primary">
+                                @lang('account.totp_not_enrolled')
                             </a>
                         @endif
                     </div>

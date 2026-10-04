@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Locale;
 use App\Enums\MembershipStatus;
+use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,14 +17,20 @@ use Illuminate\Notifications\Notifiable;
 /**
  * A conference account.
  *
- * Registration is OTP-gated: an account is only usable for ordering once
- * `phone_verified_at` is set. That replaces the 2024 flow, where a user could
- * register and immediately reach the checkout with no verification at all.
+ * Registration is gated by an authenticator app: an account is only usable for
+ * ordering once `totp_confirmed_at` is set. That replaces the SMS code that
+ * asked a delegate to prove a phone number, which cost money per verification
+ * and needed a metered provider in the loop.
+ *
+ * `phone_verified_at` still exists as a column because pre-2026 accounts carry
+ * it, but nothing reads it any more and nothing writes it. Dropping the column
+ * is a separate, reversible decision.
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use Notifiable;
     use SoftDeletes;
 
@@ -35,6 +42,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $hidden = [
         'password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes',
+        // The TOTP secret is the one attribute on this model that must never
+        // reach a JSON response, an array export or an API resource by accident.
+        // `encrypted` protects it at rest; `$hidden` protects it in transit, and
+        // the cast is decrypted on read, so without this a `->toArray()` would
+        // hand out a working credential.
+        'totp_secret', 'totp_recovery_codes',
     ];
 
     protected function casts(): array
@@ -42,6 +55,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
+            // Encrypted, not hashed: the server has to read the secret back to
+            // compute the expected code. A hash would make verification
+            // impossible, which is why this is one of the few secrets in the
+            // application that cannot be stored one-way — and why the column is
+            // never selected for a list, a log line or an export.
+            'totp_secret' => 'encrypted',
+            'totp_recovery_codes' => 'array',
+            'totp_confirmed_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
             'last_login_at' => 'datetime',
             'last_verification_sent_at' => 'datetime',
@@ -91,22 +112,29 @@ class User extends Authenticatable implements MustVerifyEmail
         $query->where('is_admin', true);
     }
 
-    /** @param  Builder<User>  $query */
-    public function scopeVerifiedPhone(Builder $query): void
+    /**
+     * Accounts with a working authenticator app.
+     *
+     * Both columns, because a pending secret is an abandoned enrolment.
+     *
+     * @param  Builder<User>  $query
+     */
+    public function scopeConfirmedTotp(Builder $query): void
     {
-        $query->whereNotNull('phone_verified_at');
+        $query->whereNotNull('totp_confirmed_at')
+            ->whereNotNull('totp_secret');
     }
 
-    // --- State ------------------------------------------------------------
-
-    public function hasVerifiedPhone(): bool
+    /**
+     * Whether this account has a working authenticator app.
+     *
+     * Both conditions, always: a secret with no confirmation is an enrolment
+     * somebody abandoned halfway, and treating that as done is how a gate gets
+     * walked through.
+     */
+    public function hasConfirmedTotp(): bool
     {
-        return $this->phone_verified_at !== null;
-    }
-
-    public function markPhoneAsVerified(): void
-    {
-        $this->forceFill(['phone_verified_at' => now()])->save();
+        return $this->totp_confirmed_at !== null;
     }
 
     public function isAdmin(): bool
@@ -162,12 +190,15 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Accounts that may place an order. Both conditions are required: a
-     * verified phone and an accepted terms flag.
+     * Accounts that may place an order.
+     *
+     * Both conditions, and the second one is a consent record rather than a
+     * technicality: a confirmed authenticator says the account is reachable, and
+     * the accepted terms are what make an order placed through it binding.
      */
     public function canRegister(): bool
     {
-        return $this->hasVerifiedPhone() && $this->terms_accepted_at !== null;
+        return $this->hasConfirmedTotp() && $this->terms_accepted_at !== null;
     }
 
     public function acceptTerms(): void
@@ -179,11 +210,11 @@ class User extends Authenticatable implements MustVerifyEmail
      * Whether the account is complete enough to be useful.
      *
      * Used by the cleanup command to find registrations abandoned between
-     * "account created" and "number verified", which is the state the 2024 build
-     * accumulated silently.
+     * "account created" and "authenticator confirmed", which is the state a
+     * delegate who never scanned the QR leaves behind.
      */
     public function isRegistrationIncomplete(): bool
     {
-        return ! $this->hasVerifiedPhone();
+        return ! $this->hasConfirmedTotp();
     }
 }

@@ -412,6 +412,116 @@ label {
     text-align: center;
 }
 
+/* ---------------------------------------------------------------------------
+   Authenticator app enrolment
+   ---------------------------------------------------------------------------
+   Three elements the setup page needs and nothing else uses: the numbered
+   steps, the QR frame, and the recovery-code list.
+
+   The QR frame is white and padded on purpose. The code is black-on-white by
+   specification, and a scanner reads the *quiet zone* around it; without the
+   padding, a QR sitting on the page's tinted background is refused by most
+   scanner apps for reasons the visitor cannot see.
+   */
+
+.app-steps {
+    counter-reset: totp-step;
+    list-style: none;
+    margin: 0 0 8px;
+    padding: 0;
+}
+
+.app-steps > li {
+    counter-increment: totp-step;
+    padding-block-start: 20px;
+    position: relative;
+}
+
+/* The number sits in the gutter. Hidden from assistive tech because the list is
+   already an ordered list — announcing "1 of 3" twice is noise. */
+.app-steps > li::before {
+    align-items: center;
+    background: var(--arab-brand);
+    border-radius: 50%;
+    color: #fff;
+    content: counter(totp-step);
+    display: flex;
+    font-weight: 700;
+    height: 28px;
+    inset-block-start: 18px;
+    inset-inline-start: 0;
+    justify-content: center;
+    position: absolute;
+    width: 28px;
+}
+
+.app-steps > li > p:first-child {
+    padding-inline-start: 44px;
+}
+
+.app-qr {
+    background: #fff;
+    border: 1px solid var(--arab-border, #d9d9de);
+    border-radius: 16px;
+    display: block;
+    margin: 16px auto;
+    max-width: 240px;
+    padding: 12px;
+    width: fit-content;
+}
+
+.app-qr img {
+    display: block;
+    height: auto;
+    width: 100%;
+}
+
+/* The typeable secret. Base32 in a monospace face at a fixed width, so a
+   mistyped character is visible rather than inferred. */
+.totp-key {
+    background: #fafafc;
+    border: 1px solid var(--arab-border, #d9d9de);
+    border-radius: 12px;
+    font-family: ui-monospace, 'Roboto Mono', monospace;
+    font-size: 1rem;
+    letter-spacing: .08em;
+    margin-block: 12px;
+    overflow-wrap: anywhere;
+    padding: 12px 14px;
+    text-align: center;
+    word-break: break-all;
+}
+
+/* The recovery codes. A two-column grid rather than a list: eight one-per-line
+   entries push the "continue" button off a phone screen, which is where the
+   delegate is standing when they read this. */
+.totp-codes {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    list-style: none;
+    margin: 20px 0;
+    padding: 0;
+}
+
+.totp-code {
+    background: #fafafc;
+    border: 1px dashed var(--arab-border, #d9d9de);
+    border-radius: 10px;
+    font-family: ui-monospace, 'Roboto Mono', monospace;
+    font-size: 1.05rem;
+    letter-spacing: .06em;
+    padding: 10px 12px;
+    text-align: center;
+    user-select: all;
+}
+
+@media (max-width: 575.98px) {
+    .totp-codes {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 /* Grid of partner logos. */
 .app-logo-grid {
     display: grid;

@@ -8,7 +8,6 @@ use App\Enums\MembershipStatus;
 use App\Models\Country;
 use App\Models\Edition;
 use App\Models\Membership;
-use App\Models\Room;
 use App\Models\User;
 use App\Services\Otp\PhoneNumber;
 use Illuminate\Database\Seeder;
@@ -50,7 +49,9 @@ class DemoUserSeeder extends Seeder
                 'job_title' => 'Administratrice',
                 'locale' => 'fr',
                 'is_admin' => true,
-                'phone_verified_at' => now(),
+                'totp_secret' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+                'totp_confirmed_at' => now(),
+                'totp_recovery_codes' => null,
                 'terms_accepted_at' => now(),
             ],
         );
@@ -71,7 +72,9 @@ class DemoUserSeeder extends Seeder
                 'job_title' => 'Directeur d\'audit interne',
                 'locale' => 'fr',
                 'is_admin' => false,
-                'phone_verified_at' => now(),
+                'totp_secret' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+                'totp_confirmed_at' => now(),
+                'totp_recovery_codes' => null,
                 'terms_accepted_at' => now(),
             ],
         );
@@ -99,7 +102,9 @@ class DemoUserSeeder extends Seeder
                 'job_title' => 'Responsable conformité',
                 'locale' => 'ar',
                 'is_admin' => false,
-                'phone_verified_at' => now(),
+                'totp_secret' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+                'totp_confirmed_at' => now(),
+                'totp_recovery_codes' => null,
                 'terms_accepted_at' => now(),
             ],
         );
@@ -117,7 +122,9 @@ class DemoUserSeeder extends Seeder
                 'country_id' => $morocco?->getKey(),
                 'locale' => 'fr',
                 'is_admin' => false,
-                'phone_verified_at' => null,
+                'totp_secret' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+                'totp_confirmed_at' => null,
+                'totp_recovery_codes' => null,
                 'terms_accepted_at' => now(),
             ],
         );
