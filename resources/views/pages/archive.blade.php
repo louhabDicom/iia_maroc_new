@@ -9,92 +9,108 @@
         :crumbs="[__('nav.archive') => null]"
         image="assets/images/bg/about_page_bg.jpg" />
 
-    <div class="section-padding-04">
+    {{-- The record of an edition: figures, then the documents.
+
+         The year switcher is a row of tags rather than a select. The archive holds
+         a handful of years, every one of them a one-tap destination, and a select
+         on a phone costs a tap and a scroll to show a list of four. --}}
+    <section class="ux-section section-padding-03 ux-section--defer"
+             aria-labelledby="archive-record-heading">
         <div class="container">
-            <div class="app-shell app-shell--wide">
 
-                <p class="app-lede">@lang('archive.intro')</p>
+            @if ($editions->isNotEmpty())
+                <nav class="ux-tags mb-5" aria-label="{{ __('archive.title') }}">
+                    @foreach ($editions as $year)
+                        <a href="{{ route('archive', ['locale' => request()->route('locale'), 'year' => $year->year]) }}"
+                           @class([
+                               'ux-tag',
+                               'ux-tag--solid' => $archived?->year === $year->year,
+                               'ux-tag--muted' => $archived?->year !== $year->year,
+                           ])
+                           @if ($archived?->year === $year->year) aria-current="page" @endif>
+                            {{ $year->year }}
+                        </a>
+                    @endforeach
+                </nav>
+            @endif
 
-        {{-- Year switcher, built from the editions table. A year that does not
-             exist yields null below rather than an empty page, because
-             Edition::archive() resolves against real rows. --}}
-        @if ($editions->isNotEmpty())
-            <nav class="d-flex flex-wrap gap-2 mb-4" aria-label="{{ __('archive.title') }}">
-                @foreach ($editions as $year)
-                    <a href="{{ route('archive', ['locale' => request()->route('locale'), 'year' => $year->year]) }}"
-                       @class([
-                           'app-badge',
-                           'app-badge--brand' => $archived?->year === $year->year,
-                           'app-badge--muted' => $archived?->year !== $year->year,
-                       ])
-                       @if ($archived?->year === $year->year) aria-current="page" @endif>
-                        {{ $year->year }}
-                    </a>
-                @endforeach
-            </nav>
-        @endif
+            @if ($archived === null)
+                <x-empty-state :message="__('state.empty')" icon="fa-box-archive" />
+            @else
+                <div class="row g-4">
 
-        @if ($archived === null)
-            <div class="app-empty">@lang('state.empty')</div>
-        @else
-            <section class="app-card">
-                <h2 class="app-title app-title--sm">
-                    {{ $archived->titleIn($locale) }}
-                </h2>
+                    <div class="col-lg-5 ux-reveal ux-reveal-left">
+                        <div class="ux-card ux-card--glass ux-radius-xl p-4 h-100">
+                            <x-section-head
+                                id="archive-record-heading"
+                                :eyebrow="__('archive.title')"
+                                :title="$archived->titleIn($locale)"
+                                :level="2" />
 
-                <p class="app-note">
-                    {{ $archived->dateLine($locale) }}<br>
-                    {{ $archived->venueLine($locale) }}
-                </p>
+                            <p class="ux-ink-soft mb-0">
+                                {{ $archived->dateLine($locale) }}<br>
+                                {{ $archived->venueLine($locale) }}
+                            </p>
 
-                @if ($archived->archive_note)
-                    <div class="app-notice mt-4">{{ $archived->archive_note }}</div>
-                @endif
-
-                @if ($stats)
-                    <dl class="d-flex flex-wrap gap-5 mt-4 mb-0">
-                        <div>
-                            <dt class="app-note">@lang('programme.title')</dt>
-                            <dd class="app-title app-title--sm mb-0">{{ $stats['sessions'] }}</dd>
-                        </div>
-                        <div>
-                            <dt class="app-note">@lang('speakers.title')</dt>
-                            <dd class="app-title app-title--sm mb-0">{{ $stats['speakers'] }}</dd>
-                        </div>
-                    </dl>
-                @endif
-            </section>
-
-            {{-- Downloads. isAvailableIn() checks the per-locale flag, so a
-                 document that was only translated into French does not 404 for
-                 an Arabic visitor. --}}
-            <section class="app-section" aria-labelledby="archive-documents">
-                <h2 id="archive-documents" class="app-section__title">
-                    @lang('archive.documents')
-                </h2>
-
-                @if ($documents->isEmpty())
-                    <p class="app-note">@lang('state.coming_soon')</p>
-                @else
-                    <ul class="app-list">
-                        @foreach ($documents as $document)
-                            @if ($document->isAvailableIn($locale->value))
-                                <li class="app-list__row">
-                                    <span class="app-note--strong">{{ $document->title }}</span>
-                                    <a href="{{ $document->downloadUrl() }}"
-                                       class="app-link">
-                                        @lang('action.download')
-                                        @if ($document->formattedSize())
-                                            <span class="app-note">({{ $document->formattedSize() }})</span>
-                                        @endif
-                                    </a>
-                                </li>
+                            @if ($stats)
+                                {{-- A <dl> rather than two loose figures: the number
+                                     is meaningless without the thing it counts. --}}
+                                <dl class="row g-3 mt-4 mb-0">
+                                    <div class="col-6">
+                                        <dt class="ux-ink-soft small">@lang('programme.title')</dt>
+                                        <dd class="ux-stat mb-0">{{ $stats['sessions'] }}</dd>
+                                    </div>
+                                    <div class="col-6">
+                                        <dt class="ux-ink-soft small">@lang('speakers.title')</dt>
+                                        <dd class="ux-stat mb-0">{{ $stats['speakers'] }}</dd>
+                                    </div>
+                                </dl>
                             @endif
-                        @endforeach
-                    </ul>
-                @endif
-            </section>
-        @endif
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7 ux-reveal ux-reveal-right">
+                        {{-- isAvailableIn() checks the per-locale flag, so a document
+                             translated only into French does not 404 for an Arabic
+                             visitor. --}}
+                        <div class="ux-card ux-card--edge ux-radius-xl p-4 h-100">
+                            <x-section-head
+                                :title="__('archive.documents')"
+                                :level="2" />
+
+                            @if ($archived->archive_note)
+                                <div class="ux-notice ux-notice--warning mb-4">
+                                    {{ $archived->archive_note }}
+                                </div>
+                            @endif
+
+                            @if ($documents->isEmpty())
+                                <p class="ux-ink-soft mb-0">@lang('state.coming_soon')</p>
+                            @else
+                                <ul class="ux-checks list-unstyled mb-0">
+                                    @foreach ($documents as $document)
+                                        @if ($document->isAvailableIn($locale->value))
+                                            <li class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-2">
+                                                <span class="ux-ink">{{ $document->title }}</span>
+                                                <a href="{{ $document->downloadUrl() }}" class="ux-btn ux-btn--ghost">
+                                                    @lang('action.download')
+                                                    @if ($document->formattedSize())
+                                                        <span class="ux-ink-soft small">
+                                                            ({{ $document->formattedSize() }})
+                                                        </span>
+                                                    @endif
+                                                </a>
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </section>
 
     {{-- The editions, as photographs.
 
@@ -148,5 +164,4 @@
         </section>
     @endif
 
-    </div>
 @endsection

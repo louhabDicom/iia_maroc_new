@@ -52,6 +52,30 @@ return [
     'email_receipt' => 'Un e-mail de confirmation vous sera envoyé.',
     'summary' => 'Récapitulatif',
     'status' => 'Statut',
+
+    // --- Invoice ---------------------------------------------------------
+    // An order paid for before its seats were named: the attendee list is
+    // collected by the organiser afterwards, so an empty one is expected
+    // rather than a fault, and the page has to say so instead of showing
+    // nothing under a heading.
+    'participants_pending' => 'Les participants seront enregistrés avant la conférence. Pour les ajouter, contactez-nous.',
+
+    // Closing band on the invoice: the purchase is finished, and what the
+    // delegate wants next is the thing the ticket is for.
+    'cta_lede' => 'Votre inscription est enregistrée. Retrouvez le programme de la conférence et les informations pratiques sur le lieu.',
+
+    // Printed from the browser. The PDF download is the document to keep; this
+    // is for the delegate who needs a copy today and would rather not open a
+    // reader.
+    'print' => 'Imprimer',
+    'print_hint' => 'Imprime cette page en PDF depuis la fenêtre d’impression de votre navigateur.',
+
+    // Shown before payment. The order can be opened, printed and paid at this
+    // point; what does not exist yet is the *facture*, because issuing a
+    // numbered invoice for money that has not arrived would put a document in
+    // circulation the bank will not honour. The delegate can still print this
+    // page as a receipt, so the wording promises exactly that.
+    'unpaid_notice' => 'Cette inscription n’est pas encore réglée. Vous pouvez l’imprimer comme reçu et la payer maintenant ; la facture numérotée sera disponible après le paiement.',
     'sign_in_to_checkout' => 'Connectez-vous pour finaliser votre inscription.',
     'enroll_to_checkout' => 'Configurez votre application d’authentification avant de finaliser votre inscription.',
     'not_payable' => 'Cette commande ne peut plus être payée.',

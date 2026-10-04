@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Support\Money;
+use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,8 +24,9 @@ use Illuminate\Support\Str;
  */
 class Order extends Model
 {
-    /** @use HasFactory<\Database\Factories\OrderFactory> */
+    /** @use HasFactory<OrderFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     protected $fillable = [
@@ -177,8 +179,20 @@ class Order extends Model
         return $this->participants()->count();
     }
 
-    /** The payment attempt that should be shown to the user. */
-    public function latestPayment(): ?Payment
+    /**
+     * The payment attempt that should be shown to the user.
+     *
+     * Named `latestPaymentRecord` rather than `latestPayment` on purpose. Eloquent
+     * resolves `$order->latestPayment` — property syntax — as a *relationship*
+     * whenever a method of that name exists, and then insists the method return a
+     * Relation. This one returns a single model or null, so every property-style
+     * access blew up with "latestPayment must return a relationship instance".
+     *
+     * A plain method is right here: this is a query against the payments the order
+     * already owns, not an association the order might not have. Call it with
+     * parentheses.
+     */
+    public function latestPaymentRecord(): ?Payment
     {
         return $this->payments()->latest('id')->first();
     }

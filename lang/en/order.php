@@ -45,6 +45,30 @@ return [
     'email_receipt' => 'A confirmation e-mail will be sent to you.',
     'summary' => 'Summary',
     'status' => 'Status',
+
+    // --- Invoice ---------------------------------------------------------
+    // An order paid for before its seats were named: the attendee list is
+    // collected by the organiser afterwards, so an empty one is expected
+    // rather than a fault, and the page has to say so instead of showing
+    // nothing under a heading.
+    'participants_pending' => 'Participants will be registered before the conference. To add them, please contact us.',
+
+    // Closing band on the invoice: the purchase is finished, and what the
+    // delegate wants next is the thing the ticket is for.
+    'cta_lede' => 'Your registration is recorded. Find the conference programme and practical information about the venue.',
+
+    // Printed from the browser. The PDF download is the document to keep; this
+    // is for the delegate who needs a copy today and would rather not open a
+    // reader.
+    'print' => 'Print',
+    'print_hint' => 'Print this page to PDF from your browser’s print dialog.',
+
+    // Shown before payment. The order can be opened, printed and paid at this
+    // point; what does not exist yet is the *facture*, because issuing a
+    // numbered invoice for money that has not arrived would put a document in
+    // circulation the bank will not honour. The delegate can still print this
+    // page as a receipt, so the wording promises exactly that.
+    'unpaid_notice' => 'This order has not been paid yet. You can print it as a receipt and pay it now; the numbered invoice becomes available once payment has gone through.',
     'sign_in_to_checkout' => 'Sign in to complete your registration.',
     'enroll_to_checkout' => 'Set up your authenticator app before completing your registration.',
     'not_payable' => 'This order can no longer be paid.',

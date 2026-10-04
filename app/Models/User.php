@@ -134,7 +134,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function hasConfirmedTotp(): bool
     {
-        return $this->totp_confirmed_at !== null;
+        return filled($this->totp_secret) && $this->totp_confirmed_at !== null;
     }
 
     public function isAdmin(): bool

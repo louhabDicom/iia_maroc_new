@@ -87,8 +87,8 @@ class CheckoutController extends Controller
         }
 
         if (! $user->canRegister()) {
-            return redirect()->route('verification.notice')
-                ->with('status', __('order.verify_to_checkout'));
+            return redirect()->route('totp.setup')
+                ->with('status', __('order.enroll_to_checkout'));
         }
 
         $quote = $this->quoteFor($request, $cart);

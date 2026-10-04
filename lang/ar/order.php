@@ -46,6 +46,30 @@ return [
     'email_receipt' => 'سيتم إرسال رسالة تأكيد إلى بريدك الإلكتروني.',
     'summary' => 'ملخص الطلب',
     'status' => 'الحالة',
+
+    // --- Invoice ---------------------------------------------------------
+    // An order paid for before its seats were named: the attendee list is
+    // collected by the organiser afterwards, so an empty one is expected
+    // rather than a fault, and the page has to say so instead of showing
+    // nothing under a heading.
+    'participants_pending' => 'سيتم تسجيل المشاركين قبل عقد المؤتمر. لإضافتهم، يرجى الاتصال بنا.',
+
+    // Closing band on the invoice: the purchase is finished, and what the
+    // delegate wants next is the thing the ticket is for.
+    'cta_lede' => 'تم حفظ تسجيلك. اطّلع على برنامج المؤتمر والمعلومات العملية حول فضاء انعقاده.',
+
+    // Printed from the browser. The PDF download is the document to keep; this
+    // is for the delegate who needs a copy today and would rather not open a
+    // reader.
+    'print' => 'طباعة',
+    'print_hint' => 'اطبع هذه الصفحة إلى ملف PDF من نافذة الطباعة في متصفحك.',
+
+    // Shown before payment. The order can be opened, printed and paid at this
+    // point; what does not exist yet is the *facture*, because issuing a
+    // numbered invoice for money that has not arrived would put a document in
+    // circulation the bank will not honour. The delegate can still print this
+    // page as a receipt, so the wording promises exactly that.
+    'unpaid_notice' => 'لم يتم تسديد هذا الطلب بعد. يمكنك طباعته كإيصال ودفعه الآن؛ وستصبح الفاتورة المرقّمة متاحة بعد إتمام الدفع.',
     'sign_in_to_checkout' => 'يرجى تسجيل الدخول لإتمام التسجيل.',
     'enroll_to_checkout' => 'يرجى إعداد تطبيق المصادقة قبل إتمام التسجيل.',
     'not_payable' => 'لم يعد من الممكن دفع هذا الطلب.',

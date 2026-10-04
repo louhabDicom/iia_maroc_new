@@ -440,14 +440,19 @@ class RegistrationFlowTest extends TestCase
         // invoice and the cancellation from `$_POST['id']` with no ownership
         // test, so any signed-in visitor could open and void anyone's order
         // and read their participants' names and phone numbers.
+        //
+        // A 404 rather than a 403: the order is looked up inside the buyer's
+        // own relation, so "not yours" and "no such order" are the same
+        // answer. A 403 would confirm the reference is real, which is enough
+        // to turn the endpoint into an oracle for enumerating live orders.
         $this->actingAs($intruder)->get(route('orders.show', ['order' => $order->getKey()]))
-            ->assertForbidden();
+            ->assertNotFound();
 
         $this->actingAs($intruder)->post(route('orders.cancel', ['order' => $order->getKey()]))
-            ->assertForbidden();
+            ->assertNotFound();
 
         $this->actingAs($intruder)->post(route('orders.invoice', ['order' => $order->getKey()]))
-            ->assertForbidden();
+            ->assertNotFound();
 
         $this->assertSame(OrderStatus::Paid, $order->refresh()->status);
     }

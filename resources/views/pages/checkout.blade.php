@@ -8,14 +8,27 @@
         :crumbs="[__('order.title') => null]"
         image="assets/images/bg/price_bg.jpg" />
 
-    <div class="section-padding-04">
+    {{-- Checkout.
+
+         The form and the summary are separated bands of the same rhythm as every
+         other page rather than a bespoke two-column layout: the delegate reads
+         this on a phone at 23:00 the night before, and the page they already know
+         from the rest of the site is one less thing to learn. --}}
+    <section class="ux-section section-padding-03 ux-section--defer"
+             aria-labelledby="checkout-heading">
         <div class="container">
             <div class="row g-4">
-                <div class="col-lg-8">
+                <div class="col-lg-8 ux-reveal ux-reveal-left">
+
+                    <x-section-head
+                        id="checkout-heading"
+                        :eyebrow="__('order.title')"
+                        :title="__('order.billing_details')"
+                        :level="2"
+                        class="mb-4" />
+
                     <form method="POST" action="{{ route('checkout.store') }}">
                         @csrf
-
-                        <h2 class="h4 mb-3">@lang('order.billing_details')</h2>
 
                         <div class="row">
                             <div class="col-md-6">
@@ -73,7 +86,10 @@
                             </div>
                         </div>
 
-                        <h2 class="h4 mt-4 mb-3">@lang('order.participants')</h2>
+                        <x-section-head
+                            :title="__('order.participants')"
+                            :level="2"
+                            class="mt-5 mb-3" />
 
                         <p class="text-muted">@lang('order.participant_help')</p>
 
@@ -157,10 +173,13 @@
 
                     </form>
                 </div>
-                <div class="col-lg-4">
-                    <div class="price-card text-center">
-                        <div class="price-body">
-                            <h2 class="h5">@lang('order.summary')</h2>
+                {{-- The summary keeps the table: it really is two columns of
+                     numbers that line up, and that is what a table is for. What
+                     changes is the frame — the legacy price-card is a Bootstrap
+                     panel, and the rest of the site now speaks in ux-card. --}}
+                <div class="col-lg-4 ux-reveal ux-reveal-right">
+                    <div class="ux-card ux-card--glass ux-radius-xl p-4 text-center">
+                        <h2 class="h5 ux-card__title">@lang('order.summary')</h2>
 
                             <table class="table table-sm">
                                 <caption class="visually-hidden">@lang('order.summary')</caption>
@@ -204,11 +223,10 @@
                                 </p>
                             @endif
 
-                            <p class="text-muted small">@lang('order.payment.secure')</p>
+                            <p class="ux-ink-soft small">@lang('order.payment.secure')</p>
                         </div>
-                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 @endsection

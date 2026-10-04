@@ -47,7 +47,7 @@
                                 @if (auth()->user()->hasConfirmedTotp())
                                     @lang('register.terms_required')
                                 @else
-                                    <a href="{{ route('totp.setup') }}" class="app-link">
+                                    <a href="{{ route('totp.setup') }}" class="ux-btn ux-btn--ghost">
                                         @lang('totp.title')
                                     </a>
                                 @endif

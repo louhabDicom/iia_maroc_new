@@ -382,6 +382,16 @@ html:not(.no-js) .ux-reveal.is-revealed {
     z-index: 1;
 }
 
+/* A compact variant, for an action that sits inside a panel or a table cell
+   rather than headlining a section — the invoice's print button, the orders
+   list. The padding comes down but the type does not: the button still has to
+   be readable at the same size as the button beside it, and a small one that
+   also went small would read as a footnote. */
+.ux-btn--sm {
+    font-size: .875rem;
+    padding: .5rem 1rem;
+}
+
 /* --------------------------------------------------------------------------
    Scroll progress
    --------------------------------------------------------------------------
@@ -3144,5 +3154,103 @@ html:not(.no-js) .ux-reveal.is-revealed {
         background: none;
         color: CanvasText;
         -webkit-text-fill-color: CanvasText;
+    }
+}
+/* --------------------------------------------------------------------------
+   Invoice — print
+   --------------------------------------------------------------------------
+   A delegate printing their invoice wants a document, not a screenshot of the
+   website. Everything that only makes sense on screen is removed, and what
+   survives is set in black on white.
+
+   Scoped to `body.ux-printable`, which the invoice view pushes onto <body>.
+   Scoping it this way rather than hiding the header on every page means the
+   other printable pages — a ticket confirmation, the programme — keep their
+   chrome until someone asks for it too.
+   -------------------------------------------------------------------------- */
+@media print {
+    /* Chrome that has no meaning on paper. */
+    body.ux-printable .d-header,
+    body.ux-printable .d-drawer,
+    body.ux-printable .d-scrim,
+    body.ux-printable .d-footer,
+    body.ux-printable .ux-cta,
+    body.ux-printable .ux-aurora,
+    body.ux-printable .ux-lang,
+    body.ux-printable .ux-print-hide {
+        display: none !important;
+    }
+
+    /* The hero is a photograph behind a gradient; on paper it is a grey block
+       at best, so the breadcrumb goes with it. */
+    body.ux-printable .page-hero {
+        background: none !important;
+        color: #000;
+        min-height: 0;
+        padding-block: 0 1rem;
+    }
+
+    body.ux-printable .page-hero__facts,
+    body.ux-printable .page-hero .breadcrumb-area {
+        display: none;
+    }
+
+    body.ux-printable .page-hero .title,
+    body.ux-printable .page-hero .sub-title {
+        color: #000;
+    }
+
+    /* Cards go flat: a glass panel with a blurred backdrop prints as a grey
+       slab over most drivers, and a border is both cheaper and clearer. */
+    body.ux-printable .ux-card,
+    body.ux-printable .ux-card--glass,
+    body.ux-printable .ux-card--edge {
+        background: none !important;
+        border: 1px solid #999 !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+
+    body.ux-printable .ux-ink-soft {
+        color: #333 !important;
+    }
+
+    body.ux-printable .ux-stat,
+    body.ux-printable .ux-stat__label {
+        color: #000 !important;
+    }
+
+    /* Status tags keep their label; the fill goes, because a coloured chip
+       prints as an illegible smear and the word is what matters. */
+    body.ux-printable .ux-tag {
+        background: none !important;
+        border: 1px solid #666;
+        color: #000 !important;
+    }
+
+    /* A total is the one number a reader must not find split across a page. */
+    body.ux-printable .ux-card tfoot tr,
+    body.ux-printable .ux-invoice__summary {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    body.ux-printable tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* Print the URL after external links so a printed programme is usable.
+       Internal ones are omitted: the page it came from is in the reader's
+       history, and the crumb on it is more informative than a bare path. */
+    body.ux-printable a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: .85em;
+        word-break: break-all;
+    }
+
+    body.ux-printable a[href^="/"]::after,
+    body.ux-printable a[href^="#"]::after {
+        content: "";
     }
 }

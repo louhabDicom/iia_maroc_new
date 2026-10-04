@@ -38,7 +38,9 @@
             @endif
 
             @if ($slots === [])
-                <p class="app-empty mt-4 ux-reveal">@lang('programme.no_sessions')</p>
+                <div class="mt-4 ux-reveal">
+                    <x-empty-state :message="__('programme.no_sessions')" icon="fa-calendar-xmark" />
+                </div>
             @endif
 
             {{-- One block per time slot, with parallel sessions side by side. A

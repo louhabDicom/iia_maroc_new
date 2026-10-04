@@ -291,8 +291,19 @@ Route::middleware('auth')->group(function () use ($page): void {
     Route::get('/commandes', [OrderController::class, 'index'])->name('orders.alt.ar');
     Route::get('/{locale?}/commandes', [OrderController::class, 'index'])->name('orders.alt');
 
-    $page('orders.show', 'commande', [OrderController::class, 'show']);
-    Route::get('/{locale?}/commande/{order}', [OrderController::class, 'show'])->name('orders.show');
+    // The `{order}` segment is part of the path, not a query parameter.
+    //
+    // It was missing here, so `route('orders.show', ['order' => $id])` generated
+    // `/commande?order=21`: the id had nowhere to go in the URI, so the URL
+    // generator appended it as a query string. The route then matched `/commande`,
+    // route-model binding had no `order` to resolve, and the ownership check
+    // compared a null order against the signed-in user — a 403 for the legitimate
+    // owner on every single invoice. The delegate could never open their own.
+    $page('orders.show', 'commande/{order}', [OrderController::class, 'show']);
+
+    // The English spelling. Kept as a separate registration rather than a
+    // redirect, for the same reason /sponsoring keeps /partenaires: a URL
+    // printed in 2024 material should keep resolving to the page.
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.alt-show.ar');
     Route::get('/{locale?}/orders/{order}', [OrderController::class, 'show'])->name('orders.alt-show');
 

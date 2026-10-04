@@ -60,6 +60,20 @@
             : $currentRouteName
             : null;
         $unprefixedRouteName = $canonicalRouteName ? $canonicalRouteName.$defaultSuffix : null;
+
+        // The current route's own parameters, minus the locale.
+        //
+        // A translated page is the same page in another language, so the
+        // alternates have to carry whatever identifies *which* page it is — an
+        // order id, an edition year. Without this, a route with a parameter
+        // generated `route('orders.show')`, which threw "Missing required
+        // parameter" and took the whole page down with it. The locale is dropped
+        // because the unprefixed route has no such segment: passing it would
+        // silently append `?locale=fr` to the Arabic address.
+        $routeParameters = array_diff_key(
+            request()->route()?->parameters() ?? [],
+            ['locale' => null],
+        );
     @endphp
     @if ($currentEdition && $canonicalRouteName && request()->isMethod('GET'))
         <link rel="canonical" href="{{ url()->current() }}">
@@ -68,17 +82,20 @@
              entry search engines fall back to when a visitor's language matches
              none of the alternatives. --}}
         @if (Route::has($unprefixedRouteName))
-            <link rel="alternate" hreflang="x-default" href="{{ route($unprefixedRouteName) }}">
+            <link rel="alternate" hreflang="x-default" href="{{ route($unprefixedRouteName, $routeParameters) }}">
         @endif
 
         @foreach (array_keys($availableLocales ?? []) as $code)
             @php
                 $isDefaultLocale = $code === \App\Enums\Locale::default()->value;
                 $alternateRoute = $isDefaultLocale ? $unprefixedRouteName : $canonicalRouteName;
+                $alternateParameters = $isDefaultLocale
+                    ? $routeParameters
+                    : ['locale' => $code] + $routeParameters;
             @endphp
             @if ($code !== $currentLocale->value && Route::has($alternateRoute))
                 <link rel="alternate" hreflang="{{ $code }}"
-                      href="{{ route($alternateRoute, $isDefaultLocale ? [] : ['locale' => $code]) }}">
+                      href="{{ route($alternateRoute, $alternateParameters) }}">
             @endif
         @endforeach
     @endif
@@ -180,7 +197,10 @@
 
     @stack('head')
 </head>
-<body class="{{ ($isRtl ?? false) ? 'rtl' : '' }}">
+{{-- A page pushes here to mark itself printable — the invoice does, so the
+     print stylesheet can drop the site chrome and keep the document. See the
+     print block at the foot of ux.css. --}}
+<body class="{{ ($isRtl ?? false) ? 'rtl' : '' }} @stack('body-class')">
 
 {{-- Skip link. The first focusable thing on the page, so a keyboard user can
      jump the navigation and the header in one keystroke. It is visually hidden
