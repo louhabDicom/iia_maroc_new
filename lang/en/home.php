@@ -45,6 +45,8 @@ return [
         'programme' => [
             'title' => 'Conference programme',
             'download' => 'Download',
+            'more' => 'See more',
+            'days_label' => 'Programme days',
             'day' => 'Day :number',
             'expand' => 'Show the session detail',
             'collapse' => 'Hide the session detail',

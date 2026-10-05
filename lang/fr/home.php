@@ -45,6 +45,8 @@ return [
         'programme' => [
             'title' => 'Programme de la conférence',
             'download' => 'Télécharger',
+            'more' => 'Voir plus',
+            'days_label' => 'Journées du programme',
             'day' => 'Jour :number',
             'expand' => 'Afficher le détail de la session',
             'collapse' => 'Replier le détail de la session',

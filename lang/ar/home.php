@@ -45,6 +45,8 @@ return [
         'programme' => [
             'title' => 'برنامج المؤتمر',
             'download' => 'تحميل',
+            'more' => 'المزيد',
+            'days_label' => 'أيام البرنامج',
             'day' => 'اليوم :number',
             'expand' => 'عرض تفاصيل الجلسة',
             'collapse' => 'إخفاء تفاصيل الجلسة',

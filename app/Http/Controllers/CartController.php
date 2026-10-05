@@ -199,7 +199,7 @@ class CartController extends Controller
         if ($data['quantity'] < 1) {
             $line->delete();
 
-            return redirect()->route('cart')->with('status', __('order.cart_updated'));
+            return redirect()->route('cart') ; 
         }
 
         if ($data['member_quantity'] > $data['quantity']) {
@@ -210,7 +210,7 @@ class CartController extends Controller
 
         $line->update($data);
 
-        return redirect()->route('cart')->with('status', __('order.cart_updated'));
+        return redirect()->route('cart') ; 
     }
 
     /**
@@ -225,7 +225,7 @@ class CartController extends Controller
             ->where('ticket_type_id', $ticketType)
             ->delete();
 
-        return redirect()->route('cart')->with('status', __('order.cart_updated'));
+        return redirect()->route('cart') ;
     }
 
     /**

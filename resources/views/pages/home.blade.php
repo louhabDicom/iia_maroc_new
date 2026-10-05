@@ -52,7 +52,8 @@
         :slots="$slots"
         :selected-day="$selectedDay"
         :locale="$locale"
-        :programme-document="$programmeDocument" />
+        :programme-document="$programmeDocument"
+        route-name="home" />
 
     <x-home.speakers :speakers="$speakers" />
 

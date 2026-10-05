@@ -2784,7 +2784,7 @@ body.drawer-open {
    washes are the light, and they are what stop a two-stop mauve from looking
    like a flat rectangle of colour. */
 .h-hero {
-    
+    margin-top: 4%;
     background-color: var(--h-deep);
     background-image: url('../brand/ban_hero_home.png');
     background-position: center;
@@ -3765,6 +3765,37 @@ html[dir="rtl"] .h-hero {
 .h-programme__download {
     margin: var(--sp-6) 0 0;
     text-align: end;
+}
+
+/* --- The two ways onward --------------------------------------------------
+   Was a single right-aligned download. "See more" is added because what this
+   band shows is a *sample* — three sessions per day — and offering only the
+   download implied the band was the programme.
+
+   The download comes first in the source and sits on the left: it is the
+   secondary act, and in RTL the leading edge is the right, where the "See more"
+   button then lands for the reader who arrived expecting the primary action. */
+.h-programme__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    justify-content: flex-end;
+    margin: var(--sp-6) 0 0;
+}
+
+/* A tab panel that is closed. `[hidden]` has to beat whatever display the panel
+   would otherwise get, for the same reason `.h-slot__detail[hidden]` does. */
+.h-schedule__panel[hidden] {
+    display: none;
+}
+
+/* A visible focus ring on the panel: it is `tabindex="0"` so a keyboard user can
+   reach the day they just selected and read from its top, and without this the
+   browser's default ring lands on a box that has no visible edge of its own. */
+.h-schedule__panel:focus-visible {
+    border-radius: var(--r-lg);
+    outline: 2px solid var(--d-periwinkle);
+    outline-offset: var(--sp-2);
 }
 
 /* --------------------------------------------------------------------------
