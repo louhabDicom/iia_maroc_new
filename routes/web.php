@@ -312,6 +312,16 @@ Route::post('/{locale?}/inscription', [CheckoutController::class, 'store'])->nam
 Route::get('/inscription/payer/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay.ar');
 Route::get('/{locale?}/inscription/payer/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay');
 
+// Add or remove a place on a basket line, from the checkout page.
+//
+// Its own route rather than a field on `checkout.store`, because the two
+// disagree about validation: storing the order insists on one participant per
+// place, while this adjusts how many places there are in the first place. The
+// buttons reach it through `formaction`, so the form still posts the names the
+// buyer has already typed and they survive the round trip.
+Route::post('/inscription/places', [CheckoutController::class, 'seats'])->name('checkout.seats.ar');
+Route::post('/{locale?}/inscription/places', [CheckoutController::class, 'seats'])->name('checkout.seats');
+
 // --- Orders -----------------------------------------------------------------
 //
 // Behind auth, and additionally scoped to the signed-in buyer inside each

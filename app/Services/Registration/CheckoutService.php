@@ -192,22 +192,86 @@ class CheckoutService
             return;
         }
 
-        // Only paid orders hold a place. Counting pending ones would let
-        // abandoned baskets reserve the venue, which is how a cap gets hit
-        // while the seats are still empty.
-        $taken = $edition === null
-            ? 0
-            : (int) Order::query()
-                ->where('edition_id', $edition->getKey())
-                ->where('status', OrderStatus::Paid->value)
-                ->withCount('participants')
-                ->get()
-                ->sum('participants_count');
+        $taken = $this->capacityTaken($edition);
 
         if ($taken + $requested > $capacity) {
             throw new RuntimeException(__('order.capacity_reached', [
                 'capacity' => $capacity,
                 'taken' => $taken,
+            ]));
+        }
+    }
+
+    /**
+     * How many places the edition has already sold.
+     *
+     * Only paid orders hold a place. Counting pending ones would let abandoned
+     * baskets reserve the venue, which is how a cap gets hit while the seats are
+     * still empty.
+     */
+    private function capacityTaken(?Edition $edition): int
+    {
+        if ($edition === null) {
+            return 0;
+        }
+
+        return (int) Order::query()
+            ->where('edition_id', $edition->getKey())
+            ->where('status', OrderStatus::Paid->value)
+            ->withCount('participants')
+            ->get()
+            ->sum('participants_count');
+    }
+
+    /**
+     * How many places the edition can still take, counting the seats this basket
+     * already holds as spoken for.
+     *
+     * Public because the checkout page needs it before the click, not after: a
+     * "+" that is lit and then refuses is worse than one that is already greyed
+     * out, and the browser cannot work this figure out for itself.
+     *
+     * `PHP_INT_MAX` when the conference is uncapped, so a caller comparing against
+     * it does not need to know what "no limit" is expressed as.
+     */
+    public function remainingSeats(Cart $cart): int
+    {
+        $capacity = (int) config('conference.capacity', 300);
+
+        if ($capacity <= 0) {
+            return PHP_INT_MAX;
+        }
+
+        $taken = $this->capacityTaken(Edition::current())
+            + (int) $cart->items()->sum('quantity');
+
+        return max(0, $capacity - $taken);
+    }
+
+    /**
+     * Refuse a basket edit that would take more places than the edition has left.
+     *
+     * Checked here rather than only in `place()` because of when it happens: by
+     * the time an order is placed the buyer has typed a name into every seat,
+     * so a refusal discards all of it and sends them back to an empty basket. A
+     * basket edit is a booking decision too, so it gets the same cap as the
+     * order — the seats this basket already holds count against the cap, since
+     * that is what they are being changed from.
+     *
+     * @throws RuntimeException
+     */
+    public function assertSeatCanBeAdded(Cart $cart): void
+    {
+        $capacity = (int) config('conference.capacity', 300);
+
+        if ($capacity <= 0) {
+            return;
+        }
+
+        if ($this->remainingSeats($cart) < 1) {
+            throw new RuntimeException(__('order.capacity_reached', [
+                'capacity' => $capacity,
+                'taken' => $capacity - $this->remainingSeats($cart),
             ]));
         }
     }

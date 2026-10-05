@@ -89,10 +89,17 @@ class SessionController extends Controller
     {
         Auth::guard('web')->logout();
 
+        // Keep the current locale before destroying the session
+        $locale = $request->session()->get('locale', app()->getLocale());
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home')->with('status', __('auth.logged_out'));
+        // Restore the locale in the new session
+        $request->session()->put('locale', $locale);
+        app()->setLocale($locale);
+
+        return redirect()->back()->with('status', __('auth.logged_out'));
     }
 
     private function findUser(string $identifier): ?User

@@ -600,7 +600,7 @@ a.p-org__link:hover, a.p-org__link:focus-visible { background: var(--p-brand); c
 .p-audience__media {
     position: relative;
     margin: auto 0 0;
-    margin-top: 10% !important;
+    margin-top: 30% !important;
     overflow: hidden;
     clip-path: ellipse(80% 100% at 50% 100%);
 }

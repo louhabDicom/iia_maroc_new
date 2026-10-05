@@ -128,10 +128,10 @@
                                                 <span>@lang('account.email_confirmed')</span>
                                             </p>
                                         @else
-                                            <p class="d-field__warn">
+                                            <!-- <p class="d-field__warn">
                                                 <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
                                                 <span>@lang('account.email_pending')</span>
-                                            </p>
+                                            </p> -->
                                         @endif
                                     </x-form.field>
                                 </div>

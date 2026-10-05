@@ -923,3 +923,231 @@
         });
     });
 }());
+
+/* =====================================================================
+       Checkout places — add or remove a participant without a reload
+
+       An upgrade on the form, not a replacement for it. The buttons are
+       real submit buttons carrying `formaction` and the intent in their own
+       `value`, and this block only intercepts the click, posts the same
+       request with `Accept: application/json`, and swaps in what the server
+       sends back. Blocked, throttled or throwing, the post and the redirect
+       still register the place — nothing here is load-bearing.
+
+       Why the server still decides everything:
+
+         - the price of a place is not computable in the browser, because the
+           member rate depends on an active Membership record
+         - the edition's remaining capacity is not knowable from the page
+         - so the count and the total that come back are the authoritative
+           ones, not a local guess that has to be reconciled later
+
+       The whole form is posted, not just the button. The buyer has usually
+       typed names into the seats that already exist, and re-rendering the
+       fields from the server would wipe them unless they travelled with the
+       request.
+
+       The steppers are updated in place rather than re-rendered wholesale:
+       replacing them would destroy the very button that was clicked and throw
+       away the keyboard focus sitting on it.
+
+       One request in flight at a time. Two clicks racing on the same line
+       would both read the same quantity and the second would silently undo the
+       first — the visible count would disagree with the basket.
+       ===================================================================== */
+
+    safely('checkout places', function () {
+        var root = document.querySelector('[data-seats]');
+
+        if (!root || !window.fetch || !window.FormData) {
+            return;
+        }
+
+        var form = root.closest('form');
+        var participants = document.querySelector('[data-participants]');
+        var summary = document.querySelector('[data-summary]');
+        var errorSlot = document.querySelector('[data-seats-error]');
+        var announcer = document.getElementById('ux-live');
+        var token = document.querySelector('meta[name="csrf-token"]');
+        var busy = false;
+
+        if (!form) {
+            return;
+        }
+
+        function say(message) {
+            if (announcer && message) {
+                announcer.textContent = message;
+            }
+        }
+
+        function showError(message) {
+            if (!errorSlot) {
+                return;
+            }
+
+            errorSlot.innerHTML = '';
+
+            if (!message) {
+                return;
+            }
+
+            var p = document.createElement('p');
+
+            /* `role="alert"` on the element as it is inserted, so the refusal
+               is announced as it appears. A message that only becomes visible
+               is a message assistive tech is never told about. */
+            p.className = 'field-error';
+            p.setAttribute('role', 'alert');
+            p.textContent = message;
+            errorSlot.appendChild(p);
+        }
+
+        /* Read back from the server rather than incremented here: this is also
+           how the disabled states get corrected, since availability depends on
+           the cap and on the buyer's membership. */
+        function applySeats(seats) {
+            if (!seats) {
+                return;
+            }
+
+            for (var i = 0; i < seats.length; i++) {
+                var seat = seats[i];
+                var line = root.querySelector('[data-seats-line="' + seat.ticket_type_id + '"]');
+
+                if (!line) {
+                    continue;
+                }
+
+                var count = line.querySelector('[data-seats-count]');
+
+                if (count) {
+                    count.textContent = seat.quantity;
+                }
+
+                each('[data-seats-btn]', function (button) {
+                    var intent = button.getAttribute('data-seats-btn');
+
+                    if (intent.charAt(0) === '+') {
+                        button.disabled = !seat.can_add;
+                    } else {
+                        button.disabled = !seat.can_remove;
+                    }
+                }, line);
+            }
+        }
+
+        function applyTotal(message) {
+            if (summary && message && message.summary) {
+                summary.innerHTML = message.summary;
+            }
+
+            var total = root.querySelector('[data-seats-total]');
+
+            /* Both forms of the count are in the markup, because choosing between
+               them is the script's job once the number can change without a
+               reload — and "1 participants" is the kind of thing a buyer notices
+               while deciding whether to add anyone. */
+            if (total && typeof message.count === 'number') {
+                var one = total.getAttribute('data-count-one');
+                var other = total.getAttribute('data-count-other');
+
+                if (one && other) {
+                    total.textContent = (message.count === 1 ? one : other)
+                        .replace(':count', message.count);
+                }
+            }
+        }
+
+        each('[data-seats-btn]', function (button) {
+            button.addEventListener('click', function (event) {
+                /* Modifier-click and middle-click mean "open this elsewhere" and
+                   "don't fire handlers"; a plain left click or Enter is a seat
+                   change. */
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+                    return;
+                }
+
+                if (busy) {
+                    event.preventDefault();
+                    return;
+                }
+
+                var action = button.getAttribute('formaction');
+
+                if (!action) {
+                    return;
+                }
+
+                event.preventDefault();
+                busy = true;
+
+                /* `FormData(form)` omits submit buttons — only the one used to
+                   submit is a successful control — so the intent is added back
+                   explicitly. `_token` comes along with the rest of the form. */
+                var body = new FormData(form);
+
+                body.append('adjust', button.value);
+
+                button.classList.add('is-busy');
+
+                window.fetch(action, {
+                    method: 'POST',
+                    body: body,
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': token ? token.getAttribute('content') : ''
+                    }
+                }).then(function (response) {
+                    /* A 419 or a 422 is a real answer from the server, not a
+                       transport failure, so it is parsed like any other body
+                       rather than reported as "the network is down". */
+                    return response.json().then(function (payload) {
+                        return { ok: response.ok, payload: payload };
+                    });
+                }).then(function (result) {
+                    var payload = result.payload || {};
+                    var message = payload.message;
+
+                    if (!result.ok) {
+                        /* Fall back to the full round trip on anything the JSON
+                           contract does not cover. A 419 from an expired page
+                           would otherwise leave the buyer with a button that
+                           appears broken; reloading re-establishes the form and
+                           its token, which is what actually fixes it. */
+                        if (payload.participants === undefined) {
+                            window.location.reload();
+                            return;
+                        }
+                    }
+
+                    showError(payload.ok ? null : message);
+
+                    if (payload.ok) {
+                        applySeats(payload.seats);
+                        applyTotal(payload);
+
+                        if (participants && payload.participants !== undefined) {
+                            participants.innerHTML = payload.participants;
+                        }
+
+                        say(message);
+                    }
+                }).catch(function () {
+                    /* Offline, DNS failure, the JSON contract broken. Anything
+                       guessed here could disagree with the server's price, so the
+                       honest response is to reload and let the form do the work
+                       it was always able to do. */
+                    window.location.reload();
+                }).then(function () {
+                    busy = false;
+
+                    each('[data-seats-btn]', function (other) {
+                        other.classList.remove('is-busy');
+                    });
+                });
+            });
+        });
+    });

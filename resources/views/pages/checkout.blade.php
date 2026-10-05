@@ -93,77 +93,34 @@
 
                         <p class="text-muted">@lang('order.participant_help')</p>
 
-                        @error('participants')
-                            <p class="field-error" role="alert">{{ $message }}</p>
-                        @enderror
+                        {{-- The refusal slot. `role="alert"` because a refusal has to
+                             be announced: with scripting on it arrives without a page
+                             load, and a message that only appears is a message a
+                             screen-reader user is never told about. --}}
+                        <div data-seats-error>
+                            @error('participants')
+                                <p class="field-error" role="alert">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div data-seats>
+                            @include('pages.checkout.seats', [
+                                'seatRows' => $seatRows,
+                                'quote' => $quote,
+                            ])
+                        </div>
 
                         {{-- One form block per place, not a JavaScript-added
                              row. The 2024 form built its participant rows in
                              JS, so a visitor with scripting disabled — or a
                              screenshot pasted into a message — produced a
                              silently empty registration. --}}
-                        @for ($i = 0; $i < $quote->participantCount; $i++)
-                            @php $isMemberSlot = $i < $quote->memberCount; @endphp
-
-                            <fieldset class="border rounded p-3 mb-3">
-                                <legend class="float-none w-auto px-2 fs-6">
-                                    {{ __('order.participant_number', ['number' => $i + 1]) }}
-                                    @if ($isMemberSlot)
-                                        <span class="badge bg-success">@lang('pricing.member')</span>
-                                    @endif
-                                </legend>
-
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <x-form.field :name="'participants.'.$i.'.full_name'"
-                                                      :label="__('order.participant_name')" required>
-                                            <input type="text" required dir="auto"
-                                                   name="participants[{{ $i }}][full_name]"
-                                                   id="participants-{{ $i }}-full_name"
-                                                   value="{{ old("participants.$i.full_name") }}"
-                                                   class="form-control">
-                                        </x-form.field>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <x-form.field :name="'participants.'.$i.'.job_title'"
-                                                      :label="__('register.job_title')">
-                                            <input type="text" dir="auto"
-                                                   name="participants[{{ $i }}][job_title]"
-                                                   id="participants-{{ $i }}-job_title"
-                                                   value="{{ old("participants.$i.job_title") }}"
-                                                   class="form-control">
-                                        </x-form.field>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <x-form.field :name="'participants.'.$i.'.email'"
-                                                      :label="__('register.email')">
-                                            <input type="email" dir="ltr"
-                                                   name="participants[{{ $i }}][email]"
-                                                   id="participants-{{ $i }}-email"
-                                                   value="{{ old("participants.$i.email") }}"
-                                                   class="form-control">
-                                        </x-form.field>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <x-form.field :name="'participants.'.$i.'.phone'"
-                                                      :label="__('register.phone')">
-                                            <input type="tel" dir="ltr"
-                                                   name="participants[{{ $i }}][phone]"
-                                                   id="participants-{{ $i }}-phone"
-                                                   value="{{ old("participants.$i.phone") }}"
-                                                   class="form-control">
-                                        </x-form.field>
-                                    </div>
-                                </div>
-                            </fieldset>
-
-                            @error('participants.'.$i.'.full_name')
-                                <p class="field-error" role="alert">{{ $message }}</p>
-                            @enderror
-                        @endfor
+                        <div data-participants>
+                            @include('pages.checkout.participants', [
+                                'quote' => $quote,
+                                'participantValues' => $participantValues,
+                            ])
+                        </div>
 
                         <button type="submit" class="btn-join btn-cirle mt-3" style="color: wheat !important;">
                             @lang('order.place_order')
@@ -180,50 +137,15 @@
                     <div class="ux-card ux-card--glass ux-radius-xl p-4 text-center">
                         <h2 class="h5 ux-card__title">@lang('order.summary')</h2>
 
-                            <table class="table table-sm">
-                                <caption class="visually-hidden">@lang('order.summary')</caption>
-                                <tbody>
-                                    @foreach ($quote->lines as $line)
-                                        <tr>
-                                            <th scope="row" class="fw-normal text-start">
-                                                {{ $line['label'][$currentLocale->value] ?? '' }}
-                                            </th>
-                                            <td class="text-end text-nowrap">
-                                                @if ($line['member_quantity'] > 0)
-                                                    <div class="small text-success">
-                                                        {{ $line['member_quantity'] }} &times;
-                                                        <span dir="ltr">{{ \App\Support\Money::format($line['unit_price_member'], $quote->currency) }}</span>
-                                                    </div>
-                                                @endif
-                                                @if ($line['standard_quantity'] > 0)
-                                                    <div class="small">
-                                                        {{ $line['standard_quantity'] }} &times;
-                                                        <span dir="ltr">{{ \App\Support\Money::format($line['unit_price_standard'], $quote->currency) }}</span>
-                                                    </div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-
-                                    <tr class="border-top">
-                                        <th scope="row" class="text-end">@lang('order.total')</th>
-                                        <td class="text-end">
-                                            <span dir="ltr" class="fw-bold fs-5">
-                                                {{ $quote->formatted() }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            @if ($quote->memberCount > 0)
-                                <p class="text-success small">
-                                    @lang('order.member_saving_applied', ['count' => $quote->memberCount])
-                                </p>
-                            @endif
-
-                            <p class="ux-ink-soft small">@lang('order.payment.secure')</p>
+                        <div data-summary>
+                            @include('pages.checkout.summary', [
+                                'quote' => $quote,
+                                'currentLocale' => $currentLocale,
+                            ])
                         </div>
+
+                        <p class="ux-ink-soft small">@lang('order.payment.secure')</p>
+                    </div>
                 </div>
             </div>
         </div>

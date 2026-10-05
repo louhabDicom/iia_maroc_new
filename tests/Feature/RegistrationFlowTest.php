@@ -22,6 +22,7 @@ use App\Services\Payment\CmiHasher;
 use App\Services\Payment\TestGateway;
 use App\Services\Registration\CheckoutService;
 use App\Services\Registration\InvoiceService;
+use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -273,6 +274,301 @@ class RegistrationFlowTest extends TestCase
             ->assertSessionHasErrors('participants');
 
         $this->assertDatabaseCount('orders', 1);
+    }
+
+    // --- Adding and removing places from the checkout ----------------------
+    //
+    // The participant count is not a free choice: it is the number of seats the
+    // basket holds, so "add a participant" on the checkout page means "buy
+    // another place". Each test below pins one way that can go wrong.
+
+    public function test_a_place_can_be_added_from_the_checkout(): void
+    {
+        [$ticket, $user] = $this->seedConference(withUser: true);
+
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 2,
+            'member_quantity' => 0,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('checkout.seats'), ['adjust' => '+'.$ticket->getKey()])
+            ->assertRedirect();
+
+        $this->assertSame(3, (int) Cart::query()->firstOrFail()->items()->sum('quantity'));
+
+        // The point of the feature: the extra seat has to come back as an extra
+        // name field. A count that moved without a field to type into would
+        // leave the buyer on a form `store()` still refuses to accept.
+        $this->actingAs($user)->get('/inscription')
+            ->assertOk()
+            ->assertSee('participants[2][full_name]', false)
+            // The control itself, aimed at this tariff and at its own route
+            // rather than at the order: the buttons share the buyer's form, so
+            // the tariff and the intent travel in the button's own value.
+            ->assertSee('value="+'.$ticket->getKey().'"', false)
+            ->assertSee(route('checkout.seats'), false);
+    }
+
+    public function test_a_place_can_be_removed_from_the_checkout(): void
+    {
+        [$ticket, $user] = $this->seedConference(withUser: true);
+
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 3,
+            'member_quantity' => 0,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('checkout.seats'), ['adjust' => '-'.$ticket->getKey()])
+            ->assertRedirect();
+
+        $this->assertSame(2, (int) Cart::query()->firstOrFail()->items()->sum('quantity'));
+
+        $this->actingAs($user)->get('/inscription')
+            ->assertOk()
+            ->assertSee('participants[1][full_name]', false)
+            ->assertDontSee('participants[2][full_name]', false);
+    }
+
+    public function test_the_last_place_on_a_tariff_cannot_be_removed(): void
+    {
+        [$ticket, $user] = $this->seedConference(withUser: true);
+
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 1,
+            'member_quantity' => 0,
+        ]);
+
+        // Removing the last place would empty the basket, which the checkout
+        // treats as no order at all. The refusal is a message, not a deletion.
+        $this->actingAs($user)
+            ->post(route('checkout.seats'), ['adjust' => '-'.$ticket->getKey()])
+            ->assertRedirect()
+            ->assertSessionHasErrors('participants');
+
+        $this->assertSame(1, (int) Cart::query()->firstOrFail()->items()->sum('quantity'));
+    }
+
+    public function test_adding_a_place_raises_the_quoted_total(): void
+    {
+        [$ticket, $user] = $this->seedConference(withUser: true);
+
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 2,
+            'member_quantity' => 0,
+        ]);
+
+        $before = app(CheckoutService::class)
+            ->quote(Cart::query()->firstOrFail(), $user)
+            ->total;
+
+        $this->actingAs($user)
+            ->post(route('checkout.seats'), ['adjust' => '+'.$ticket->getKey()]);
+
+        $after = app(CheckoutService::class)
+            ->quote(Cart::query()->firstOrFail(), $user)
+            ->total;
+
+        // One more standard place, and nothing else: the "+" is a sale, so the
+        // figure the buyer is about to be charged has to move with it.
+        $this->assertSame($before + $ticket->price_standard, $after);
+    }
+
+    public function test_an_added_place_is_standard_rated_when_the_member_places_are_used_up(): void
+    {
+        [$ticket, $user] = $this->seedConference(withUser: true);
+        $this->grantMembership($user);
+
+        // Two member places declared and two bought.
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 2,
+            'member_quantity' => 2,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('checkout.seats'), ['adjust' => '+'.$ticket->getKey()]);
+
+        $quote = app(CheckoutService::class)->quote(Cart::query()->firstOrFail(), $user);
+
+        // The third seat is a colleague, not a member, and must be priced at the
+        // standard rate. Silently extending the member rate to cover it would be
+        // the 2024 build's bug: one member buying a group at a member price.
+        $this->assertSame(2, $quote->memberCount);
+        $this->assertSame(1, $quote->standardCount);
+        $this->assertSame(
+            ($ticket->price_member * 2) + $ticket->price_standard,
+            $quote->total,
+        );
+    }
+
+    public function test_a_place_cannot_be_added_once_the_venue_is_full(): void
+    {
+        config()->set('conference.capacity', 1);
+
+        [$ticket, $user] = $this->seedConference(withUser: true);
+
+        $this->placeOrder($this->verifiedUser(), quantity: 1, memberQuantity: 0)
+            ->transitionTo(OrderStatus::Paid);
+
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 1,
+            'member_quantity' => 0,
+        ]);
+
+        // The cap has to hold while the buyer is still adding names, not only
+        // when the order is finally placed — by then the form is filled in and a
+        // refusal discards it.
+        $this->actingAs($user)
+            ->post(route('checkout.seats'), ['adjust' => '+'.$ticket->getKey()])
+            ->assertSessionHasErrors('participants');
+
+        $this->assertSame(1, (int) Cart::query()->firstOrFail()->items()->sum('quantity'));
+    }
+
+    public function test_an_adjustment_cannot_reach_a_tariff_that_is_not_in_the_basket(): void
+    {
+        [$ticket, $user] = $this->seedConference(withUser: true);
+
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 2,
+            'member_quantity' => 0,
+        ]);
+
+        // The sign and the tariff arrive in one posted field, so a hand-built
+        // request names whatever tariff it likes. It has to be refused rather
+        // than quietly ignored: a "+" that appears to work and changes nothing
+        // is worse than one that is visibly refused.
+        $this->actingAs($user)
+            ->post(route('checkout.seats'), ['adjust' => '+'.($ticket->getKey() + 1000)])
+            ->assertSessionHasErrors('participants');
+
+        $this->assertSame(2, (int) Cart::query()->firstOrFail()->items()->sum('quantity'));
+    }
+
+    public function test_a_malformed_adjustment_is_refused(): void
+    {
+        [$ticket, $user] = $this->seedConference(withUser: true);
+
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 2,
+            'member_quantity' => 0,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('checkout.seats'), ['adjust' => 'quantity=9'])
+            ->assertSessionHasErrors('adjust');
+
+        $this->assertSame(2, (int) Cart::query()->firstOrFail()->items()->sum('quantity'));
+    }
+
+    // --- The same change without a reload ----------------------------------
+    //
+    // The script in design.js only repaints regions the server sends back, so
+    // what matters here is that the JSON carries the same rendered markup the
+    // full page would have produced. A JSON path that drifted from the redirect
+    // path would mean the no-reload buyer is filling in a different form.
+
+    public function test_a_seat_change_answers_json_with_the_regions_to_repaint(): void
+    {
+        [$ticket, $user] = $this->seedConference(withUser: true);
+
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 2,
+            'member_quantity' => 0,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->postJson(route('checkout.seats'), [
+                'adjust' => '+'.$ticket->getKey(),
+                // The names already typed, which is what a real click sends.
+                'participants' => [
+                    ['full_name' => 'Ahmed Benali'],
+                    ['full_name' => 'Sara Idrissi'],
+                ],
+            ])
+            ->assertOk()
+            ->assertJson(['ok' => true, 'count' => 3]);
+
+        $payload = $response->json();
+
+        // The extra seat arrives as a third name field...
+        $this->assertStringContainsString('participants[2][full_name]', $payload['participants']);
+
+        // ...the two that were typed are still in it...
+        $this->assertStringContainsString('value="Ahmed Benali"', $payload['participants']);
+        $this->assertStringContainsString('value="Sara Idrissi"', $payload['participants']);
+
+        // ...and the total in the summary is the re-quoted one, not the old
+        // figure carried over in the browser.
+        $this->assertStringContainsString(
+            Money::format($ticket->price_standard * 3, $ticket->currency),
+            $payload['summary'],
+        );
+
+        // The stepper comes back as data so the script can correct which button
+        // is available rather than counting up on its own.
+        $this->assertSame(3, $payload['seats'][0]['quantity']);
+        $this->assertTrue($payload['seats'][0]['can_add']);
+        $this->assertTrue($payload['seats'][0]['can_remove']);
+    }
+
+    public function test_a_json_seat_change_reports_a_refusal_without_reloading(): void
+    {
+        config()->set('conference.capacity', 1);
+
+        [$ticket, $user] = $this->seedConference(withUser: true);
+
+        $this->placeOrder($this->verifiedUser(), quantity: 1, memberQuantity: 0)
+            ->transitionTo(OrderStatus::Paid);
+
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 1,
+            'member_quantity' => 0,
+        ]);
+
+        $payload = $this->actingAs($user)
+            ->postJson(route('checkout.seats'), ['adjust' => '+'.$ticket->getKey()])
+            ->assertOk()
+            ->assertJson(['ok' => false])
+            ->json();
+
+        // A refusal has to read as a refusal with scripting on: `ok: false` plus
+        // the reason, and the regions still present so the script can repaint
+        // the disabled state rather than leaving a lit button that does nothing.
+        $this->assertNotEmpty($payload['message']);
+        $this->assertArrayHasKey('seats', $payload);
+        $this->assertSame(1, $payload['seats'][0]['quantity']);
+        $this->assertFalse($payload['seats'][0]['can_add']);
+    }
+
+    public function test_the_last_place_reports_itself_as_unavailable_to_the_script(): void
+    {
+        [$ticket, $user] = $this->seedConference(withUser: true);
+
+        $this->actingAs($user)->post('/panier', [
+            'ticket_type_id' => $ticket->getKey(),
+            'quantity' => 1,
+            'member_quantity' => 0,
+        ]);
+
+        $payload = $this->actingAs($user)
+            ->postJson(route('checkout.seats'), ['adjust' => '-'.$ticket->getKey()])
+            ->assertOk()
+            ->assertJson(['ok' => false])
+            ->json();
+
+        $this->assertFalse($payload['seats'][0]['can_remove']);
     }
 
     // --- The payment ------------------------------------------------------

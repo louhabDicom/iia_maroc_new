@@ -275,7 +275,7 @@
                              to the session, and a link among three harmless ones
                              reads as equally harmless. --}}
                         <form method="POST" action="{{ route('logout') }}"
-                              onsubmit="return confirm(@js(__('account.logout_confirm')));">
+                           >
                             @csrf
                             <button type="submit" class="d-btn d-btn--danger-ghost d-btn--block">
                                 <i class="fas fa-sign-out-alt" aria-hidden="true"></i>

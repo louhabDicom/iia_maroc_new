@@ -6950,3 +6950,104 @@ textarea.comment-form-input {
 .d-empty__text {
     margin: 0 0 var(--sp-4);
 }
+
+/* ==========================================================================
+   23. Checkout — places
+   --------------------------------------------------------------------------
+   The add/remove control on `/inscription`, above the participant entries.
+   The stepper is `.d-stepper` from the basket rather than a second control: the
+   same job in two places is one piece of CSS, and a delegate who learned the
+   basket stepper already knows this one. What is new is the row around it,
+   because the basket states the tariff as a line item while the checkout may be
+   holding several tariffs at once and each set of places has to say which it
+   belongs to.
+   ========================================================================== */
+
+.d-seats {
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-md);
+    margin-block: var(--sp-4);
+    padding: var(--sp-4);
+}
+
+.d-seats__help {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    margin: 0 0 var(--sp-3);
+}
+
+/* Label on the inline start, stepper on the inline end, so the buttons form a
+   column however long the tariff names are. The label wraps rather than
+   truncating: the whole point of the row is knowing which rate is being
+   changed, and an ellipsised tariff name fails at exactly that. */
+.d-seats__line {
+    align-items: center;
+    border-block-start: 1px solid var(--d-line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-4);
+    justify-content: space-between;
+    padding-block: var(--sp-3);
+}
+
+/* `first-of-type`, not `first-child`: the help paragraph and the total are
+   siblings of these rows, so only a type selector is describing the row list
+   rather than the block. */
+.d-seats__line:first-of-type {
+    border-block-start: 0;
+    padding-block-start: 0;
+}
+
+.d-seats__label {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+}
+
+.d-seats__ticket {
+    font-weight: 700;
+}
+
+/* The count the steppers add up to, restated under them: the delegate clicked
+   "add a participant" and the number of name fields below changed, so this is
+   the figure that ties the two together. */
+.d-seats__total {
+    border-block-start: 1px solid var(--d-line);
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    font-weight: 700;
+    margin: 0;
+    padding-block-start: var(--sp-3);
+}
+
+/* A seat change in flight. Without it the click looks inert for the length of
+   the round trip, which on a slow connection is long enough that the obvious
+   response is to click again — and the second click races the first. */
+.d-stepper__btn.is-busy {
+    opacity: .55;
+}
+
+.d-stepper__btn.is-busy i::before {
+    display: inline-block;
+    animation: d-seat-spin .7s linear infinite;
+}
+
+/* Rotating the glyph rather than swapping it for a spinner: there is no icon
+   font here that has one, and a replaced icon would shift the button's metrics
+   mid-press. */
+@keyframes d-seat-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    /* The spin is the only thing marking the wait, so it stays — but a full turn
+       every 0.7s is exactly the kind of repeated motion the preference is about.
+       Opacity alone still reports that something is happening. */
+    .d-stepper__btn.is-busy i::before {
+        animation-duration: 2.4s;
+    }
+}

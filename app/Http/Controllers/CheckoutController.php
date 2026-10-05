@@ -8,11 +8,14 @@ use App\Enums\Locale;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Concerns\ResolvesOwnedOrder;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\Payment\PaymentGateway;
 use App\Services\Registration\CheckoutService;
 use App\Services\Registration\Quote;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -34,6 +37,14 @@ use RuntimeException;
 class CheckoutController extends Controller
 {
     use ResolvesOwnedOrder;
+
+    /**
+     * Most places one tariff may hold in a single basket.
+     *
+     * Matches the basket rule in `CartController`, so a buyer cannot add places
+     * here that the cart page would refuse to store.
+     */
+    private const MAX_PLACES_PER_LINE = 20;
 
     public function __construct(
         private readonly CheckoutService $checkout,
@@ -63,12 +74,185 @@ class CheckoutController extends Controller
                 ->with('status', __('order.enroll_to_checkout'));
         }
 
+        $quote = $this->quoteFor($request, $cart);
+
         return view('pages.checkout', [
             'cart' => $cart,
-            'quote' => $this->quoteFor($request, $cart),
+            'quote' => $quote,
             'locale' => Locale::parse(app()->getLocale()),
             'currentRoute' => 'checkout',
             'user' => $request->user(),
+            'maxPlacesPerLine' => self::MAX_PLACES_PER_LINE,
+            'seatRows' => $this->seatRows($cart, $quote),
+            'participantValues' => old('participants', []),
+        ]);
+    }
+
+    /**
+     * One row per basket line: the tariff, its seats, and whether each end of the
+     * stepper is available.
+     *
+     * Built here rather than in the view so the full page and the JSON that
+     * replaces a part of it cannot disagree about which button is disabled. A "+"
+     * that is lit on the page and then refused on click is exactly the failure
+     * this avoids, and the availability depends on things the browser cannot see:
+     * the edition's remaining capacity, and the buyer's own membership.
+     *
+     * @return array<int, array{
+     *     ticket_type_id: int,
+     *     name: string,
+     *     quantity: int,
+     *     member_quantity: int,
+     *     can_add: bool,
+     *     can_remove: bool
+     * }>
+     */
+    private function seatRows(Cart $cart, Quote $quote): array
+    {
+        $remaining = $this->checkout->remainingSeats($cart);
+
+        return $cart->items->map(fn (CartItem $item): array => [
+            'ticket_type_id' => (int) $item->ticket_type_id,
+            'name' => (string) ($item->ticketType?->name ?? ''),
+            'quantity' => $item->quantity,
+            'member_quantity' => $item->member_quantity,
+            'can_add' => $item->quantity < self::MAX_PLACES_PER_LINE && $remaining > 0,
+            'can_remove' => $item->quantity > 1,
+        ])->all();
+    }
+
+    /**
+     * Add or remove one place on one basket line, then return to the checkout.
+     *
+     * The participant count is not a free choice — it is the number of seats the
+     * basket holds, and `store()` refuses a form whose rows do not match it. So
+     * "add a participant" here means "buy another place": the line's quantity
+     * changes, the quote is redone on the way back, and the extra name field
+     * appears because there is now a seat for it. That keeps the count, the
+     * basket and the invoice from ever disagreeing.
+     *
+     * It is a redirect rather than a same-page mutation on purpose. The price of
+     * a place is not derivable on the client — the member rate depends on an
+     * active Membership record — so a "+" that updated the total locally would
+     * be a guess. Re-rendering also brings back the authoritative quote, the
+     * capacity headroom, and whatever the delegate had already typed.
+     *
+     * Reached from the checkout form itself, with `formaction` on the buttons, so
+     * a buyer who has filled in two names and realises they are bringing a third
+     * does not lose the two.
+     *
+     * Answers in two shapes. A plain form post gets the redirect below, which is
+     * the whole-page path that works with scripting off. A request that accepts
+     * JSON gets the same decision plus the three regions it has to repaint, and
+     * design.js swaps them in place — no reload, and the same server-rendered
+     * markup either way, so the no-reload path cannot render a different form
+     * from the reload one.
+     */
+    public function seats(Request $request): RedirectResponse|JsonResponse
+    {
+        $cart = $this->currentCart($request);
+
+        if ($cart->items()->doesntExist()) {
+            return redirect()->route('pricing')->with('status', __('order.cart_empty'));
+        }
+
+        $user = $request->user();
+
+        if ($user === null) {
+            return redirect()->route('login');
+        }
+
+        $data = $request->validate([
+            'adjust' => ['required', 'string', 'regex:/^[+-][0-9]+$/'],
+        ], [], [
+            'adjust' => __('order.participants'),
+        ]);
+
+        // The sign and the tariff are carried in one field rather than as a
+        // `direction` plus a per-line select, so a tampered form cannot aim a
+        // "+" at a line that is not the one the button belongs to.
+        preg_match('/^([+-])([0-9]+)$/', $data['adjust'], $matches);
+
+        $adding = $matches[1] === '+';
+        $line = $cart->items()
+            ->where('ticket_type_id', (int) $matches[2])
+            ->first();
+
+        if ($line === null) {
+            return $this->seatOutcome($request, $cart->fresh(), $user, __('order.cart_line_missing'));
+        }
+
+        $quantity = $adding
+            ? min(self::MAX_PLACES_PER_LINE, $line->quantity + 1)
+            : max(1, $line->quantity - 1);
+
+        if ($quantity === $line->quantity) {
+            return $this->seatOutcome($request, $cart->fresh(), $user, $adding
+                ? __('order.max_places_reached', ['max' => self::MAX_PLACES_PER_LINE])
+                : __('order.min_one_place'));
+        }
+
+        if ($adding) {
+            try {
+                $this->checkout->assertSeatCanBeAdded($cart);
+            } catch (RuntimeException $e) {
+                return $this->seatOutcome($request, $cart->fresh(), $user, $e->getMessage());
+            }
+        }
+
+        $line->update([
+            'quantity' => $quantity,
+            // Fewer places than member places would otherwise price the member
+            // count above the seats, and the summary would show a member rate
+            // for more people than are on the order.
+            'member_quantity' => min($line->member_quantity, $quantity),
+        ]);
+
+        return $this->seatOutcome($request, $cart->fresh(), $user, null, $adding
+            ? __('order.participant_added')
+            : __('order.participant_removed'));
+    }
+
+    /**
+     * The result of a seat change, in whichever shape the caller can use.
+     *
+     * The message travels either way — a refusal has to read the same to a buyer
+     * whether their browser reloaded or not, and "the button did nothing" is not
+     * a refusal anyone can act on.
+     */
+    private function seatOutcome(
+        Request $request,
+        Cart $cart,
+        User $user,
+        ?string $error,
+        ?string $status = null,
+    ): RedirectResponse|JsonResponse {
+        if (! $request->expectsJson()) {
+            return back()
+                ->withInput()
+                ->with('status', $status)
+                ->withErrors($error === null ? [] : ['participants' => $error]);
+        }
+
+        $cart->load(['items.ticketType']);
+        $quote = $this->quoteFor($request, $cart);
+        $locale = Locale::parse(app()->getLocale());
+
+        return response()->json([
+            'ok' => $error === null,
+            'message' => $error ?? $status,
+            'count' => $quote->participantCount,
+            'seats' => $this->seatRows($cart, $quote),
+            // The values that were in the request rather than the flashed input,
+            // so the repainted fields still hold what the buyer typed.
+            'participants' => view('pages.checkout.participants', [
+                'quote' => $quote,
+                'participantValues' => $request->input('participants', []),
+            ])->render(),
+            'summary' => view('pages.checkout.summary', [
+                'quote' => $quote,
+                'currentLocale' => $locale,
+            ])->render(),
         ]);
     }
 
