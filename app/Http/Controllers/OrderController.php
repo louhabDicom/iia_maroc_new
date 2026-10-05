@@ -87,14 +87,25 @@ class OrderController extends Controller
     {
         $order = $this->findOrder($request);
 
-        // Only a settled order has an invoice. Issuing one for an unpaid order
-        // is how a delegate ends up with a document their bank will not honour.
-        if (! $order->status->isSettled()) {
+        // A settled order gets the numbered invoice, generated on demand. A
+        // payable order gets a proforma instead: the delegate can take the
+        // document to their finance department *before* paying, which is the
+        // only moment a bank transfer needs one, but it carries no invoice number
+        // because a number assigned to money that has not arrived is an
+        // accounting record the bank will not honour.
+        //
+        // A final order — cancelled, expired, refunded — gets neither. There is
+        // no basket to describe and nothing left to pay.
+        if ($order->status->isSettled()) {
+            return $this->invoices->download($order);
+        }
+
+        if (! $order->status->isPayable()) {
             return redirect()->route('orders.show', ['order' => $order->getKey()])
                 ->withErrors(['invoice' => __('order.invoice.not_available')]);
         }
 
-        return $this->invoices->download($order);
+        return $this->invoices->orderProforma($order);
     }
 
     /**

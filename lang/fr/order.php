@@ -133,6 +133,26 @@ return [
         'clear' => 'Vider le panier',
         'checkout' => 'Passer la commande',
         'sign_in_note' => 'Vous serez invité à vous connecter avant le paiement. Votre panier sera conservé.',
+
+        // Le récapitulatif imprimable et téléchargeable du panier.
+        //
+        // Le panier est précisément l'endroit où ce document est utile : c'est
+        // avant de commander qu'un delegate d'entreprise doit encore obtenir
+        // l'accord de son service achats. D'où le titre « récapitulatif » et non
+        // « facture » ; voir order.invoice.proforma_* pour le même motif côté
+        // commande.
+
+        'places' => ':count place',
+        'places_plural' => ':count places',
+
+        'member_places' => ':count place adhérent',
+        'member_places_plural' => ':count places adhérent',
+
+        'invoice' => 'Récapitulatif de commande',
+        'invoice_lede' => 'Téléchargez ou imprimez un récapitulatif de votre panier pour votre service achats ou votre direction financière.',
+        'invoice_download' => 'Télécharger le PDF',
+        'invoice_print' => 'Imprimer le récapitulatif',
+        'invoice_hint' => 'Document provisoire et non numéroté : il ne tient pas lieu de facture.',
     ],
 
     // --- Payment ----------------------------------------------------------
@@ -156,7 +176,7 @@ return [
     ],
 
     'invoice' => [
-        'not_available' => 'La facture est disponible uniquement après le règlement de la commande.',
+        'not_available' => 'Cette commande est close : aucune facture ne peut être émise.',
         'title' => 'Facture n° :number',
         'billed_to' => 'Facturé à',
         'details' => 'Informations',
@@ -168,6 +188,25 @@ return [
         'tax' => 'TVA',
         'rate' => 'Tarif',
         'footer' => 'Document généré par :organiser. Toute demande de modification doit être adressée à l\'organisation.',
+
+        // --- La facture provisoire -----------------------------------------
+        // Le message que la facture porte quand la commande n'est pas encore
+        // réglée. Un delegate entreprise a besoin d'un document *avant* de payer
+        // — un service achats ne libère pas de fonds sur la capture d'un
+        // panier — mais ce document ne peut pas être une facture numérotée : un
+        // numéro de facture est une pièce comptable, et émettre un numéro pour
+        // une somme non encaissée met en circulation un papier que la banque
+        // n'honorera pas. D'où le titre « provisoire », l'absence de numéro, et
+        // un avertissement qui interdit explicitement de s'en servir comme
+        // preuve de règlement.
+
+        'proforma_title' => 'Facture provisoire',
+        'proforma_banner_title' => 'Document provisoire — commande non réglée',
+        'proforma_banner_text' => 'Ce document n\'est pas une facture. Il récapitule votre commande à titre indicatif ; la facture numérotée et définitive n\'est émise qu\'après le règlement.',
+        'proforma_notes_title' => 'À savoir',
+        'proforma_note_estimate' => 'Les montants sont indicatifs. Le tarif adhérent n\'est appliqué qu\'aux participants rapprochés d\'un enregistrement d\'adhésion actif au moment de la commande.',
+        'proforma_note_issue' => 'Aucun numéro de facture n\'a été attribué à ce document, qui ne tient pas lieu de facture.',
+        'billed_to_pending' => 'À compléter lors de la commande.',
     ],
 
     // --- Mail -------------------------------------------------------------

@@ -218,6 +218,21 @@ Route::middleware('auth')->group(function () use ($page): void {
     $page('account', 'compte', [AccountController::class, 'show']);
     Route::get('/account', [AccountController::class, 'show'])->name('account-alt.ar');
     Route::get('/{locale?}/account', [AccountController::class, 'show'])->name('account-alt');
+
+    // Profile editing. Two separate pages rather than one: the identity fields
+    // and the password are two different acts with two different risks, and a
+    // single combined form would put "save my details" next to "change my
+    // password" for someone who only wanted the first.
+    $page('account.edit', 'compte/profil', [AccountController::class, 'edit']);
+
+    // POST for both writes, and CSRF-protected as every form on the site is.
+    // The action name carries no identifier: the account is the session's, so a
+    // request body has nothing to point a write at.
+    Route::post('/compte/profil', [AccountController::class, 'update'])->name('account.update.ar');
+    Route::post('/{locale?}/compte/profil', [AccountController::class, 'update'])->name('account.update');
+
+    Route::post('/compte/mot-de-passe', [AccountController::class, 'updatePassword'])->name('account.password.ar');
+    Route::post('/{locale?}/compte/mot-de-passe', [AccountController::class, 'updatePassword'])->name('account.password');
 });
 
 // --- Authenticator app (TOTP) ----------------------------------------------
@@ -269,6 +284,16 @@ Route::post('/{locale?}/panier/ligne/{cart}/{ticketType}/supprimer', [CartContro
 
 Route::post('/panier/vider', [CartController::class, 'clear'])->name('cart.clear.ar');
 Route::post('/{locale?}/panier/vider', [CartController::class, 'clear'])->name('cart.clear');
+
+// The basket summary, as a PDF to forward and as a page for the print dialog.
+//
+// GET, not POST: neither action changes anything. Both read the basket that
+// belongs to this session, and both are behind no middleware because the basket
+// itself is reachable while signed out — the checkout is what asks for an
+// account. A delegate who needs a document before they sign in therefore still
+// gets one.
+$page('cart.proforma', 'panier/recapitulatif', [CartController::class, 'proforma']);
+$page('cart.printable', 'panier/imprimer', [CartController::class, 'printable']);
 
 // --- The checkout -----------------------------------------------------------
 

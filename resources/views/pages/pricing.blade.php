@@ -132,12 +132,18 @@
                                     @elseif (! $canOrder)
                                         {{-- Signed in but blocked, with the reason already
                                              stated in the notice above. This points at
-                                             the step that unblocks it. --}}
-                                        <a href="{{ auth()->user()->hasVerifiedPhone() ? route('register') : route('verification.notice') }}"
+                                             the step that unblocks it.
+
+                                             Same two states the notice above tests, in
+                                             the same order: `canRegister()` is false
+                                             either because the authenticator is not
+                                             set up or because the terms were never
+                                             accepted, and there is no third. --}}
+                                        <a href="{{ auth()->user()->hasConfirmedTotp() ? route('account') : route('totp.setup') }}"
                                            class="ux-btn ux-btn--primary w-100"
                                            data-ux-magnetic="0.14">
                                             <span>
-                                                @lang(auth()->user()->hasVerifiedPhone() ? 'register.terms' : 'verify.title')
+                                                @lang(auth()->user()->hasConfirmedTotp() ? 'register.terms_required' : 'totp.title')
                                             </span>
                                         </a>
                                     @else

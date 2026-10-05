@@ -8,10 +8,12 @@ use App\Enums\Locale;
 use App\Models\Cart;
 use App\Models\TicketType;
 use App\Services\Registration\CheckoutService;
+use App\Services\Registration\InvoiceService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * The basket.
@@ -29,6 +31,7 @@ class CartController extends Controller
 {
     public function __construct(
         private readonly CheckoutService $checkout,
+        private readonly InvoiceService $invoices,
     ) {}
 
     /**
@@ -56,6 +59,49 @@ class CartController extends Controller
             ),
             'currency' => (string) ($cart->items->first()?->ticketType?->currency
                 ?? config('conference.default_currency', 'MAD')),
+        ]);
+    }
+
+    /**
+     * Download the basket summary as a PDF.
+     *
+     * A delegate whose company pays by transfer needs something to hand over
+     * before they commit, and the basket is the last screen where that is still
+     * true — after the checkout the money is already moving. It is rendered as
+     * a proforma, not as an invoice, for the reason given in InvoiceService.
+     */
+    public function proforma(Request $request): StreamedResponse|RedirectResponse
+    {
+        $cart = $this->currentCart($request);
+
+        if ($cart->items()->doesntExist()) {
+            return redirect()->route('pricing')->with('status', __('order.cart_empty'));
+        }
+
+        return $this->invoices->cartProforma($cart, $request->user());
+    }
+
+    /**
+     * The same summary, laid out for the browser's own print dialog.
+     *
+     * A separate route from the PDF rather than a query flag on this one,
+     * because the two are different documents for different moments: the PDF is
+     * the file to forward, the print view is for someone who wants a copy in
+     * front of them now. Both are built from InvoiceService::cartPayload() so
+     * they cannot disagree over the total.
+     */
+    public function printable(Request $request): View|RedirectResponse
+    {
+        $cart = $this->currentCart($request);
+
+        if ($cart->items()->doesntExist()) {
+            return redirect()->route('pricing')->with('status', __('order.cart_empty'));
+        }
+
+        return view('pages.cart-print', [
+            'payload' => $this->invoices->cartPayload($cart, $request->user()),
+            'locale' => Locale::parse(app()->getLocale()),
+            'currentRoute' => 'cart',
         ]);
     }
 

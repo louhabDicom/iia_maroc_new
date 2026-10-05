@@ -632,4 +632,145 @@
             sync();
         });
     });
+
+    /* =====================================================================
+       Quantity stepper
+
+       The buttons edit the number input; they never replace it. The input stays
+       a real input so the value is submitted and announced, and the page is
+       complete without this block — a delegate who prefers typing can, and one
+       whose browser blocked the file loses nothing but the shortcut.
+
+       Two rules the arithmetic follows:
+
+         - the value is clamped to the input's own min and max, read from the
+           markup rather than hard-coded here, so the server's bounds and the
+           control's bounds cannot drift apart
+         - the member quantity is pulled down with the total, because the
+           controller rejects a line whose member places exceed its quantity and
+           a stepper click that always fails is worse than no stepper
+       ===================================================================== */
+
+    safely('quantity stepper', function () {
+        each('[data-stepper-input]', function (input) {
+            var stepper = input.closest('.d-stepper');
+
+            if (!stepper) {
+                return;
+            }
+
+            var down = stepper.querySelector('[data-stepper-down]');
+            var up = stepper.querySelector('[data-stepper-up]');
+            /* Looked up inside the line's own form. Every line has exactly one
+               hidden member_quantity, and reaching for it by id across the page
+               would break the moment a second basket appeared on a page. */
+            var member = input.form
+                ? input.form.querySelector('input[name="member_quantity"]')
+                : null;
+
+            /* The down button is rendered disabled at one place, and disabled
+               again here after a typed value, so both paths end in the same
+               state. */
+            function floor() {
+                var min = input.min === '' ? 0 : parseInt(input.min, 10);
+
+                return isNaN(min) ? 0 : min;
+            }
+
+            function ceiling() {
+                var max = input.max === '' ? 99 : parseInt(input.max, 10);
+
+                return isNaN(max) ? 99 : max;
+            }
+
+            function clamp(value) {
+                var min = floor();
+                var max = ceiling();
+
+                /* An empty or half-typed field is left alone. Rewriting it while
+                   someone is on their way to typing 12 into a field that reads 1
+                   is the classic way to make a form unusable. */
+                if (value === '' || isNaN(value)) {
+                    return;
+                }
+
+                var next = Math.min(Math.max(parseInt(value, 10), min), max);
+
+                if (next === parseInt(input.value, 10)) {
+                    return;
+                }
+
+                input.value = next;
+            }
+
+            function sync() {
+                var value = parseInt(input.value, 10);
+
+                if (down) {
+                    /* One, not zero: zero removes the line, and that has its own
+                       button. A decrement that deletes is the kind of thing a
+                       delegate discovers by accident on a phone. */
+                    down.disabled = isNaN(value) || value <= Math.max(floor(), 1);
+                }
+
+                if (up) {
+                    up.disabled = isNaN(value) || value >= ceiling();
+                }
+
+                if (member) {
+                    var places = parseInt(member.value, 10);
+
+                    if (!isNaN(places) && !isNaN(value) && places > value) {
+                        member.value = value;
+                    }
+                }
+            }
+
+            function nudge(direction) {
+                var step = parseInt(input.step, 10);
+
+                if (isNaN(step) || step < 1) {
+                    step = 1;
+                }
+
+                var current = parseInt(input.value, 10);
+
+                if (isNaN(current)) {
+                    current = floor();
+                }
+
+                clamp(String(current + direction * step));
+                sync();
+            }
+
+            if (down) {
+                down.addEventListener('click', function () {
+                    nudge(-1);
+                });
+            }
+
+            if (up) {
+                up.addEventListener('click', function () {
+                    nudge(1);
+                });
+            }
+
+            input.addEventListener('input', sync);
+
+            /* Enter submits the surrounding form, which is the keyboard
+               equivalent of the Update button beside it. */
+            input.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    var form = input.form;
+
+                    if (form) {
+                        event.preventDefault();
+                        form.submit();
+                    }
+                }
+            });
+
+            sync();
+        });
+    });
 }());

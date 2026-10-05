@@ -5343,3 +5343,1108 @@ textarea.comment-form-input {
         transition: none;
     }
 }
+
+/* ==========================================================================
+   19. Programme editorial blocks
+
+   The theme, the format, the three workshop tracks and the Innovation Lab.
+
+   SCOPE. New classes only, and only ever reached from `.d-page--programme`.
+   The schedule timeline above and the published sheets below are left alone:
+   this section adds the context a delegate reads once, before the timetable,
+   and must not restyle the timetable itself.
+
+   These blocks are dark because they are the page's two pauses — the theme on
+   the way in, the Innovation Lab on the way out — and a light card in the
+   middle of a white programme page reads as an advertisement.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   19a. The theme band
+   -------------------------------------------------------------------------- */
+
+.d-theme {
+    background-color: var(--d-navy);
+    background-image:
+        radial-gradient(120% 90% at 88% 8%, rgb(115 132 255 / 30%) 0%, transparent 58%),
+        linear-gradient(158deg, var(--d-navy-lift) 0%, var(--d-navy) 46%, var(--d-navy-deep) 100%);
+    color: rgb(255 255 255 / 74%);
+    padding-block: var(--section-y);
+}
+
+.d-theme__inner {
+    margin-inline: auto;
+    max-width: var(--container);
+}
+
+/* The label is set as a rule followed by a word, the way a title page does it,
+   so the theme reads as a heading rather than as another section head. The
+   rule grows from the text outwards: `flex` with the label inline means the
+   divider has to take the remaining width explicitly in both directions. */
+.d-theme__label {
+    align-items: center;
+    color: var(--d-clay);
+    display: flex;
+    font-size: var(--t-xs);
+    font-weight: 700;
+    gap: var(--sp-3);
+    letter-spacing: 0.14em;
+    margin: 0 0 var(--sp-4);
+    text-transform: uppercase;
+}
+
+.d-theme__rule {
+    background: currentColor;
+    flex: 1 1 auto;
+    height: 1px;
+    opacity: 0.42;
+}
+
+.d-theme__title {
+    color: #fff;
+    font-size: var(--t-3xl);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: var(--lh-tight);
+    margin: 0;
+    max-width: 34ch;
+    text-wrap: balance;
+}
+
+.d-theme__body {
+    border-top: 1px solid rgb(255 255 255 / 14%);
+    display: grid;
+    gap: var(--sp-6);
+    grid-template-columns: minmax(0, 1fr);
+    margin-block-start: var(--sp-7);
+    padding-block-start: var(--sp-6);
+}
+
+.d-theme__subtitle {
+    color: #fff;
+    font-size: var(--t-lg);
+    margin: 0 0 var(--sp-2);
+}
+
+.d-theme__lede {
+    color: rgb(255 255 255 / 82%);
+    font-size: var(--t-base);
+    margin: 0;
+}
+
+.d-theme__columns {
+    display: grid;
+    gap: var(--sp-4);
+}
+
+.d-theme__columns p {
+    margin: 0;
+}
+
+
+
+/* --------------------------------------------------------------------------
+   19b. The four formats
+   -------------------------------------------------------------------------- */
+
+.d-format__heading {
+    color: #fff;
+    font-size: var(--t-xl);
+    margin: var(--sp-8) 0 var(--sp-2);
+}
+
+.d-format__lede {
+    color: rgb(255 255 255 / 68%);
+    margin: 0 0 var(--sp-5);
+}
+
+.d-format__grid {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.d-format__item {
+    background: rgb(255 255 255 / 6%);
+    border: 1px solid rgb(255 255 255 / 12%);
+    border-radius: var(--r-lg);
+    padding: var(--sp-5);
+    transition: background-color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
+}
+
+.d-format__item:hover {
+    background: rgb(255 255 255 / 10%);
+    border-color: rgb(255 255 255 / 24%);
+    transform: translateY(-3px);
+}
+
+.d-format__icon {
+    align-items: center;
+    background: rgb(161 197 20 / 16%);
+    border-radius: var(--r-md);
+    color: var(--d-clay);
+    display: inline-flex;
+    font-size: var(--t-lg);
+    height: 2.75rem;
+    justify-content: center;
+    margin-bottom: var(--sp-4);
+    width: 2.75rem;
+}
+
+.d-format__title {
+    color: #fff;
+    font-size: var(--t-base);
+    margin: 0 0 var(--sp-2);
+}
+
+.d-format__text {
+    font-size: var(--t-sm);
+    margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   19c. The three workshop tracks
+   -------------------------------------------------------------------------- */
+
+.d-tracks {
+    display: grid;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.d-track {
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-1);
+    display: flex;
+    gap: var(--sp-4);
+    padding: var(--sp-5);
+    transition: border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
+}
+
+.d-track:hover {
+    border-color: var(--d-lilac);
+    box-shadow: var(--sh-2);
+    transform: translateY(-3px);
+}
+
+/* The ordinal is decorative: it labels a list the heading already announced, so
+   it is kept out of the accessibility tree and out of a screen reader's copy of
+   the track name. */
+.d-track__num {
+    color: var(--d-lilac);
+    flex: 0 0 auto;
+    font-family: var(--f-title);
+    font-size: var(--t-2xl);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin: 0;
+    opacity: 0.32;
+}
+
+.d-track__title {
+    align-items: center;
+    display: flex;
+    font-size: var(--t-lg);
+    gap: var(--sp-3);
+    margin: 0 0 var(--sp-3);
+}
+
+.d-track__title i {
+    color: var(--d-lilac);
+    font-size: 0.85em;
+}
+
+.d-track__text {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   19d. The Innovation Lab
+   -------------------------------------------------------------------------- */
+
+.d-lab {
+    background: var(--d-navy);
+    background-image:
+        radial-gradient(100% 120% at 4% 100%, rgb(47 191 159 / 22%) 0%, transparent 55%),
+        linear-gradient(150deg, var(--d-navy-lift) 0%, var(--d-navy-deep) 100%);
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-3);
+    color: rgb(255 255 255 / 76%);
+    display: grid;
+    gap: var(--sp-6);
+    overflow: hidden;
+    padding: var(--sp-7);
+    position: relative;
+}
+
+.d-lab__badge {
+    align-items: center;
+    background: rgb(255 255 255 / 10%);
+    border-radius: var(--r-pill);
+    color: #fff;
+    display: inline-flex;
+    font-size: var(--t-xs);
+    font-weight: 700;
+    gap: var(--sp-2);
+    letter-spacing: 0.08em;
+    margin: 0 0 var(--sp-4);
+    padding: var(--sp-2) var(--sp-4);
+    text-transform: uppercase;
+}
+
+.d-lab__title {
+    color: #fff;
+    font-size: var(--t-2xl);
+    margin: 0 0 var(--sp-3);
+}
+
+.d-lab__lede {
+    font-size: var(--t-base);
+    margin: 0;
+    max-width: 56ch;
+}
+
+.d-lab__days {
+    border-block: 1px solid rgb(255 255 255 / 14%);
+    display: grid;
+    gap: var(--sp-3);
+    margin: 0;
+    padding-block: var(--sp-5);
+}
+
+.d-lab__day {
+    align-items: flex-start;
+    display: flex;
+    font-size: var(--t-sm);
+    gap: var(--sp-3);
+}
+
+.d-lab__day i {
+    color: var(--d-mint);
+    flex: 0 0 auto;
+    margin-top: 0.35em;
+}
+
+.d-lab__note {
+    align-items: center;
+    color: rgb(255 255 255 / 66%);
+    display: flex;
+    font-size: var(--t-xs);
+    gap: var(--sp-2);
+    margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   19e. Two columns and the responsive step
+   -------------------------------------------------------------------------- */
+
+/* Two columns only once there is room for both. The rule is on the container
+   width rather than a device width because the text columns are the thing that
+   has to fit, not the phone model. */
+@media (min-width: 62rem) {
+    .d-theme__body {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    }
+
+    .d-theme__columns {
+        gap: var(--sp-4) var(--sp-6);
+    }
+
+    /* `columns` is a print term; here it is a two-column text flow, which is why
+       the class name carries the qualification rather than pretending to be a
+       grid. */
+    .d-theme__columns {
+        column-count: 2;
+        column-gap: var(--sp-6);
+    }
+
+    .d-theme__columns p {
+        break-inside: avoid;
+    }
+
+    .d-lab {
+        align-items: center;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    }
+
+    /* In the two-column layout the days block is the second column and the note
+       sits under it; in the stacked layout the note follows the days directly. */
+    .d-lab__main {
+        grid-row: 1;
+    }
+
+    .d-lab__days {
+        border-block: 0;
+        border-inline-start: 1px solid rgb(255 255 255 / 14%);
+        grid-row: 1;
+        padding-block: 0;
+        padding-inline-start: var(--sp-6);
+    }
+
+    .d-lab__note {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (min-width: 48rem) {
+    .d-lab__days {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--sp-4);
+    }
+}
+
+/* --------------------------------------------------------------------------
+   19f. Reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .d-format__item,
+    .d-track {
+        transition: none;
+    }
+
+    .d-format__item:hover,
+    .d-track:hover {
+        transform: none;
+    }
+}
+
+/* ==========================================================================
+   20. Cart and profile
+
+   Two pages, one section, because both are built from the same two ideas: a
+   sticky summary that follows the visitor down the page, and a step of
+   controls that has to work with a thumb rather than a cursor.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   20a. Layout primitives used by these two pages
+
+   Deliberately two names rather than a utility framework. `.d-stack` is a
+   vertical rhythm with one gap value, `.d-flex` is the horizontal equivalent;
+   anything that needs a bespoke gap is a bespoke class in its own block below.
+   -------------------------------------------------------------------------- */
+
+.d-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+}
+
+.d-flex {
+    align-items: center;
+    display: flex;
+    gap: var(--sp-3);
+}
+
+/* --------------------------------------------------------------------------
+   20b. Buttons
+
+   The variants the cart needs on top of the shared primitives: a quiet action
+   beside a primary one, and two destructive ones. Destructive buttons are
+   outlined rather than filled — an empty basket is not a mistake, and a filled
+   red button next to a checkout button reads as one.
+   -------------------------------------------------------------------------- */
+
+.d-btn--ghost {
+    background: var(--d-surface);
+    border-color: var(--d-line-strong);
+    color: var(--d-ink);
+}
+
+.d-btn--ghost:hover {
+    background: var(--d-surface-alt);
+    border-color: var(--d-ink);
+    color: var(--d-ink);
+}
+
+/* Sits beside a filled button and must not shout. Tinted rather than white so
+   it still reads as a control on a white panel. */
+.d-btn--quiet {
+    background: var(--d-surface-alt);
+    border-color: var(--d-line);
+    color: var(--d-ink);
+    font-size: var(--t-xs);
+    padding: 0.6rem 1.15rem;
+}
+
+.d-btn--quiet:hover {
+    background: var(--d-surface-sunk);
+    border-color: var(--d-line-strong);
+    color: var(--d-ink);
+}
+
+.d-btn--danger {
+    background: transparent;
+    border-color: #e6b4b0;
+    color: #b3261e;
+    font-size: var(--t-xs);
+    padding: 0.6rem 1.15rem;
+}
+
+.d-btn--danger:hover {
+    background: #fdf3f2;
+    border-color: #b3261e;
+    color: #b3261e;
+}
+
+/* The "empty the basket" action. Text-only on purpose: it removes every line,
+   so it must be the easiest thing on the page to miss by accident. */
+.d-btn--danger-ghost {
+    background: none;
+    border-color: transparent;
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    padding: 0.6rem 1.15rem;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .25em;
+}
+
+.d-btn--danger-ghost:hover {
+    color: #b3261e;
+    text-decoration-color: currentColor;
+}
+
+.d-btn--block {
+    display: flex;
+    width: 100%;
+}
+
+/* The arrow sits after the label in the source, so it points the way the
+   reader is already going. */
+.d-btn__arrow {
+    transition: transform var(--dur-2) var(--ease);
+}
+
+.d-btn:hover .d-btn__arrow {
+    transform: translateX(4px);
+}
+
+/* Logical properties throughout, so the checkout button points left on the
+   Arabic page without a second rule. */
+[dir="rtl"] .d-btn:hover .d-btn__arrow {
+    transform: translateX(-4px);
+}
+
+/* --------------------------------------------------------------------------
+   20c. Notices
+
+   Above the fold, so a delegate who just emptied their basket finds out
+   without scrolling.
+   -------------------------------------------------------------------------- */
+
+/* The confirmation messages on the pages that have forms to confirm.
+   A container rather than a utility because it is the same three states in the
+   same order on both pages that need it. */
+.d-notices {
+    display: grid;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-6);
+}
+
+.d-notice {
+    align-items: flex-start;
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-md);
+    display: flex;
+    font-size: var(--t-sm);
+    gap: var(--sp-3);
+    margin: 0;
+    padding: var(--sp-4) var(--sp-5);
+}
+
+.d-notice i {
+    line-height: 1.5;
+}
+
+.d-notice ul {
+    margin: 0;
+    padding-inline-start: 1.1em;
+}
+
+.d-notice--success {
+    background: var(--d-mint-wash);
+    border-color: rgb(47 191 159 / 40%);
+    color: #14624f;
+}
+
+.d-notice--danger {
+    background: #fdf3f2;
+    border-color: #e6b4b0;
+    color: #b3261e;
+}
+
+/* --------------------------------------------------------------------------
+   20d. The two columns
+   -------------------------------------------------------------------------- */
+
+/* One column until there is room for both, and the summary comes second in the
+   DOM but first in the visual order on a wide screen — the total is what a
+   delegate is checking, the line list is what they are editing. */
+.d-cart {
+    display: grid;
+    gap: var(--sp-6);
+}
+
+@media (min-width: 62rem) {
+    .d-cart {
+        align-items: start;
+        gap: var(--sp-7);
+        grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+    }
+
+    /* Source order puts the summary after the lines so it is read after them
+       by a screen reader, which is the order the page makes sense in. Visual
+       order cannot fix that, so it is not changed here either. */
+    .d-cart__aside {
+        position: sticky;
+        top: 6.5rem;
+    }
+}
+
+.d-cart__heading {
+    font-size: var(--t-xl);
+    margin: 0 0 var(--sp-5);
+}
+
+/* `min-width: 0` so a long French or Arabic ticket name wraps inside its
+   column instead of stretching the grid — a grid item defaults to
+   `min-width: auto`, which is the width of its longest unbreakable content. */
+.d-cart__lines {
+    min-width: 0;
+}
+
+.d-cart__list {
+    display: grid;
+    gap: var(--sp-4);
+    margin: 0;
+}
+
+.d-cart-line {
+    align-items: center;
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-lg);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4) var(--sp-5);
+    justify-content: space-between;
+    padding: var(--sp-5);
+    transition: border-color var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease);
+}
+
+/* The border carries the hover rather than a shadow: a shadow on three cards
+   in a column reads as a stacked deck, not a hover. */
+.d-cart-line:hover {
+    border-color: var(--d-line-strong);
+    box-shadow: var(--sh-1);
+}
+
+.d-cart-line__id {
+    align-items: flex-start;
+    display: flex;
+    flex: 1 1 16rem;
+    gap: var(--sp-4);
+    min-width: 0;
+}
+
+.d-cart-line__badge {
+    align-items: center;
+    background: var(--d-surface-alt);
+    border-radius: var(--r-md);
+    color: var(--d-ink);
+    display: flex;
+    flex: 0 0 auto;
+    height: 2.75rem;
+    justify-content: center;
+    width: 2.75rem;
+}
+
+.d-cart-line__title {
+    font-size: var(--t-lg);
+    margin: 0 0 var(--sp-1);
+}
+
+.d-cart-line__desc {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.55;
+    margin: 0 0 var(--sp-2);
+    max-width: 34rem;
+}
+
+.d-cart-line__meta {
+    align-items: center;
+    color: var(--d-ink);
+    display: flex;
+    font-size: var(--t-xs);
+    font-weight: 700;
+    gap: var(--sp-2);
+    margin: 0;
+}
+
+.d-cart-line__meta i {
+    color: var(--d-mint);
+}
+
+.d-cart-line__controls {
+    align-items: center;
+    display: flex;
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    gap: var(--sp-4) var(--sp-5);
+    justify-content: flex-end;
+}
+
+.d-cart-line__qty {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+}
+
+/* Visually hidden rather than display:none — the label is what tells a screen
+   reader which number this is. */
+.d-cart-line__qty-label {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    font-weight: 700;
+    margin: 0;
+}
+
+/* The stepper.
+
+   Buttons rather than a select: the useful values are a small range around the
+   current one, and a delegate changing 3 to 4 should not have to open anything
+   on a phone. The number input stays a real input so the value is submitted
+   and announced, and it is not disabled — the buttons edit it, they do not
+   replace it. */
+.d-stepper {
+    align-items: stretch;
+    border: 1px solid var(--d-line-strong);
+    border-radius: var(--r-pill);
+    display: inline-flex;
+    overflow: hidden;
+}
+
+.d-stepper__btn {
+    background: var(--d-surface-alt);
+    border: 0;
+    color: var(--d-ink);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: var(--t-sm);
+    line-height: 1;
+    padding: 0;
+    transition: background-color var(--dur-2) var(--ease),
+        color var(--dur-2) var(--ease);
+    width: 2.6rem;
+}
+
+.d-stepper__btn:hover {
+    background: var(--d-surface-sunk);
+}
+
+.d-stepper__btn[disabled] {
+    color: var(--d-line-strong);
+    cursor: not-allowed;
+}
+
+.d-stepper__input {
+    background: var(--d-surface);
+    border: 0;
+    color: var(--d-ink);
+    font-family: inherit;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    /* The spin buttons are a second, redundant way to change the value on a
+       screen where the stepper buttons already do it, and they widen the
+       control enough to push the total out of line on a narrow phone. */
+    -moz-appearance: textfield;
+    appearance: textfield;
+    padding: .6rem .25rem;
+    text-align: center;
+    width: 3rem;
+}
+
+.d-stepper__input::-webkit-outer-spin-button,
+.d-stepper__input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.d-stepper__input:focus-visible {
+    background: var(--d-surface-alt);
+    outline: 2px solid var(--d-periwinkle);
+    outline-offset: -2px;
+}
+
+.d-cart-line__price {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+}
+
+.d-cart-line__total {
+    font-size: var(--t-lg);
+    font-weight: 800;
+    margin: 0;
+    white-space: nowrap;
+}
+
+/* The stepper is the widest thing on a line, so on a phone it takes the row
+   and the price sits under it at the inline end. */
+@media (max-width: 47.99rem) {
+    .d-cart-line {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .d-cart-line__controls {
+        justify-content: space-between;
+    }
+
+    .d-cart-line__price {
+        align-items: flex-end;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+}
+
+.d-cart__note {
+    align-items: flex-start;
+    color: var(--d-muted);
+    display: flex;
+    font-size: var(--t-xs);
+    gap: var(--sp-2);
+    line-height: 1.6;
+    margin: var(--sp-5) 0 0;
+}
+
+.d-cart__note i {
+    color: var(--d-periwinkle);
+    margin-top: .2em;
+}
+
+.d-cart__actions {
+    align-items: center;
+    border-block-start: 1px solid var(--d-line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    justify-content: space-between;
+    margin-block-start: var(--sp-6);
+    padding-block-start: var(--sp-5);
+}
+
+/* --------------------------------------------------------------------------
+   20e. The summary panel
+   -------------------------------------------------------------------------- */
+
+.d-cart-summary {
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-2);
+    padding: var(--sp-6);
+}
+
+.d-cart-summary__title {
+    font-size: var(--t-lg);
+    margin: 0 0 var(--sp-2);
+}
+
+.d-cart-summary__note {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    line-height: 1.6;
+    margin: 0 0 var(--sp-4);
+}
+
+/* The one number on the page, so it is the largest type in the panel. */
+.d-cart-summary__total {
+    font-size: var(--t-2xl);
+    font-weight: 800;
+    letter-spacing: -.01em;
+    line-height: 1.1;
+    margin: 0;
+}
+
+.d-cart-summary__label {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    margin: var(--sp-1) 0 var(--sp-5);
+}
+
+.d-cart-summary__hint {
+    align-items: flex-start;
+    color: var(--d-muted);
+    display: flex;
+    font-size: var(--t-xs);
+    gap: var(--sp-2);
+    line-height: 1.55;
+    margin: var(--sp-3) 0 0;
+}
+
+.d-cart-summary__hint i {
+    margin-top: .2em;
+}
+
+/* --------------------------------------------------------------------------
+   20f. The document block inside the summary
+
+   Inside the summary rather than beside it: it is a panel-within-the-panel, so
+   the eye reads "total, pay, or take this with you" as one group instead of
+   three competing blocks.
+   -------------------------------------------------------------------------- */
+
+.d-cart-invoice {
+    border-block-start: 1px solid var(--d-line);
+    margin-block-start: var(--sp-6);
+    padding-block-start: var(--sp-5);
+}
+
+.d-cart-invoice__title {
+    align-items: center;
+    display: flex;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    gap: var(--sp-2);
+    margin: 0 0 var(--sp-2);
+}
+
+.d-cart-invoice__title i {
+    color: var(--d-ink);
+}
+
+.d-cart-invoice__lede {
+    color: var(--d-muted);
+    font-size: var(--t-xs);
+    line-height: 1.6;
+    margin: 0 0 var(--sp-4);
+}
+
+.d-cart-invoice__actions {
+    display: grid;
+    gap: var(--sp-3);
+}
+
+/* Side by side only where both labels fit without wrapping; stacked, a wrapped
+   pair of buttons reads as two rows of the same thing. */
+@media (min-width: 26rem) {
+    .d-cart-invoice__actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.d-cart-invoice__hint {
+    align-items: flex-start;
+    color: var(--d-muted);
+    display: flex;
+    font-size: var(--t-xs);
+    gap: var(--sp-2);
+    line-height: 1.55;
+    margin: var(--sp-3) 0 0;
+}
+
+.d-cart-invoice__hint i {
+    color: var(--d-clay-dark);
+    margin-top: .2em;
+}
+
+/* --------------------------------------------------------------------------
+   20g. Profile: panel headers, state lines and the radio group
+   -------------------------------------------------------------------------- */
+
+.d-form-panel__title {
+    font-size: var(--t-xl);
+    margin: 0 0 var(--sp-2);
+}
+
+.d-form-panel__lede {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.6;
+    margin: 0 0 var(--sp-5);
+}
+
+/* A quieter panel for the state list. It is reference information next to a
+   form, and a raised card of the same weight would say the two are equally
+   important. */
+.d-panel {
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-lg);
+    padding: var(--sp-5);
+}
+
+.d-panel--quiet {
+    background: var(--d-surface-alt);
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.d-panel__title {
+    font-size: var(--t-sm);
+    letter-spacing: .08em;
+    margin: 0 0 var(--sp-3);
+    text-transform: uppercase;
+}
+
+.d-panel__list {
+    display: grid;
+    gap: var(--sp-1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Key on the inline start, value on the inline end, so the two columns line up
+   down the list on either writing direction. */
+.d-panel__row {
+    align-items: center;
+    border-block-start: 1px solid var(--d-line);
+    display: flex;
+    gap: var(--sp-3);
+    justify-content: space-between;
+    padding-block: var(--sp-3);
+}
+
+.d-panel__row:first-child {
+    border-block-start: 0;
+}
+
+.d-panel__key {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+}
+
+.d-panel__link {
+    color: var(--d-ink);
+    font-size: var(--t-sm);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .2em;
+}
+
+.d-panel__link:hover,
+.d-panel__link:focus-visible {
+    color: var(--d-periwinkle);
+}
+
+/* A tag for a state a delegate can see. Success is mint, which is the one
+   colour in the palette that is neither the brand's nor its competitor's. */
+.d-tag--success {
+    background: var(--d-mint-wash);
+    border-color: rgb(47 191 159 / 40%);
+    color: #14624f;
+}
+
+/* The confirmed/pending state under the email field. The text carries the
+   meaning; the colour only makes it findable. */
+.d-field__ok,
+.d-field__warn {
+    align-items: center;
+    display: flex;
+    font-size: var(--t-xs);
+    font-weight: 700;
+    gap: var(--sp-2);
+    margin: var(--sp-2) 0 0;
+}
+
+.d-field__ok {
+    color: #14624f;
+}
+
+.d-field__warn {
+    color: var(--d-clay-dark);
+}
+
+/* The language radio group.
+
+   Three options, so tiles rather than a list: a tile is a target on a phone,
+   and the selected one has to be obvious without reading the label again. */
+.d-choice {
+    display: grid;
+    gap: var(--sp-3);
+}
+
+@media (min-width: 30rem) {
+    .d-choice {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.d-choice__option {
+    cursor: pointer;
+    position: relative;
+}
+
+.d-choice__option input {
+    /* Kept in the DOM and focusable, moved out of sight rather than hidden:
+       `display: none` would take it out of the tab order and a keyboard user
+       could not reach the field at all. */
+    height: 1px;
+    opacity: 0;
+    position: absolute;
+    width: 1px;
+}
+
+.d-choice__option span {
+    background: var(--d-surface);
+    border: 1px solid var(--d-line-strong);
+    border-radius: var(--r-md);
+    display: block;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    padding: .75rem .5rem;
+    text-align: center;
+    transition: background-color var(--dur-2) var(--ease),
+        border-color var(--dur-2) var(--ease),
+        color var(--dur-2) var(--ease);
+}
+
+.d-choice__option:hover span {
+    border-color: var(--d-ink);
+}
+
+.d-choice__option input:checked + span {
+    background: var(--d-indigo);
+    border-color: var(--d-indigo);
+    color: #fff;
+}
+
+.d-choice__option input:focus-visible + span {
+    box-shadow: 0 0 0 4px rgb(115 132 255 / 25%);
+    outline: none;
+}
+
+/* --------------------------------------------------------------------------
+   20h. Reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .d-cart-line,
+    .d-stepper__btn,
+    .d-choice__option span {
+        transition: none;
+    }
+
+    .d-cart-line:hover {
+        box-shadow: none;
+    }
+
+    .d-btn:hover .d-btn__arrow,
+    [dir="rtl"] .d-btn:hover .d-btn__arrow {
+        transform: none;
+    }
+}

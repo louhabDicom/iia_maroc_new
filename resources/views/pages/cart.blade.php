@@ -1,6 +1,11 @@
 {{--
     The basket.
 
+    Two columns on a desktop, one on a phone, and the summary stays first in the
+    DOM on a phone by being the sticky column: the total and the call to action
+    are the only two things a delegate needs on a screen they are scrolling with
+    one thumb.
+
     The lines are tiles rather than a table. A table is the right semantic for a
     spreadsheet and the wrong one for three rows on a phone: a five-column table
     scrolls sideways on a narrow screen, and the quantity control — the only thing
@@ -9,6 +14,11 @@
 
     Each line also keeps its own form rather than sharing one for the page, so a
     validation error on one line cannot silently discard edits made to another.
+
+    The summary panel carries the printable and downloadable document as well as
+    the checkout button, because the basket is the last screen on which a company
+    delegate still needs a document to take to their finance department — after
+    the checkout the money is already moving.
 --}}
 @extends('layouts.app')
 
@@ -17,82 +27,179 @@
 
 @section('content')
 
-    <x-page-hero
+{{-- `$currentEdition`, not `$edition`: AppServiceProvider shares it under
+     that name on every view, and CartController does not pass an `$edition` of
+     its own. `Edition::current()` returns null when nothing is published, so
+     every use is null-safe — an unpublished edition renders the page without
+     the year band rather than a 500. --}}
+@php
+    $places = (int) $cart->items->sum('quantity');
+    $registrationOpen = (bool) ($currentEdition?->registration_open ?? false);
+@endphp
+
+<div class="d-page d-page--cart">
+
+    <x-design.page-hero
         :title="__('order.cart.title')"
+        :eyebrow="$currentEdition?->identityLabel()"
+        :lede="__('order.cart.subtitle')"
         :crumbs="[__('order.cart.title') => null]"
+        :facts="[
+            {{-- A singular/plural key pair rather than `trans_choice`, because
+                 Arabic has three forms and `trans_choice` on this project's
+                 locale range cannot express them. --}}
+            ['icon' => 'fa-ticket', 'label' => $places === 1
+                ? __('order.cart.places', ['count' => 1])
+                : __('order.cart.places_plural', ['count' => $places])],
+        ]"
+        :cta-label="$registrationOpen ? __('order.cart.checkout') : null"
+        :cta-url="$registrationOpen ? (auth()->check() ? route('pricing') : route('register')) : null"
+        :secondary-label="__('order.cart.continue')"
+        :secondary-url="route('pricing')"
         image="assets/images/bg/price_bg.jpg" />
 
-    <section class="ux-section section-padding-03 ux-section--defer"
-             aria-labelledby="cart-lines-heading">
+    {{-- ---------------------------------------------------------------------
+        Success and error notices, above everything rather than inside the
+        summary: a delegate who just emptied their basket should not have to
+        scroll to the bottom of the page to find out it worked.
+    --------------------------------------------------------------------- --}}
+    @if (session('status') || $errors->any())
+        <div class="container d-notices">
+            @if (session('status'))
+                <p class="d-notice d-notice--success" role="status">
+                    <i class="fas fa-circle-check" aria-hidden="true"></i>
+                    <span>{{ session('status') }}</span>
+                </p>
+            @endif
+
+            @if ($errors->any())
+                <div class="d-notice d-notice--danger" role="alert">
+                    <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+                    <ul>
+                        @foreach ($errors->all() as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+        </div>
+    @endif
+
+    <section class="d-section" aria-labelledby="cart-lines-heading">
         <div class="container">
-            <div class="row g-4">
+            <div class="d-cart">
 
-                <div class="col-lg-8 ux-reveal ux-reveal-left">
-                    <x-section-head
-                        id="cart-lines-heading"
-                        :eyebrow="__('order.cart.title')"
-                        :title="__('order.summary')"
-                        :level="2"
-                        :lede="__('order.cart.subtitle')" />
+                {{-- -----------------------------------------------------------------
+                    The lines.
+                ----------------------------------------------------------------- --}}
+                <div class="d-cart__lines" ux-reveal>
 
-                    @if ($errors->any())
-                        <div class="ux-notice ux-notice--danger mt-4" role="alert">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $message)
-                                    <li>{{ $message }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+                    <h2 id="cart-lines-heading" class="d-cart__heading">
+                        @lang('order.summary')
+                    </h2>
 
-                    <ul class="row g-3 list-unstyled mt-2" data-ux-stagger="70">
+                    <ul class="d-cart__list list-unstyled" data-ux-stagger="70">
                         @foreach ($cart->items as $item)
-                            <li class="col-12">
-                                <article class="ux-card ux-card--lift ux-card--edge p-4">
-                                    <div class="row g-3 align-items-center">
+                            <li class="ux-reveal">
+                                <article class="d-cart-line">
 
-                                        <div class="col-sm">
-                                            <h3 class="ux-card__title h6 mb-1">
+                                    <div class="d-cart-line__id">
+                                        <span class="d-cart-line__badge" aria-hidden="true">
+                                            <i class="fas fa-ticket"></i>
+                                        </span>
+
+                                        <div>
+                                            <h3 class="d-cart-line__title">
                                                 {{ $item->ticketType?->name ?? __('order.ticket') }}
                                             </h3>
+
                                             @if ($item->ticketType?->description)
-                                                <p class="ux-ink-soft small mb-0">
+                                                <p class="d-cart-line__desc">
                                                     {{ $item->ticketType->description }}
                                                 </p>
                                             @endif
-                                        </div>
 
-                                        <div class="col-sm-auto">
-                                            <form method="POST"
-                                                  action="{{ route('cart.update', ['cart' => $cart->id, 'ticketType' => $item->ticket_type_id]) }}"
-                                                  class="d-flex align-items-center gap-2">
-                                                @csrf
-                                                <label class="visually-hidden" for="qty-{{ $item->id }}">
-                                                    @lang('order.quantity')
-                                                </label>
-                                                <input type="number" id="qty-{{ $item->id }}" name="quantity"
-                                                       value="{{ $item->quantity }}" min="0" max="20"
-                                                       class="form-control form-control-sm" style="width: 5rem;">
-                                                <input type="hidden" name="member_quantity"
-                                                       value="{{ $item->member_quantity }}">
-                                                <button type="submit" class="btn btn-sm btn-outline-secondary">
-                                                    @lang('action.update')
+                                            @if ($item->member_quantity > 0)
+                                                <p class="d-cart-line__meta">
+                                                    <i class="fas fa-id-badge" aria-hidden="true"></i>
+                                                    <span>
+                                                        {{ $item->member_quantity === 1
+                                                            ? __('order.cart.member_places', ['count' => 1])
+                                                            : __('order.cart.member_places_plural', ['count' => $item->member_quantity]) }}
+                                                    </span>
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="d-cart-line__controls">
+                                        <form method="POST"
+                                              action="{{ route('cart.update', ['cart' => $cart->id, 'ticketType' => $item->ticket_type_id]) }}"
+                                              class="d-cart-line__qty">
+                                            @csrf
+
+                                            <label class="d-cart-line__qty-label"
+                                                   for="qty-{{ $item->id }}">
+                                                @lang('order.quantity')
+                                            </label>
+
+                                            {{-- A stepper rather than a bare number input: a
+                                                 quantity is the one field on this page a
+                                                 delegate edits on a phone, and typing a
+                                                 digit into a 5rem box is a worse way to
+                                                 change 3 into 4 than tapping a button.
+                                                 The input stays a real number input —
+                                                 hidden from the tab order rather than
+                                                 removed, so the value is still submitted
+                                                 and still announced. --}}
+                                            <div class="d-stepper">
+                                                <button type="button"
+                                                        class="d-stepper__btn"
+                                                        data-stepper-down
+                                                        aria-label="{{ __('action.decrease') }}"
+                                                        @disabled($item->quantity <= 1)>
+                                                    <i class="fas fa-minus" aria-hidden="true"></i>
                                                 </button>
-                                            </form>
-                                        </div>
 
-                                        <div class="col-sm-auto text-sm-end">
-                                            {{-- dir="ltr": an amount beside a currency
-                                                 code must not be bidi-reordered on the
-                                                 Arabic page. --}}
-                                            <p class="ux-card__title mb-0" dir="ltr">
+                                                <input type="number" id="qty-{{ $item->id }}"
+                                                       name="quantity"
+                                                       value="{{ $item->quantity }}"
+                                                       min="0" max="20"
+                                                       data-stepper-input
+                                                       class="d-stepper__input"
+                                                       aria-label="{{ __('order.quantity') }}">
+
+                                                <button type="button"
+                                                        class="d-stepper__btn"
+                                                        data-stepper-up
+                                                        aria-label="{{ __('action.increase') }}">
+                                                    <i class="fas fa-plus" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+
+                                            <input type="hidden" name="member_quantity"
+                                                   value="{{ $item->member_quantity }}">
+
+                                            <button type="submit" class="d-btn d-btn--quiet">
+                                                <span>@lang('action.update')</span>
+                                            </button>
+                                        </form>
+
+                                        <div class="d-cart-line__price">
+                                            {{-- dir="ltr": an amount beside a currency code
+                                                 must not be bidi-reordered on the Arabic
+                                                 page. --}}
+                                            <p class="d-cart-line__total" dir="ltr">
                                                 {{ $item->formattedEstimatedTotal() }}
                                             </p>
+
                                             <form method="POST"
                                                   action="{{ route('cart.destroy', ['cart' => $cart->id, 'ticketType' => $item->ticket_type_id]) }}">
                                                 @csrf
-                                                <button type="submit" class="btn btn-sm btn-link text-danger p-0">
-                                                    @lang('action.remove')
+                                                <button type="submit"
+                                                        class="d-btn d-btn--danger">
+                                                    <i class="fas fa-trash-can" aria-hidden="true"></i>
+                                                    <span>@lang('action.remove')</span>
                                                 </button>
                                             </form>
                                         </div>
@@ -102,52 +209,110 @@
                         @endforeach
                     </ul>
 
-
                     {{-- The estimate is explicitly labelled as one. The authoritative
                          figure is the quote at checkout, because that is where the
                          member rate is applied from the server's own membership record
                          rather than from what the visitor claimed. --}}
-                    <p class="ux-ink-soft small mt-3 mb-0">@lang('order.cart.estimate_note')</p>
+                    <p class="d-cart__note">
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <span>@lang('order.cart.estimate_note')</span>
+                    </p>
 
-                    <div class="d-flex flex-wrap gap-2 mt-4">
-                        <a href="{{ route('pricing') }}" class="btn btn-outline-secondary">
-                            @lang('order.cart.continue')
+                    <div class="d-cart__actions">
+                        <a href="{{ route('pricing') }}" class="d-btn d-btn--ghost">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                            <span>@lang('order.cart.continue')</span>
                         </a>
+
                         <form method="POST" action="{{ route('cart.clear') }}">
                             @csrf
-                            <button type="submit" class="btn btn-outline-danger">
-                                @lang('order.cart.clear')
+                            <button type="submit" class="d-btn d-btn--danger-ghost">
+                                <i class="fas fa-broom" aria-hidden="true"></i>
+                                <span>@lang('order.cart.clear')</span>
                             </button>
                         </form>
                     </div>
                 </div>
 
-                {{-- The summary is its own column rather than a table footer: on a
-                     phone it is the only thing visible without scrolling, which is
-                     exactly where the total and the call to action belong. --}}
-                <div class="col-lg-4 ux-reveal ux-reveal-right">
-                    <div class="ux-card ux-card--glass ux-radius-xl p-4 text-center">
-                        <h2 class="h5 ux-card__title">@lang('order.summary')</h2>
+                {{-- -----------------------------------------------------------------
+                    The summary.
 
-                        <p class="ux-ink-soft">@lang('order.cart.summary_note')</p>
+                    On a desktop it is a sticky column: a delegate comparing two
+                    tariffs can change a quantity and watch the total move without
+                    losing their place.
+                ----------------------------------------------------------------- --}}
+                <aside class="d-cart__aside" ux-reveal>
 
-                        <p class="ux-card__title my-4" dir="ltr">
+                    <div class="d-cart-summary">
+                        <h2 class="d-cart-summary__title">@lang('order.summary')</h2>
+
+                        <p class="d-cart-summary__note">@lang('order.cart.summary_note')</p>
+
+                        <p class="d-cart-summary__total" dir="ltr">
                             {{ \App\Support\Money::format($estimatedTotal, $currency) }}
                         </p>
+
+                        <p class="d-cart-summary__label">@lang('order.cart.estimate')</p>
 
                         {{-- Both paths lead to the same place. Signed out, the checkout
                              sends the visitor to sign in and keeps the basket, so they
                              come back to it. --}}
                         <a href="{{ auth()->check() ? route('checkout') : route('login') }}"
-                           class="btn-join w-100 text-center d-block">@lang('order.cart.checkout')</a>
+                           class="d-btn d-btn--primary d-btn--block">
+                            <span>@lang('order.cart.checkout')</span>
+                            <i class="fas fa-arrow-right d-btn__arrow" aria-hidden="true"></i>
+                        </a>
 
                         @guest
-                            <p class="ux-ink-soft small mt-2 mb-0">@lang('order.cart.sign_in_note')</p>
+                            <p class="d-cart-summary__hint">
+                                <i class="fas fa-lock" aria-hidden="true"></i>
+                                <span>@lang('order.cart.sign_in_note')</span>
+                            </p>
                         @endguest
+
+                        {{-- -----------------------------------------------------------------
+                            The document.
+
+                            Both are GET and neither changes anything, so they are links
+                            rather than a form. The PDF is the file to forward; the print
+                            view is for someone who wants a copy now.
+                        ----------------------------------------------------------------- --}}
+                        <div class="d-cart-invoice">
+                            <p class="d-cart-invoice__title">
+                                <i class="fas fa-file-invoice" aria-hidden="true"></i>
+                                @lang('order.cart.invoice')
+                            </p>
+
+                            <p class="d-cart-invoice__lede">
+                                @lang('order.cart.invoice_lede')
+                            </p>
+
+                            <div class="d-cart-invoice__actions">
+                                <a href="{{ route('cart.proforma') }}" class="d-btn d-btn--quiet">
+                                    <i class="fas fa-download" aria-hidden="true"></i>
+                                    <span>@lang('order.cart.invoice_download')</span>
+                                </a>
+
+                                <a href="{{ route('cart.printable') }}"
+                                   class="d-btn d-btn--quiet"
+                                   target="_blank"
+                                   rel="noopener">
+                                    <i class="fas fa-print" aria-hidden="true"></i>
+                                    <span>@lang('order.cart.invoice_print')</span>
+                                </a>
+                            </div>
+
+                            <p class="d-cart-invoice__hint">
+                                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                                <span>@lang('order.cart.invoice_hint')</span>
+                            </p>
+                        </div>
                     </div>
-                </div>
+                </aside>
             </div>
         </div>
     </section>
+
+</div>
 
 @endsection

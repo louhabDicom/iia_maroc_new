@@ -29,6 +29,15 @@
                             </p>
                         </div>
 
+                        {{-- Profile editing. A link rather than a second form on this page: this is a
+                         dashboard, and a thirteen-field edit form in the middle of
+                         it pushes the orders — the thing most visitors came for —
+                         below the fold. --}}
+                        <a href="{{ route('account.edit') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-user-pen" aria-hidden="true"></i>
+                            @lang('account.edit_title')
+                        </a>
+
                         @if ($user->hasConfirmedTotp())
                             <span class="app-badge app-badge--success">@lang('account.totp_enrolled')</span>
                         @else
@@ -51,7 +60,7 @@
 
                 @unless ($canOrder)
                     <div class="app-notice app-notice--warning mt-4">
-                        @lang('verify.pending_notice')
+                        @lang('totp.pending_notice')
                     </div>
                 @endunless
 
