@@ -5,12 +5,23 @@
     The numbered invoice only exists after settlement (InvoiceService::generate()).
 
     WHY THE "PHP GD extension is required" ERROR IS GONE
-    dompdf can only embed PNG through the GD extension. This template uses JPEG
-    only, which dompdf reads natively, so it renders on a server without GD.
-    Copy to public/assets/images/invoice/ :
-        invoice-bg.jpg        the violet artwork (full A4, replaces the PNG)
-        logo-iia-maroc.jpg    the IIA Maroc logo on white (replaces the PNG)
-    If a file is missing the page still renders (flat colour / text fallback).
+    dompdf reads PNG through the GD extension. JPEG would have been the smaller
+    option, but this PHP's GD is built without it — imagejpeg is undefined, as
+    is imageistruecolortopalette — so there is nothing to gain by converting and
+    everything stays PNG.
+
+    Both images are read from the local filesystem rather than by URL:
+    enable_remote is false in the dompdf config, so an http:// asset() URL does
+    not fail loudly, it just draws nothing.
+
+    THE PAGE ARTWORK IS THE PRINT-SIZED COPY
+    dompdf embeds an image at its native pixel size, and the artwork from the
+    design pack is 2198x3106 for a page of 210x297mm — roughly 265 dpi, well
+    past what paper resolves, and it made every proforma 3.9 MB.
+    invoice-bg-print.jpg is the same artwork at 150 dpi (1240x1754),
+    indistinguishable in print and about 90 KB instead of 2.2 MB. The original
+    stays in place and is used when the print copy is absent, so nothing breaks
+    if one of them goes missing.
 
     dompdf is ~CSS 2.1: tables instead of flex/grid, literals instead of
     variables, solid violet instead of gradients, local paths (public_path)
@@ -23,11 +34,28 @@
     $end = $direction === 'rtl' ? 'left' : 'right';
     $start = $direction === 'rtl' ? 'right' : 'left';
 
-    $art = public_path('assets/images/invoice/invoice-bg.png');
+    // First readable candidate wins: the print-sized JPEG, then the print-sized
+    // PNG, then the original artwork. A single hard-coded path plus an extension
+    // test is how the artwork went missing entirely once already — the path
+    // ended in .png while the test demanded .jpg, so $artExists was always
+    // false and every proforma quietly fell back to a flat violet rectangle.
+    $art = null;
+
+    foreach (['invoice-bg-print.png', 'invoice-bg.png'] as $candidate) {
+        $path = public_path('assets/images/invoice/'.$candidate);
+
+        if (is_file($path)) {
+            $art = $path;
+            break;
+        }
+    }
+
+    // The logo stays a PNG on purpose: it is small and it carries lettering,
+    // which is exactly where JPEG shows its artefacts, and it costs 22 KB.
     $logo = public_path('assets/images/invoice/logo-iia-maroc.png');
     $noImages = (bool) ($noImages ?? false);
-    $artExists = ! $noImages && is_file($art) && str_ends_with($art, '.jpg');
-    $logoExists = ! $noImages && is_file($logo) && str_ends_with($logo, '.jpg');
+    $artExists = ! $noImages && $art !== null;
+    $logoExists = ! $noImages && is_file($logo);
 
     $organiser = $edition?->organiser ?? 'ARABCIA';
     $year = $edition?->year ?? now()->year;
@@ -137,8 +165,7 @@
                 <img src="{{ $logo }}"  width="200"/>
             </td>
             <td style="padding-{{ $start }}: 4mm; vertical-align: middle;">
-                <!-- <div class="brand-name ltr">{{ $organiser }} <span class="brand-year">{{ $year }}</span></div>
-                <div class="brand-sub">{{ $edition?->titleIn(\App\Enums\Locale::parse($invoiceLocale)) }}</div> -->
+
             </td>
         </tr>
     </table>
