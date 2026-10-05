@@ -25,8 +25,9 @@
 
     $art = public_path('assets/images/invoice/invoice-bg.png');
     $logo = public_path('assets/images/invoice/logo-iia-maroc.png');
-    $artExists = is_file($art);
-    $logoExists = is_file($logo);
+    $noImages = (bool) ($noImages ?? false);
+    $artExists = ! $noImages && is_file($art) && str_ends_with($art, '.jpg');
+    $logoExists = ! $noImages && is_file($logo) && str_ends_with($logo, '.jpg');
 
     $organiser = $edition?->organiser ?? 'ARABCIA';
     $year = $edition?->year ?? now()->year;
@@ -72,7 +73,7 @@
         .page { padding: 11mm 11mm 0; }
 
         /* Brand */
-        .mark {  font-size: 22pt; height: 15mm; text-align: center; vertical-align: middle; width: 15mm; }
+        .mark {  color: #fff; font-size: 22pt; height: 15mm; text-align: center; vertical-align: middle; width: 15mm; }
         .brand-name { color: #2b1a78; font-size: 26pt; font-weight: bold; letter-spacing: 1px; line-height: 1; }
         .brand-year { color: #7b4fd8; }
         .brand-sub { color: #2b1a78; font-size: 6.5pt; letter-spacing: 3px; padding-top: 2mm; text-transform: uppercase; }
@@ -132,7 +133,9 @@
     {{-- Brand --}}
     <table>
         <tr>
-            <td class="mark" style="width: 15mm;">    <img src="{{ $logo }}"  width="200"/></td>
+            <td class="mark" style="width: 15mm;">
+                <img src="{{ $logo }}"  width="200"/>
+            </td>
             <td style="padding-{{ $start }}: 4mm; vertical-align: middle;">
                 <!-- <div class="brand-name ltr">{{ $organiser }} <span class="brand-year">{{ $year }}</span></div>
                 <div class="brand-sub">{{ $edition?->titleIn(\App\Enums\Locale::parse($invoiceLocale)) }}</div> -->
@@ -341,9 +344,6 @@
                     <td>{{ $t('order.invoice.footer', ['organiser' => $organiser]) }}</td>
                 </tr>
             </table>
-        </td>
-        <td style="width: 38%;">
-            <table><tr><td class="foot__tag">{{ $tagline }}</td></tr></table>
         </td>
     </tr>
 </table>
