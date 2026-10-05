@@ -65,12 +65,6 @@
     --------------------------------------------------------------------- --}}
     @if (session('status') || $errors->any())
         <div class="container d-notices">
-            @if (session('status'))
-                <p class="d-notice d-notice--success" role="status">
-                    <i class="fas fa-check-circle" aria-hidden="true"></i>
-                    <span>{{ session('status') }}</span>
-                </p>
-            @endif
 
             @if ($errors->any())
                 <div class="d-notice d-notice--danger" role="alert">

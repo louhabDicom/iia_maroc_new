@@ -12,14 +12,6 @@
     success or failure only if the visitor happens to scroll back up.
 --}}
 
-@if (session('status'))
-    <div class="container">
-        <div class="alert alert-success mt-4" role="status">
-            {{ session('status') }}
-        </div>
-    </div>
-@endif
-
 @if ($errors->any())
     <div class="container">
         <div class="alert alert-danger mt-4" role="alert" tabindex="-1" id="error-summary">

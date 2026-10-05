@@ -165,11 +165,10 @@
                             @enderror
                         @endfor
 
-                        <button type="submit" class="btn-join btn-cirle mt-3">
+                        <button type="submit" class="btn-join btn-cirle mt-3" style="color: wheat !important;">
                             @lang('order.place_order')
                         </button>
 
-                        <p class="text-muted small mt-2">@lang('order.email_receipt')</p>
 
                     </form>
                 </div>

@@ -58,7 +58,7 @@
 
         // A published PDF when there is one, the programme page when there is
         // not. Never a link to a file that is not there.
-        $downloadUrl = $programmeDocument?->downloadUrl() ?? route('programme');
+        $downloadUrl = $programmeDocument?->downloadUrl() ?? route('programme', array_filter(['locale' => request()->route('locale')]));
     @endphp
 
     <section class="h-programme" aria-labelledby="programme-title">
@@ -80,6 +80,7 @@
                      tab roles mean arrow-key navigation is the browser's, and the
                      two work together rather than against each other. --}}
                 <ul class="h-days" role="tablist"
+                    data-day-tabs
                     aria-label="@lang('home.landing.programme.days_label')">
                     @foreach ($dayKeys as $index => $date)
                         @php
@@ -99,6 +100,7 @@
                                data-day-tab="{{ $panelId }}"
                                aria-controls="{{ $panelId }}"
                                aria-selected="{{ $isCurrent ? 'true' : 'false' }}"
+                               tabindex="{{ $isCurrent ? '0' : '-1' }}"
                                @if ($isCurrent) aria-current="true" @endif>
                                 <span class="h-day__label">
                                     @lang('home.landing.programme.day', ['number' => $index + 1])
@@ -246,7 +248,7 @@
                  day — and the button is what tells the truth about that. Leaving
                  only the download offered implied the band was the programme. --}}
             <div class="h-programme__actions">
-                <a href="{{ route('programme') }}" class="h-btn h-btn--solid">
+                <a href="{{ route('programme', array_filter(['locale' => request()->route('locale')])) }}" class="h-btn h-btn--fill-light">
                     <span>@lang('home.landing.programme.more')</span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M5 12h13M13 6.5 18.5 12 13 17.5"></path>

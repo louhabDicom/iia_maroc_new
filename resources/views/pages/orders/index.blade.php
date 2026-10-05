@@ -21,11 +21,6 @@
                 </div>
             @endif
 
-            @if (session('status'))
-                <div class="ux-notice ux-notice--success mb-4" role="status">
-                    {{ session('status') }}
-                </div>
-            @endif
 
             @if ($orders->isEmpty())
                 {{-- A signed-in delegate with no order has not failed at

@@ -506,6 +506,155 @@
     });
 
     /* =====================================================================
+       Programme day tabs
+
+       The tabs are real links with `?day=` on them and every day's timetable
+       already in the document, so this is an upgrade rather than the mechanism:
+       it swaps which panel is visible instead of reloading the page, and
+       rewrites the query string so the address bar still names the day that is
+       open. Without this file the links navigate and the server does exactly
+       the same thing, so nothing here is load-bearing.
+
+       `replaceState`, not `pushState`: the day is a view of the page rather
+       than a new page, and pushing would put an entry per tab in the history
+       stack so that the back button walked through days instead of leaving.
+
+       The arrow keys are here because that is what a tablist is expected to do
+       and because `role="tab"` promises it — the browser's default for a link
+       is Enter-to-follow, not arrow navigation.
+       ===================================================================== */
+
+    safely('programme day tabs', function () {
+        var list = document.querySelector('[data-day-tabs]');
+
+        if (!list) {
+            return;
+        }
+
+        var tabs = list.querySelectorAll('[data-day-tab]');
+        var announcer = document.getElementById('ux-live');
+
+        if (!tabs.length) {
+            return;
+        }
+
+        function panelFor(tab) {
+            var id = tab.getAttribute('data-day-tab');
+
+            return id ? document.getElementById(id) : null;
+        }
+
+        function select(tab, moveFocus) {
+            var target = panelFor(tab);
+
+            // A tab pointing at a panel that is not there is worse than no tab:
+            // return instead of marking everything selected and showing nothing.
+            if (!target) {
+                return false;
+            }
+
+            for (var i = 0; i < tabs.length; i++) {
+                var other = tabs[i];
+                var otherPanel = panelFor(other);
+                var isCurrent = other === tab;
+
+                other.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+
+                /* Roving tabindex, which is what a tablist is: only the selected
+                   tab is in the tab order, the rest are reached with the arrow
+                   keys from it. Leaving every tab focusable turns the tab strip
+                   into two stops in the page's tab order before any real content
+                   — so a keyboard user walks the two days again on every pass
+                   through the page. */
+                other.setAttribute('tabindex', isCurrent ? '0' : '-1');
+
+                if (isCurrent) {
+                    other.setAttribute('aria-current', 'true');
+                } else {
+                    other.removeAttribute('aria-current');
+                }
+
+                if (otherPanel) {
+                    otherPanel.hidden = !isCurrent;
+                }
+            }
+
+            // The date is the only part of the tab that changes meaning between
+            // days, so it is what gets announced: `aria-selected` alone tells a
+            // screen-reader user that a tab is now selected and not which one.
+            if (announcer && target.querySelector('.h-schedule__date')) {
+                announcer.textContent = target.querySelector('.h-schedule__date').textContent.trim();
+            }
+
+            if (moveFocus) {
+                tab.focus();
+            }
+
+            return true;
+        }
+
+        function bind(tab) {
+            tab.addEventListener('click', function (event) {
+                // Modifier-clicking a day link is "open this day in a new tab",
+                // and it has to keep doing that: only a plain left click is a
+                // tab switch.
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) {
+                    return;
+                }
+
+                if (!select(tab, false)) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState({}, '', tab.getAttribute('href'));
+                }
+            });
+
+            tab.addEventListener('keydown', function (event) {
+                var index = -1;
+
+                for (var i = 0; i < tabs.length; i++) {
+                    if (tabs[i] === tab) {
+                        index = i;
+                    }
+                }
+
+                var next = null;
+
+                switch (event.key) {
+                    case 'ArrowRight':
+                    case 'ArrowDown':
+                        next = tabs[(index + 1) % tabs.length];
+                        break;
+                    case 'ArrowLeft':
+                    case 'ArrowUp':
+                        next = tabs[(index - 1 + tabs.length) % tabs.length];
+                        break;
+                    case 'Home':
+                        next = tabs[0];
+                        break;
+                    case 'End':
+                        next = tabs[tabs.length - 1];
+                        break;
+                    default:
+                        return;
+                }
+
+                if (next && select(next, true)) {
+                    event.preventDefault();
+                }
+            });
+        }
+
+        for (var t = 0; t < tabs.length; t++) {
+            bind(tabs[t]);
+        }
+    });
+
+    /* =====================================================================
        Session detail — the "+" on a programme row
 
        A disclosure, and therefore three things rather than one: the button owns
