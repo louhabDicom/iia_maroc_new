@@ -20,8 +20,7 @@
         ]"
         :cta-label="$edition->registration_open ? __('nav.registration') : null"
         :cta-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
-        :secondary-label="__('speakers.title')"
-        :secondary-url="route('speakers')"
+   
         image="assets/images/bg/hero_bg2.jpg" />
 
     {{-- The theme of the edition, quoted from the organisers' own presentation
