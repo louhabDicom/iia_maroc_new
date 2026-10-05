@@ -7,7 +7,7 @@
 
 <div class="d-page d-page--speakers">
 
-    <x-design.page-hero
+    <x-front.hero
         :title="__('speakers.title')"
         :eyebrow="$edition->identityLabel()"
         :lede="__('speakers.hero_lede')"

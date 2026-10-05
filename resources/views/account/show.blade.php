@@ -3,7 +3,7 @@
 @section('title', __('account.title'))
 
 @section('content')
-    <x-page-hero
+    <x-front.hero
         :title="__('account.title')"
         :crumbs="[__('account.title') => null]"
         image="assets/images/bg/about_page_bg.jpg" />

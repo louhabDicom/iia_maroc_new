@@ -8,7 +8,7 @@
     {{-- Currency is settled here, in the hero band, rather than in a footnote
          under the cards. A tariff the visitor cannot interpret is a tariff they
          will not act on, and the note is short enough to belong in the lede. --}}
-    <x-page-hero
+    <x-front.hero
         :title="__('pricing.title')"
         :eyebrow="$edition->identityLabel()"
         :lede="__('pricing.currency_note')"

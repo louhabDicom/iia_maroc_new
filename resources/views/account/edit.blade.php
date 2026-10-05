@@ -21,7 +21,7 @@
 
 <div class="d-page d-page--account">
 
-    <x-design.page-hero
+    <x-front.hero
         :title="__('account.edit_title')"
         :eyebrow="__('account.title')"
         :lede="__('account.edit_lede')"

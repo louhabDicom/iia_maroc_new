@@ -56,8 +56,24 @@
         ];
     @endphp
 
-    {{-- Hero (unchanged) --}}
-    <x-home.hero :edition="$edition" :locale="$locale" />
+    {{-- The shared front-office hero. Previously `x-home.hero` verbatim, which put
+         the organiser and the theme in the `h1` instead of the page's own
+         subject — the reader could not tell from the first screen which page
+         they had opened. --}}
+    <x-front.hero
+        :title="__('presentation.title')"
+        :eyebrow="$edition->identityLabel()"
+        :lede="__('presentation.intro.lede')"
+        :crumbs="[__('nav.presentation') => null]"
+        :facts="[
+            ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
+            ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
+        ]"
+        :cta-label="$edition->registration_open ? __('nav.registration') : null"
+        :cta-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
+        :secondary-label="__('nav.programme')"
+        :secondary-url="route('programme')"
+        image="assets/images/bg/about_page_bg.jpg" />
 
     <div class="p-page">
 

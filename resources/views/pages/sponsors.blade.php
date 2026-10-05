@@ -43,7 +43,24 @@ $allies = [
 $allyRows = [array_slice($allies, 0, 4), array_slice($allies, 4)];
 @endphp
 
-<x-home.hero :edition="$edition" :locale="$locale" />
+{{-- The shared front-office hero, with the sponsors page's own title and
+     pitch. Previously this page mounted `x-home.hero` verbatim, which put the
+     organiser's name and the edition's theme in the `h1` and sent the reader
+     back to the sponsors page from the sponsors page. --}}
+<x-front.hero
+    :title="__('sponsoring.title')"
+    :eyebrow="__('sponsoring.hero.eyebrow')"
+    :lede="__('sponsoring.hero.lede', ['year' => $year])"
+    :crumbs="[__('nav.sponsors') => null]"
+    :facts="[
+        ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
+        ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
+    ]"
+    :cta-label="__('nav.pricing')"
+    :cta-url="route('pricing')"
+    :secondary-label="__('nav.programme')"
+    :secondary-url="route('programme')"
+    image="assets/images/bg/hero_bg1.jpg" />
 
 <div class="sp-page">
 

@@ -39,7 +39,7 @@
 
 <div class="d-page d-page--cart">
 
-    <x-design.page-hero
+    <x-front.hero
         :title="__('order.cart.title')"
         :eyebrow="$currentEdition?->identityLabel()"
         :lede="__('order.cart.subtitle')"

@@ -4,7 +4,7 @@
 @section('description', __('archive.intro'))
 
 @section('content')
-    <x-page-hero
+    <x-front.hero
         :title="__('archive.title')"
         :crumbs="[__('nav.archive') => null]"
         image="assets/images/bg/about_page_bg.jpg" />

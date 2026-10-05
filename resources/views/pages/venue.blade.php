@@ -10,7 +10,7 @@
     {{-- The venue page is the page a delegate opens on a phone, standing at a
          taxi rank, so "when, where, and how do I get there" is answered in the
          hero band itself rather than after a scroll. --}}
-    <x-design.page-hero
+    <x-front.hero
         :title="__('venue.title')"
         :eyebrow="$edition->identityLabel()"
         :lede="__('venue.venue_lede', [

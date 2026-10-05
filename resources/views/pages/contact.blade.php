@@ -7,7 +7,7 @@
 
 <div class="d-page d-page--contact">
 
-    <x-design.page-hero
+    <x-front.hero
         :title="__('contact.title')"
         :eyebrow="$edition?->identityLabel()"
         :lede="__('contact.hero_lede')"

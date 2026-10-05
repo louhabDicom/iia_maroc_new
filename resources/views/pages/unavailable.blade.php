@@ -17,7 +17,7 @@
 @section('description', __('state.coming_soon'))
 
 @section('content')
-    <x-page-hero
+    <x-front.hero
         :title="__('site.site_name')"
         :eyebrow="null"
         :lede="__('state.coming_soon')"

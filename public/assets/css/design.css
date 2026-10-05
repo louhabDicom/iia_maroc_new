@@ -6448,3 +6448,77 @@ textarea.comment-form-input {
         transform: none;
     }
 }
+/* ==========================================================================
+   21. The shared front-office hero
+
+   One band for every public page, and it is the landing page's own band. That
+   is why this section is four rules rather than a stylesheet: `h-hero` already
+   styles the background, the marks, the title, the facts and the actions, and
+   re-declaring any of it here would be a second source of truth for the same
+   design.
+
+   Only the two things the landing page has no use for are new.
+   ========================================================================== */
+
+/* The band reads taller on an inner page than on the landing page only because
+   it carries a lede and a crumb trail as well. The vertical rhythm is the
+   landing page's, unchanged. */
+.f-hero .h-hero__inner {
+    max-width: 46rem;
+}
+
+/* Breadcrumbs.
+
+   Below the title, at the end of the band: above an `h1` they are read before
+   the reader knows what page they are on, which is the opposite of what a
+   breadcrumb is for. A trailing trail is the way back, and that is the moment
+   someone looks for it.
+
+   Hairlines between the crumbs rather than chevrons: on a dark band a chevron
+   in periwinkle is the same weight as the links and reads as another link. */
+.f-hero__crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-3);
+    list-style: none;
+    margin: 0 0 var(--sp-5);
+    padding: 0;
+}
+
+.f-hero__crumbs li {
+    align-items: center;
+    color: rgb(255 255 255 / 72%);
+    display: flex;
+    font-size: var(--t-xs);
+    font-weight: 700;
+    gap: var(--sp-3);
+    letter-spacing: .04em;
+}
+
+/* `li + li::before` rather than a counter: the trail is short and its length
+   varies per page, and a generated ordinal ("2 / 3") is a step count dressed
+   up as a hierarchy. */
+.f-hero__crumbs li + li::before {
+    color: rgb(255 255 255 / 40%);
+    content: '';
+    height: 1px;
+    inline-size: 1rem;
+}
+
+.f-hero__crumbs a {
+    color: rgb(255 255 255 / 88%);
+    text-decoration: none;
+}
+
+.f-hero__crumbs a:hover,
+.f-hero__crumbs a:focus-visible {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: .25em;
+}
+
+/* The current page. Not a link, so not link-coloured — a trail whose last
+   crumb looks clickable is a trail that wastes a tap. */
+.f-hero__crumbs [aria-current="page"] {
+    color: var(--h-amber);
+}

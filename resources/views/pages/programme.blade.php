@@ -7,7 +7,9 @@
 
 <div class="d-page d-page--programme">
 
-    <x-design.page-hero
+    {{-- The shared front-office hero: the landing page's own band. See
+         components/front/hero.blade.php for why every public page uses one. --}}
+    <x-front.hero
         :title="__('programme.title')"
         :eyebrow="$edition->identityLabel()"
         :lede="__('programme.hero_lede')"

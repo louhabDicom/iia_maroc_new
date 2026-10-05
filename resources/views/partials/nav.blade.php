@@ -16,6 +16,8 @@
     `aria-current="page"` rides alongside the class so the highlight survives a
     high-contrast mode and is announced by a screen reader — the class alone
     carries no meaning to either.
+      ['route' => 'venue', 'label' => __('nav.venue')],
+              ['route' => 'speakers', 'label' => __('nav.speakers')],
 --}}
 @php
     $variant = $variant ?? 'bar';
@@ -26,9 +28,9 @@
         ['route' => 'presentation', 'label' => __('nav.presentation')],
                 ['route' => 'sponsors', 'label' => __('nav.sponsors')],
         ['route' => 'programme', 'label' => __('nav.programme')],
-        ['route' => 'speakers', 'label' => __('nav.speakers')],
+
         ['route' => 'pricing', 'label' => __('nav.pricing')],
-        ['route' => 'venue', 'label' => __('nav.venue')],
+      
 
         ['route' => 'contact', 'label' => __('nav.contact')],
     ], static fn (array $item): bool => Route::has($item['route'])));
