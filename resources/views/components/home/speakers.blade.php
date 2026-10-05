@@ -93,7 +93,7 @@
                                      somebody set, and the alternative is eight
                                      identical labels that say nothing. --}}
                                 <p class="h-person__chip">
-                                    <i class="{{ $speaker->is_keynote ? 'fas fa-star' : 'fas fa-microphone-lines' }}"
+                                    <i class="{{ $speaker->is_keynote ? 'fas fa-star' : 'fas fa-microphone-alt' }}"
                                        aria-hidden="true"></i>
                                     @lang($speaker->is_keynote ? 'home.landing.speakers.keynote' : 'home.landing.speakers.speaker')
                                 </p>

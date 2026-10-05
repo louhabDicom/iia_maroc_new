@@ -39,10 +39,10 @@
 
         $sheetRows = array_values(array_filter([
             ['icon' => 'fa-lightbulb', 'label' => __('presentation.sheet.theme'), 'value' => $edition->theme],
-            ['icon' => 'fa-calendar-days', 'label' => __('presentation.sheet.dates'), 'value' => $edition->dateLine($locale)],
-            ['icon' => 'fa-location-dot', 'label' => __('presentation.sheet.venue'), 'value' => $edition->venueLine($locale)],
+            ['icon' => 'fa-calendar-alt', 'label' => __('presentation.sheet.dates'), 'value' => $edition->dateLine($locale)],
+            ['icon' => 'fa-map-marker-alt', 'label' => __('presentation.sheet.venue'), 'value' => $edition->venueLine($locale)],
             ['icon' => 'fa-flag', 'label' => __('presentation.sheet.organisers'), 'value' => $edition->organiser],
-            ['icon' => 'fa-building-shield', 'label' => __('presentation.sheet.host'), 'value' => $edition->host_institute],
+            ['icon' => 'fa-building', 'label' => __('presentation.sheet.host'), 'value' => $edition->host_institute],
             ['icon' => 'fa-language', 'label' => __('presentation.sheet.languages'), 'value' => __('presentation.languages_value')],
             ['icon' => 'fa-users', 'label' => __('presentation.sheet.audience'), 'value' => __('presentation.audience.brief')],
         ], static fn (array $row): bool => filled($row['value'])));
@@ -66,8 +66,8 @@
         :lede="__('presentation.intro.lede')"
         :crumbs="[__('nav.presentation') => null]"
         :facts="[
-            ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
-            ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
+            ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
+            ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
         ]"
         :cta-label="$edition->registration_open ? __('nav.registration') : null"
         :cta-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
@@ -222,7 +222,7 @@
 
                         <div class="p-sheet__inner">
                             <div class="p-sheet__head">
-                                <span class="p-sheet__icon" aria-hidden="true"><i class="fas fa-file-lines"></i></span>
+                                <span class="p-sheet__icon" aria-hidden="true"><i class="fas fa-file-alt"></i></span>
                                 <div>
                                     <h2 id="presentation-sheet-title" class="p-sheet__title">@lang('presentation.sheet.title')</h2>
                                     <p class="p-sheet__lede">@lang('presentation.sheet.lede')</p>
@@ -253,7 +253,7 @@
                     <div class="p-audience ux-reveal">
                         <div class="p-audience__body">
                             <p class="p-audience__eyebrow">
-                                <i class="fas fa-user-group" aria-hidden="true"></i>
+                                <i class="fas fa-users" aria-hidden="true"></i>
                                 <span>@lang('presentation.audience.eyebrow')</span>
                             </p>
                             <h2 class="p-audience__title">@lang('presentation.audience.title')</h2>

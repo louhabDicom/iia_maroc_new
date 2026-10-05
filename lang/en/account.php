@@ -39,4 +39,41 @@ return [
     'profile_saved' => 'Your details have been saved.',
     'password_saved' => 'Your password has been changed.',
     'email_reverify' => 'We have sent you a link to confirm your new email address. Your registrations are unaffected.',
+
+    // --- The dashboard -------------------------------------------------------
+    //
+    // 'lede' is the dashboard's standfirst; 'edit_lede' above belongs to the
+    // form. Two pages, two summaries.
+
+    'lede' => 'Your registrations, your profile and the state of your account in one place.',
+    'summary' => 'At a glance',
+    'summary_lede' => 'The state of your account. The first two requirements are checked on every sign-in; the last one is yours to give.',
+
+    'registrations_label' => 'Registrations',
+    'email_label' => 'Email address',
+
+    'checklist_title' => 'Before you can register',
+    'checklist_lede' => 'Three requirements, all checked before payment. The first two take a few minutes; the third is simply your agreement.',
+    'checklist_done' => 'Everything is ready: you can register.',
+    'step_email_title' => 'Confirm your email address',
+    'step_email_text' => 'We sent you a confirmation link. Without it we cannot send you any receipt.',
+    'step_totp_title' => 'Set up your authenticator app',
+    'step_totp_text' => 'A six-digit code, checked on every sign-in. This replaces the paid SMS code used before.',
+    'step_terms_title' => 'Accept the participation terms',
+    'step_terms_text' => 'The regulations, the privacy policy and the cancellation terms. Your acceptance is timestamped.',
+    'step_pending' => 'To do',
+    'step_done' => 'Done',
+    'step_action' => 'Start',
+    'terms_label' => 'I accept the participation terms',
+    'terms_link' => 'Read the terms',
+    'terms_accepted' => 'Terms accepted: your account can now place an order.',
+    'terms_not_accepted' => 'You have not accepted the terms. Tick the box to do so.',
+    'terms_accepted_on' => 'Accepted on :date',
+
+    'profile_lede' => 'These details appear on your badge and on every invoice.',
+    'orders_lede' => 'Your registrations, most recent first.',
+    'order_places' => ':count place|:count places',
+    'order_no_places' => 'No places',
+    'actions_title' => 'Shortcuts',
+    'logout_confirm' => 'Sign out of this device?',
 ];

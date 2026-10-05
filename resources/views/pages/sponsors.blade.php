@@ -53,8 +53,8 @@ $allyRows = [array_slice($allies, 0, 4), array_slice($allies, 4)];
     :lede="__('sponsoring.hero.lede', ['year' => $year])"
     :crumbs="[__('nav.sponsors') => null]"
     :facts="[
-        ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
-        ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
+        ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
+        ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
     ]"
     :cta-label="__('nav.pricing')"
     :cta-url="route('pricing')"
@@ -123,7 +123,7 @@ $allyRows = [array_slice($allies, 0, 4), array_slice($allies, 4)];
 
                 <div class="sp-dossier ux-reveal">
                     <div class="sp-dossier__head">
-                        <span class="sp-dossier__icon" aria-hidden="true"><i class="far fa-file-lines"></i></span>
+                        <span class="sp-dossier__icon" aria-hidden="true"><i class="far fa-file-alt"></i></span>
 
                         <h3 class="sp-dossier__title">
                             <span class="sp-dossier__lead">{{ $dossierFirst }}</span>

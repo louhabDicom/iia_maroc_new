@@ -39,4 +39,41 @@ return [
     'profile_saved' => 'Vos coordonnées ont été enregistrées.',
     'password_saved' => 'Votre mot de passe a été modifié.',
     'email_reverify' => 'Nous vous avons envoyé un lien pour confirmer votre nouvelle adresse e-mail. Vos inscriptions ne sont pas affectées.',
+
+    // --- Le tableau de bord -------------------------------------------------
+    //
+    // `lede` est le chapeau du tableau de bord ; `edit_lede` ci-dessus est celui
+    // du formulaire. Deux pages, deux résumés.
+
+    'lede' => 'Vos inscriptions, votre profil et l\'état de votre compte au même endroit.',
+    'summary' => 'En un coup d\'œil',
+    'summary_lede' => 'L\'état de votre compte. Les deux premières conditions sont vérifiées à chaque connexion ; la dernière est la vôtre.',
+
+    'registrations_label' => 'Inscriptions',
+    'email_label' => 'Adresse e-mail',
+
+    'checklist_title' => 'Avant de pouvoir vous inscrire',
+    'checklist_lede' => 'Trois conditions, vérifiées avant le paiement. Les deux premières se règlent en quelques minutes ; la troisième est un simple accord de votre part.',
+    'checklist_done' => 'Tout est prêt : vous pouvez vous inscrire.',
+    'step_email_title' => 'Confirmer votre adresse e-mail',
+    'step_email_text' => 'Un lien de confirmation vous a été envoyé. Sans lui, aucun justificatif ne peut vous être envoyé.',
+    'step_totp_title' => 'Configurer votre application d\'authentification',
+    'step_totp_text' => 'Un code à six chiffres, vérifié à chaque connexion. C\'est ce qui remplace l\'SMS payant utilisé auparavant.',
+    'step_terms_title' => 'Accepter les conditions de participation',
+    'step_terms_text' => 'Le règlement, la politique de confidentialité et les conditions d\'annulation. Votre acceptation est horodatée.',
+    'step_pending' => 'À faire',
+    'step_done' => 'Fait',
+    'step_action' => 'Commencer',
+    'terms_label' => 'J\'accepte les conditions de participation',
+    'terms_link' => 'Lire les conditions',
+    'terms_accepted' => 'Conditions acceptées : votre compte peut maintenant passer commande.',
+    'terms_not_accepted' => 'Vous n\'avez pas accepté les conditions. Cochez la case pour le faire.',
+    'terms_accepted_on' => 'Acceptées le :date',
+
+    'profile_lede' => 'Ces informations figurent sur votre badge et sur chaque facture.',
+    'orders_lede' => 'Vos inscriptions, de la plus récente à la plus ancienne.',
+    'order_places' => ':count place|:count places',
+    'order_no_places' => 'Aucune place',
+    'actions_title' => 'Raccourcis',
+    'logout_confirm' => 'Se déconnecter de cet appareil ?',
 ];

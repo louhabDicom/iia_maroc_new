@@ -136,7 +136,7 @@
 
                                             @if ($lead->room)
                                                 <p class="h-slot__detail-line">
-                                                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                                    <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
                                                     {{ $lead->room->name }}
                                                 </p>
                                             @endif

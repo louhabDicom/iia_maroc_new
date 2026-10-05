@@ -302,7 +302,7 @@
         <div class="container">
             <div class="row g-4">
                 @foreach ([[
-                    ['fa-shield-halved', 'secure'],
+                    ['fa-shield-alt', 'secure'],
                     ['fa-credit-card', 'cards'],
                     ['fa-file-invoice', 'instant'],
                     ['fa-headset', 'support'],

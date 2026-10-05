@@ -140,7 +140,7 @@
                 @php($basketCount = \App\Models\Cart::forSession(request()->session()->getId(), auth()->user())->items()->sum('quantity'))
                 <a href="{{ route('cart') }}" class="header-cart">
                     <span class="cart-btn" aria-hidden="true">
-                        <i class="flaticon-shopping-cart"></i>
+                        <i class="flaticon-shopping-cart" style="color: wheat;"></i>
                         @if ($basketCount > 0)
                             <span class="count">{{ $basketCount }}</span>
                         @endif
@@ -167,14 +167,14 @@
             @auth
                 <a href="{{ route('account') }}" class="d-btn d-btn--outline d-btn--sm d-header__account">
                     <span class="visually-hidden">@lang('account.title')</span>
-                    <i class="fas fa-circle-user" aria-hidden="true"></i>
+                    <i class="fas fa-user-circle" aria-hidden="true"></i>
                     <span class="d-header__account-name">{{ auth()->user()->displayName() }}</span>
                 </a>
             @else
                 {{-- The visible label is the accessible name here, so there is no
                      second copy of it for a screen reader to hear twice. --}}
                 <a href="{{ route('login') }}" class="d-btn d-btn--outline d-btn--sm d-header__account">
-                    <i class="fas fa-right-to-bracket" aria-hidden="true"></i>
+                    <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
                     <span class="d-header__account-name">@lang('action.login')</span>
                 </a>
             @endauth
@@ -230,7 +230,7 @@
     <div class="d-drawer__head">
         <h2 id="d-drawer-title" class="d-footer__title mb-0">@lang('nav.menu')</h2>
         <button type="button" class="d-drawer__close" data-drawer-close>
-            <i class="fas fa-xmark" aria-hidden="true"></i>
+            <i class="fas fa-times" aria-hidden="true"></i>
             <span class="visually-hidden">@lang('nav.close')</span>
         </button>
     </div>

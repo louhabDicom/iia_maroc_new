@@ -131,25 +131,38 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                                     @switch($fact['icon'])
-                                        @case('fa-calendar-days')
+                                        @case('fa-calendar-alt')
                                             <rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect>
                                             <path d="M8 3v4M16 3v4M3.5 10h17"></path>
                                             @break
 
-                                        @case('fa-location-dot')
+                                        @case('fa-map-marker-alt')
                                             <path d="M12 21.5s7-6.6 7-11.5a7 7 0 1 0-14 0c0 4.9 7 11.5 7 11.5Z"></path>
                                             <circle cx="12" cy="10" r="2.6"></circle>
                                             @break
 
-                                        @case('fa-ticket')
+                                        @case('fa-ticket-alt')
                                             <path d="M3.5 9V7.5A2.5 2.5 0 0 1 6 5h12a2.5 2.5 0 0 1 2.5 2.5V9a2.5 2.5 0 0 0 0 5v1.5A2.5 2.5 0 0 1 18 18H6a2.5 2.5 0 0 1-2.5-2.5V14a2.5 2.5 0 0 0 0-5Z"></path>
                                             <path d="M13 5.5v13" stroke-dasharray="2 2.5"></path>
                                             @break
 
-                                        @case('fa-shield-halved')
+                                        @case('fa-shield-alt')
                                             <path d="M12 21.5s7-3.2 7-9.4V5.6L12 3 5 5.6v6.5c0 6.2 7 9.4 7 9.4Z"></path>
                                             <path d="M12 12.2 8.6 8.8"></path>
                                             <path d="M12 3v9.2"></path>
+                                            @break
+
+                                        {{-- An address and a phone number. Without these they fell through to
+                                             the default pin, so a page that
+                                             passed one was announcing it with a
+                                             map marker. --}}
+                                        @case('fa-phone')
+                                            <path d="M6.2 3.5h3l1.5 4-2 1.4a12 12 0 0 0 5.4 5.4l1.4-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.2 5.7a2 2 0 0 1 2-2.2Z"></path>
+                                            @break
+
+                                        @case('fa-envelope')
+                                            <rect x="3" y="5.5" width="18" height="13" rx="2.5"></rect>
+                                            <path d="m3.8 7.4 7.1 5.3a2 2 0 0 0 2.2 0l7.1-5.3"></path>
                                             @break
 
                                         @default

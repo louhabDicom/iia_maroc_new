@@ -46,6 +46,11 @@ class AccountController extends Controller
                 ->orderByDesc('id')
                 ->first(),
             'canOrder' => $user->canRegister(),
+            // The same check twice: `canOrder` gates the whole gate notice, and
+            // `termsAccepted` is what says *which* of the two steps is missing.
+            // Passing only one would force the view to recompute the user's state
+            // to draw a row on the checklist.
+            'termsAccepted' => $user->terms_accepted_at !== null,
         ]);
     }
 
@@ -139,6 +144,32 @@ class AccountController extends Controller
 
         return redirect()->route('account.edit')
             ->with('status', __('account.password_saved'));
+    }
+
+    /**
+     * Record acceptance of the terms.
+     *
+     * `terms_accepted_at` is what `User::canRegister()` reads, so this is the
+     * difference between an account that can order and one that cannot — and
+     * until this existed nothing in the application ever set the column, which
+     * left every TOTP-confirmed delegate permanently blocked at the pricing page.
+     *
+     * Timestamped only when it is not already set: re-submitting the checkbox
+     * must not push the original consent date forward, or a delegate could
+     * launder a stale acceptance into a fresh one by clicking twice.
+     */
+    public function acceptTerms(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($request->boolean('accept')) {
+            $user->acceptTerms();
+        }
+
+        return redirect()->route('account')
+            ->with('status', $user->terms_accepted_at !== null
+                ? __('account.terms_accepted')
+                : __('account.terms_not_accepted'));
     }
 
     public function logout(Request $request): RedirectResponse

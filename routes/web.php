@@ -233,6 +233,14 @@ Route::middleware('auth')->group(function () use ($page): void {
 
     Route::post('/compte/mot-de-passe', [AccountController::class, 'updatePassword'])->name('account.password.ar');
     Route::post('/{locale?}/compte/mot-de-passe', [AccountController::class, 'updatePassword'])->name('account.password');
+
+    // Accepting the terms. Its own action rather than a checkbox inside the
+    // profile form, because it is the one field on the account that is a consent
+    // record rather than a detail: it has to be timestamped on its own, it must
+    // not be settable by an incidental save of the identity fields, and the
+    // dashboard is where the delegate is told what is still missing.
+    Route::post('/conditions', [AccountController::class, 'acceptTerms'])->name('account.terms.ar');
+    Route::post('/{locale?}/conditions', [AccountController::class, 'acceptTerms'])->name('account.terms');
 });
 
 // --- Authenticator app (TOTP) ----------------------------------------------

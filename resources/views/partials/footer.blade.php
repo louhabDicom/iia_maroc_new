@@ -112,7 +112,7 @@
                         <li>
                             <a href="{{ $currentEdition->mapUrl() }}"
                                rel="noopener noreferrer" target="_blank">
-                                <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
                                 <span>@lang('contact.open_map')</span>
                             </a>
                         </li>

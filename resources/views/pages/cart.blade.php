@@ -48,7 +48,7 @@
             {{-- A singular/plural key pair rather than `trans_choice`, because
                  Arabic has three forms and `trans_choice` on this project's
                  locale range cannot express them. --}}
-            ['icon' => 'fa-ticket', 'label' => $places === 1
+            ['icon' => 'fa-ticket-alt', 'label' => $places === 1
                 ? __('order.cart.places', ['count' => 1])
                 : __('order.cart.places_plural', ['count' => $places])],
         ]"
@@ -67,14 +67,14 @@
         <div class="container d-notices">
             @if (session('status'))
                 <p class="d-notice d-notice--success" role="status">
-                    <i class="fas fa-circle-check" aria-hidden="true"></i>
+                    <i class="fas fa-check-circle" aria-hidden="true"></i>
                     <span>{{ session('status') }}</span>
                 </p>
             @endif
 
             @if ($errors->any())
                 <div class="d-notice d-notice--danger" role="alert">
-                    <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
                     <ul>
                         @foreach ($errors->all() as $message)
                             <li>{{ $message }}</li>
@@ -105,7 +105,7 @@
 
                                     <div class="d-cart-line__id">
                                         <span class="d-cart-line__badge" aria-hidden="true">
-                                            <i class="fas fa-ticket"></i>
+                                            <i class="fas fa-ticket-alt"></i>
                                         </span>
 
                                         <div>
@@ -198,7 +198,7 @@
                                                 @csrf
                                                 <button type="submit"
                                                         class="d-btn d-btn--danger">
-                                                    <i class="fas fa-trash-can" aria-hidden="true"></i>
+                                                    <i class="fas fa-trash-alt" aria-hidden="true"></i>
                                                     <span>@lang('action.remove')</span>
                                                 </button>
                                             </form>
@@ -214,7 +214,7 @@
                          member rate is applied from the server's own membership record
                          rather than from what the visitor claimed. --}}
                     <p class="d-cart__note">
-                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
                         <span>@lang('order.cart.estimate_note')</span>
                     </p>
 
@@ -303,7 +303,7 @@
                             </div>
 
                             <p class="d-cart-invoice__hint">
-                                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                                <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
                                 <span>@lang('order.cart.invoice_hint')</span>
                             </p>
                         </div>

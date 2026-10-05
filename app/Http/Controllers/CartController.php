@@ -42,7 +42,7 @@ class CartController extends Controller
         $cart = $this->currentCart($request);
 
         if ($cart->items()->doesntExist()) {
-            return redirect()->route('pricing')->with('status', __('order.cart_empty'));
+           // return redirect()->route('pricing')->with('status', __('order.cart_empty'));
         }
 
         $cart->load(['items.ticketType']);
@@ -75,7 +75,7 @@ class CartController extends Controller
         $cart = $this->currentCart($request);
 
         if ($cart->items()->doesntExist()) {
-            return redirect()->route('pricing')->with('status', __('order.cart_empty'));
+        //    return redirect()->route('pricing')->with('status', __('order.cart_empty'));
         }
 
         return $this->invoices->cartProforma($cart, $request->user());
@@ -95,7 +95,7 @@ class CartController extends Controller
         $cart = $this->currentCart($request);
 
         if ($cart->items()->doesntExist()) {
-            return redirect()->route('pricing')->with('status', __('order.cart_empty'));
+          //  return redirect()->route('pricing')->with('status', __('order.cart_empty'));
         }
 
         return view('pages.cart-print', [

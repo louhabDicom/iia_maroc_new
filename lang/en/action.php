@@ -9,6 +9,7 @@ return [
     'continue' => 'Continue',
     'decrease' => 'One fewer',
     'download' => 'Download',
+    'edit' => 'Edit',
     'increase' => 'One more',
     'learn_more' => 'Learn more',
     'login' => 'Log in',

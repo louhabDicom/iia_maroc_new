@@ -14,8 +14,8 @@
         :lede="__('pricing.currency_note')"
         :crumbs="[__('nav.pricing') => null]"
         :facts="[
-            ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
-            ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
+            ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
+            ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
         ]"
         image="assets/images/bg/price_bg.jpg" />
 
@@ -39,7 +39,7 @@
                 @auth
                     @unless ($canOrder)
                         <div class="ux-notice ux-notice--warning ux-reveal" role="status">
-                            <i class="fas fa-circle-exclamation ux-notice__icon" aria-hidden="true"></i>
+                            <i class="fas fa-exclamation-circle ux-notice__icon" aria-hidden="true"></i>
 
                             {{-- Told what to do about it here, with a link, rather than
                                  left to be discovered when the form refuses. --}}

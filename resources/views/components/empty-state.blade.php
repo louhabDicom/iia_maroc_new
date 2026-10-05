@@ -14,7 +14,7 @@
 --}}
 @props([
     'message',
-    'icon' => 'fa-regular fa-calendar-xmark',
+    'icon' => 'fa-regular fa-calendar-times',
 ])
 
 <div class="ux-empty">

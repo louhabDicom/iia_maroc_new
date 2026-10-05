@@ -92,7 +92,7 @@
 
                         @if ($contact->internal_notes)
                             <div class="ux-notice ux-notice--warning mt-3" role="note">
-                                <i class="fas fa-note-sticky ux-notice__icon" aria-hidden="true"></i>
+                                <i class="fas fa-sticky-note ux-notice__icon" aria-hidden="true"></i>
                                 <div>{{ $contact->internal_notes }}</div>
                             </div>
                         @endif

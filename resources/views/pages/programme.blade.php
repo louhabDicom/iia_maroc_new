@@ -15,8 +15,8 @@
         :lede="__('programme.hero_lede')"
         :crumbs="[__('nav.programme') => null]"
         :facts="[
-            ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
-            ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
+            ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
+            ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
         ]"
         :cta-label="$edition->registration_open ? __('nav.registration') : null"
         :cta-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
@@ -62,10 +62,10 @@
 
                 <ul class="d-format__grid list-unstyled">
                     @foreach ([
-                        ['fa-microphone-lines', 'programme.format_plenaries', 'programme.format_plenaries_text'],
+                        ['fa-microphone-alt', 'programme.format_plenaries', 'programme.format_plenaries_text'],
                         ['fa-comments', 'programme.format_panels', 'programme.format_panels_text'],
-                        ['fa-people-group', 'programme.format_workshops', 'programme.format_workshops_text'],
-                        ['fa-flask-vial', 'programme.format_lab', 'programme.format_lab_text'],
+                        ['fa-users', 'programme.format_workshops', 'programme.format_workshops_text'],
+                        ['fa-flask', 'programme.format_lab', 'programme.format_lab_text'],
                     ] as $format)
                         <li class="d-format__item">
                             <span class="d-format__icon" aria-hidden="true">
@@ -93,7 +93,7 @@
                  page says so rather than implying it is final. It sits above the
                  day tabs because it is a caveat about every day, not about one. --}}
             <p class="d-note">
-                <i class="fas fa-circle-info" aria-hidden="true"></i>
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
                 <span>@lang('programme.notice')</span>
             </p>
 
@@ -123,7 +123,7 @@
 
             @if ($slots === [])
                 <div class="d-empty">
-                    <i class="fas fa-calendar-xmark d-empty__icon" aria-hidden="true"></i>
+                    <i class="fas fa-calendar-times d-empty__icon" aria-hidden="true"></i>
                     <p>@lang('programme.no_sessions')</p>
                 </div>
             @else
@@ -222,7 +222,7 @@
             <ul class="d-tracks list-unstyled" data-ux-stagger="90">
                 @foreach ([
                     ['fa-microchip', 'programme.track_ai_title', 'programme.track_ai_text'],
-                    ['fa-shield-halved', 'programme.track_resilience_title', 'programme.track_resilience_text'],
+                    ['fa-shield-alt', 'programme.track_resilience_title', 'programme.track_resilience_text'],
                     ['fa-user-graduate', 'programme.track_auditor_title', 'programme.track_auditor_text'],
                 ] as $index => $track)
                     <li class="d-track ux-reveal">
@@ -255,7 +255,7 @@
             <div class="d-lab">
                 <div class="d-lab__main">
                     <p class="d-lab__badge">
-                        <i class="fas fa-flask-vial" aria-hidden="true"></i>
+                        <i class="fas fa-flask" aria-hidden="true"></i>
                         @lang('programme.format_lab')
                     </p>
 
@@ -266,17 +266,17 @@
 
                 <ul class="d-lab__days list-unstyled">
                     <li class="d-lab__day">
-                        <i class="fas fa-circle-check" aria-hidden="true"></i>
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
                         <span>@lang('programme.lab_day1')</span>
                     </li>
                     <li class="d-lab__day">
-                        <i class="fas fa-circle-check" aria-hidden="true"></i>
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
                         <span>@lang('programme.lab_day2')</span>
                     </li>
                 </ul>
 
                 <p class="d-lab__note">
-                    <i class="fas fa-circle-info" aria-hidden="true"></i>
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
                     <span>@lang('programme.lab_note')</span>
                 </p>
             </div>
@@ -327,7 +327,7 @@
                                      loading="lazy"
                                      decoding="async">
                                 <span class="d-sheet__zoom" aria-hidden="true">
-                                    <i class="fas fa-up-right-from-square"></i>
+                                    <i class="fas fa-external-link-alt"></i>
                                 </span>
                             </a>
                             <figcaption class="d-sheet__caption">

@@ -9,6 +9,7 @@ return [
     'continue' => 'Continuer',
     'decrease' => 'Une place de moins',
     'download' => 'Télécharger',
+    'edit' => 'Modifier',
     'increase' => 'Une place de plus',
     'learn_more' => 'En savoir plus',
     'login' => 'Se connecter',

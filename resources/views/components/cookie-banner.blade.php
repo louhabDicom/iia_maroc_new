@@ -36,7 +36,7 @@
                 </button>
                 <button type="button" class="d-cookie__close" data-cookie-dismiss
                         aria-label="{{ __('cookie.dismiss') }}">
-                    <i class="fas fa-xmark" aria-hidden="true"></i>
+                    <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
             </div>
 

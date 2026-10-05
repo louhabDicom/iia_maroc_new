@@ -35,7 +35,7 @@
             @endif
 
             @if ($archived === null)
-                <x-empty-state :message="__('state.empty')" icon="fa-box-archive" />
+                <x-empty-state :message="__('state.empty')" icon="fa-archive" />
             @else
                 <div class="row g-4">
 

@@ -199,6 +199,7 @@ html {
 }
 
 body {
+    margin: 0;
     background: var(--d-surface);
     color: var(--d-ink-soft);
     /* 16px floor. The template sets `body { font-size: 14px }`, which is below
@@ -551,6 +552,7 @@ img {
     inset-inline: 0;
     position: fixed;
     z-index: 1000;
+background: linear-gradient(2deg, #4a3dac  0%, #2c1181 600%);
 }
 
 /* The bar is 72px and *not* translucent over the hero: a 72px strip of
@@ -560,7 +562,7 @@ img {
    what stops the links being read against moving content. */
 .d-header__bar {
     align-items: center;
-    background: transparent;
+
     display: flex;
     gap: var(--sp-5);
     height: var(--header-h);
@@ -574,8 +576,8 @@ img {
 
 .d-header.is-stuck .d-header__bar {
     backdrop-filter: blur(16px) saturate(180%);
-background: linear-gradient(135deg, rgb(44 17 129 / 88%) 0%, rgb(32 16 98 / 88%) 100%);
-    box-shadow: 0 1px 0 var(--d-line), 0 8px 24px rgb(28 25 64 / 8%);
+    background: linear-gradient(2deg, #4a3dac  0%, #2c1181 600%);
+   
 }
 
 @media (max-width: 767.98px) {
@@ -2782,6 +2784,7 @@ body.drawer-open {
    washes are the light, and they are what stop a two-stop mauve from looking
    like a flat rectangle of colour. */
 .h-hero {
+    
     background-color: var(--h-deep);
     background-image: url('../brand/ban_hero_home.png');
     background-position: center;
@@ -5832,6 +5835,25 @@ textarea.comment-form-input {
     transform: translateX(-4px);
 }
 
+/* Font Awesome's `arrow-right` is a glyph, not a shape that follows the
+   writing direction, so on the Arabic page it points out of the page rather
+   than onward through it. Mirrored here rather than swapped for `arrow-left`
+   per call site: the icon name stays the same everywhere, so a "forward"
+   affordance is `fa-arrow-right` in the markup and comes out pointing the
+   right way.
+
+   `scale`, not `transform`: the hover rules above translate the same element
+   and the mirror has to survive them. `scale` and `transform` are separate
+   properties and both apply, so the two compose instead of the later rule
+   winning. */
+[dir="rtl"] .fa-arrow-right,
+[dir="rtl"] .fa-long-arrow-alt-right,
+[dir="rtl"] .fa-sign-in-alt,
+[dir="rtl"] .fa-sign-out-alt,
+[dir="rtl"] .fa-external-link-alt {
+    scale: -1 1;
+}
+
 /* --------------------------------------------------------------------------
    20c. Notices
 
@@ -6521,4 +6543,360 @@ textarea.comment-form-input {
    crumb looks clickable is a trail that wastes a tap. */
 .f-hero__crumbs [aria-current="page"] {
     color: var(--h-amber);
+}
+
+/* ==========================================================================
+   22. Account dashboard
+   --------------------------------------------------------------------------
+   The dashboard (`/compte`) in the same vocabulary as the profile page, so the
+   two account pages read as one design and a change to the design system lands
+   on both at once. Everything here extends a class that already exists
+   (`d-stat`, `d-panel`, `d-tag`, `d-empty`, `d-head`); only the pieces the
+   dashboard actually needs are new.
+   ========================================================================== */
+
+/* --- State colours on tags ------------------------------------------------
+   `OrderStatus::colour()` returns warning / success / danger / info, and
+   `d-tag` only shipped mint for success, so every status but "paid" was
+   rendering as an unstyled grey pill. Amber for the two states a delegate can
+   still act on, indigo for the two that are settled history. */
+.d-tag--warning {
+    background: rgb(227 147 116 / 18%);
+    color: #8a4526;
+}
+
+.d-tag--danger {
+    background: rgb(196 62 74 / 12%);
+    color: #9c1f28;
+}
+
+.d-tag--info {
+    background: var(--d-surface-sunk);
+    color: var(--d-indigo);
+}
+
+/* The one outstanding item on a checklist row. Deliberately not red: it is the
+   normal state of an account that registered this morning, not a failure. */
+.d-tag--todo {
+    background: rgb(227 147 116 / 18%);
+    color: #8a4526;
+}
+
+/* --- Stat tiles -----------------------------------------------------------
+   The existing tile is `icon + value + label`, which suits a number. Half of
+   what the dashboard needs is a value that is a *phrase* - "Adherent", "This
+   address is confirmed" - and one tile is the account's own identity rather
+   than a measurement at all. */
+.d-stat__text {
+    color: var(--d-ink);
+    font-size: var(--t-lg);
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.d-stat__body {
+    min-width: 0;
+}
+
+.d-stat__name {
+    color: var(--d-ink);
+    font-size: var(--t-lg);
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.d-stat__meta {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    margin: var(--sp-1) 0 0;
+    overflow-wrap: anywhere;
+}
+
+/* Spans two columns so the identity tile holds an email address at full
+   length. Falls back to one column on its own once there is no room for two. */
+.d-stat--wide {
+    grid-column: span 2;
+}
+
+@media (max-width: 30rem) {
+    .d-stat--wide {
+        grid-column: span 1;
+    }
+}
+
+/* The green/amber tint on the email tile's icon: the tile carries the meaning in
+   words, this only makes it findable in a four-tile row. */
+.d-stat__icon--ok {
+    background: var(--d-mint-wash);
+    color: #14624f;
+}
+
+.d-stat__icon--todo {
+    background: rgb(227 147 116 / 18%);
+    color: #8a4526;
+}
+
+.d-stat__dot,
+.d-order__dot {
+    color: var(--d-line-strong);
+    margin-inline: var(--sp-1);
+}
+
+/* --- Section header with a trailing action --------------------------------
+   `d-head` is a centred stack. The dashboard's section headers are left-aligned
+   with a button at the end, which on a phone has to wrap under the text rather
+   than push it off the edge. */
+.d-head--row {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    justify-content: space-between;
+    margin-block-end: var(--sp-5);
+}
+
+.d-head--row .d-head__title {
+    margin-block-end: var(--sp-1);
+}
+
+/* A panel title that is a sentence rather than a small-caps label: on the
+   checklist the title *is* the section heading, and `.d-panel__title` is
+   letter-spaced uppercase, which is right for "Shortcuts" and wrong for a
+   heading someone has to read. */
+.d-panel__title--lede {
+    font-size: var(--t-xl);
+    letter-spacing: normal;
+    line-height: var(--lh-heading);
+    text-transform: none;
+}
+
+/* --- The three-step checklist ---------------------------------------------
+   An ordered list, because the three steps *are* ordered in the one way that
+   matters: the last one cannot be reached until the middle one is done. The
+   markers are state, not ordinals - a green tick says "done", not "step 1" -
+   so the position is carried by the list itself for a screen reader. */
+.d-steps {
+    display: grid;
+    gap: var(--sp-4);
+    list-style: none;
+    margin: var(--sp-5) 0 0;
+    padding: 0;
+}
+
+.d-steps__row {
+    align-items: start;
+    background: var(--d-surface-alt);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-lg);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    padding: var(--sp-4);
+}
+
+.d-steps__row.is-done {
+    background: var(--d-surface);
+}
+
+/* The marker is a fixed square so the three titles beside them align, whatever
+   length the icon inside it. */
+.d-steps__marker {
+    align-items: center;
+    background: var(--d-surface-sunk);
+    border-radius: var(--r-md);
+    color: var(--d-indigo);
+    display: flex;
+    flex: 0 0 auto;
+    font-size: 1.05rem;
+    height: 2.75rem;
+    justify-content: center;
+    width: 2.75rem;
+}
+
+.is-done .d-steps__marker {
+    background: var(--d-mint-wash);
+    color: #14624f;
+}
+
+.is-todo .d-steps__marker {
+    background: rgb(227 147 116 / 18%);
+    color: #8a4526;
+}
+
+/* `flex: 1 1 14rem` rather than a fixed width: the row is a marker, a body and
+   a tag or a button, and on a phone the third item drops under the body while
+   the body still takes the full width instead of leaving a gap beside it. */
+.d-steps__body {
+    flex: 1 1 14rem;
+    min-width: 0;
+}
+
+.d-steps__title {
+    color: var(--d-ink);
+    font-weight: 700;
+    margin: 0;
+}
+
+.d-steps__text {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    line-height: 1.65;
+    margin: var(--sp-1) 0 0;
+}
+
+.d-steps__stamp {
+    align-items: center;
+    color: var(--d-muted);
+    display: flex;
+    font-size: var(--t-xs);
+    gap: var(--sp-2);
+    margin: var(--sp-2) 0 0;
+}
+
+.d-steps__form {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-block-start: var(--sp-3);
+}
+
+/* A single checkbox with its label beside it, as one target. The profile form's
+   radio group (`d-choice`) is for choosing between named options; this is a
+   declaration, so it reads as a sentence with a box in front of it. */
+.d-check {
+    align-items: flex-start;
+    cursor: pointer;
+    display: flex;
+    flex: 1 1 12rem;
+    font-size: var(--t-sm);
+    gap: var(--sp-3);
+    line-height: 1.55;
+}
+
+.d-check input[type="checkbox"] {
+    flex: 0 0 auto;
+    margin-block-start: .25em;
+}
+
+/* --- Key/value list -------------------------------------------------------
+   A real <dl>, key on the inline start and value on the inline end so the two
+   columns line up down the panel in either writing direction. Distinct from
+   `d-facts`, which is a grid of stacked label/value tiles for the venue. */
+.d-defs {
+    display: grid;
+    gap: 0;
+    margin: var(--sp-4) 0 0;
+}
+
+.d-defs__row {
+    align-items: baseline;
+    border-block-start: 1px solid var(--d-line);
+    display: flex;
+    gap: var(--sp-4);
+    justify-content: space-between;
+    padding-block: var(--sp-3);
+}
+
+.d-defs__row:first-child {
+    border-block-start: 0;
+    padding-block-start: 0;
+}
+
+.d-defs dt {
+    color: var(--d-muted);
+    flex: 0 0 auto;
+    font-size: var(--t-sm);
+}
+
+.d-defs dd {
+    color: var(--d-ink);
+    font-weight: 600;
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: end;
+}
+
+/* --- The registration list ------------------------------------------------
+   A grid of cards rather than the old `app-list` rows: a registration is a
+   self-contained thing with a reference, a date, a status, an amount and an
+   action, and on a phone those five cannot share one line without the
+   reference or the amount wrapping. */
+.d-orders {
+    display: grid;
+    gap: var(--sp-3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.d-order {
+    align-items: center;
+    background: var(--d-surface);
+    border: 1px solid var(--d-line);
+    border-radius: var(--r-lg);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    justify-content: space-between;
+    padding: var(--sp-4) var(--sp-5);
+    transition: border-color var(--dur-2) var(--ease),
+        box-shadow var(--dur-2) var(--ease);
+}
+
+.d-order:hover {
+    border-color: var(--d-line-strong);
+    box-shadow: var(--sh-1);
+}
+
+.d-order__id {
+    min-width: 0;
+}
+
+/* Monospaced, `dir="ltr"`, and allowed to shrink: a reference is a code that is
+   quoted in an email and typed into a search box, so it has to be copyable
+   exactly as rendered rather than reflowed. */
+.d-order__ref {
+    color: var(--d-ink);
+    font-family: var(--f-body);
+    font-size: var(--t-base);
+    font-weight: 700;
+    letter-spacing: .01em;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.d-order__meta {
+    color: var(--d-muted);
+    font-size: var(--t-sm);
+    margin: var(--sp-1) 0 0;
+}
+
+.d-order__side {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3) var(--sp-4);
+}
+
+.d-order__amount {
+    color: var(--d-ink);
+    font-size: var(--t-lg);
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.d-orders__foot {
+    margin-block-start: var(--sp-5);
+}
+
+/* --- Empty state ----------------------------------------------------------
+   `d-empty` centres its icon and text; the paragraph needs a margin of its own
+   to sit between the two rather than against the icon. */
+.d-empty__text {
+    margin: 0 0 var(--sp-4);
 }

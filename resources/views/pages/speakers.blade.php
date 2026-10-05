@@ -13,8 +13,8 @@
         :lede="__('speakers.hero_lede')"
         :crumbs="[__('nav.speakers') => null]"
         :facts="[
-            ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
-            ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
+            ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
+            ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
         ]"
         :cta-label="$edition->registration_open ? __('nav.registration') : null"
         :cta-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"

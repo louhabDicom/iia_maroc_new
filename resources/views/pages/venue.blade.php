@@ -19,8 +19,8 @@
         ])"
         :crumbs="[__('nav.venue') => null]"
         :facts="[
-            ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
-            ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
+            ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
+            ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
         ]"
         :cta-label="$edition->mapUrl() ? __('venue.map_cta') : null"
         :cta-url="$edition->mapUrl()"
@@ -103,7 +103,7 @@
                                  decoding="async">
 
                             <span class="d-venue__pin" aria-hidden="true">
-                                <i class="fas fa-location-dot"></i>
+                                <i class="fas fa-map-marker-alt"></i>
                             </span>
 
                             <span class="d-btn d-btn--primary d-venue__map-cta">
@@ -114,7 +114,7 @@
                         {{-- No map configured: say so, rather than showing an empty
                              frame that suggests one was meant to be there. --}}
                         <div class="d-empty">
-                            <i class="fas fa-map-location-dot d-empty__icon" aria-hidden="true"></i>
+                            <i class="fas fa-map-marker-alt d-empty__icon" aria-hidden="true"></i>
                             <p>@lang('state.not_available')</p>
                         </div>
                     @endif
@@ -186,7 +186,7 @@
     @php
         $contactTiles = array_values(array_filter([
             [
-                'icon'  => 'fa-location-dot',
+                'icon'  => 'fa-map-marker-alt',
                 'label' => __('venue.venue_name'),
                 'value' => $edition->venueLine($locale),
                 'href'  => null,

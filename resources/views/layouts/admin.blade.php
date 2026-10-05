@@ -122,7 +122,7 @@
 
         <div class="admin-rail__foot">
             <a href="{{ route('home') }}" class="admin-rail__link">
-                <i class="fas fa-arrow-left-long" aria-hidden="true"></i>
+                <i class="fas fa-long-arrow-alt-left" aria-hidden="true"></i>
                 <span>@lang('admin.nav.public_site')</span>
             </a>
 
@@ -132,7 +132,7 @@
             <form method="POST" action="{{ route('admin.logout') }}">
                 @csrf
                 <button type="submit" class="admin-rail__link admin-rail__link--button">
-                    <i class="fas fa-right-from-bracket" aria-hidden="true"></i>
+                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                     <span>@lang('action.logout')</span>
                 </button>
             </form>

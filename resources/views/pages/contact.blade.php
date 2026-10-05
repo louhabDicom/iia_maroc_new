@@ -13,8 +13,8 @@
         :lede="__('contact.hero_lede')"
         :crumbs="[__('nav.contact') => null]"
         :facts="$edition ? [
-            ['icon' => 'fa-calendar-days', 'label' => $edition->dateLine($locale)],
-            ['icon' => 'fa-location-dot',  'label' => $edition->venueLine($locale)],
+            ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
+            ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
         ] : []"
         :cta-label="$edition?->mapUrl() ? __('contact.open_map') : null"
         :cta-url="$edition?->mapUrl()"

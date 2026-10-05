@@ -30,7 +30,7 @@
             __('account.profile') => null,
         ]"
         :facts="[
-            ['icon' => 'fa-shield-halved', 'label' => $user->hasConfirmedTotp()
+            ['icon' => 'fa-shield-alt', 'label' => $user->hasConfirmedTotp()
                 ? __('account.totp_enrolled')
                 : __('account.totp_not_enrolled')],
         ]"
@@ -53,7 +53,7 @@
                     @foreach (['status', 'email_status'] as $flash)
                         @if (session($flash))
                             <p class="d-notice d-notice--success" role="status">
-                                <i class="fas fa-circle-check" aria-hidden="true"></i>
+                                <i class="fas fa-check-circle" aria-hidden="true"></i>
                                 <span>{{ session($flash) }}</span>
                             </p>
                         @endif
@@ -61,7 +61,7 @@
 
                     @if ($errors->any())
                         <div class="d-notice d-notice--danger" role="alert">
-                            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+                            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
                             <ul>
                                 @foreach ($errors->all() as $message)
                                     <li>{{ $message }}</li>
@@ -124,12 +124,12 @@
                                              visible anywhere else. --}}
                                         @if ($user->hasVerifiedEmail())
                                             <p class="d-field__ok">
-                                                <i class="fas fa-circle-check" aria-hidden="true"></i>
+                                                <i class="fas fa-check-circle" aria-hidden="true"></i>
                                                 <span>@lang('account.email_confirmed')</span>
                                             </p>
                                         @else
                                             <p class="d-field__warn">
-                                                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                                                <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
                                                 <span>@lang('account.email_pending')</span>
                                             </p>
                                         @endif
