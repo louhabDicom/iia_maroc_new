@@ -97,6 +97,25 @@
                 <span>@lang('programme.notice')</span>
             </p>
 
+            {{-- The programme PDF, next to the caveat it belongs to: a delegate
+                 who is told the schedule is provisional is exactly the delegate
+                 who wants a copy to keep. The same three-rung resolution as the
+                 landing page button, so a published document still wins over the
+                 file committed in `public/`. --}}
+            @php
+                $programmeFile = public_path('programme.pdf');
+                $programmeDownload = $programmeDocument?->downloadUrl()
+                    ?? (is_file($programmeFile) ? asset('programme.pdf') : null)
+                    ?? route('programme', array_filter(['locale' => request()->route('locale')]));
+            @endphp
+
+            <p class="mt-3">
+                <a href="{{ $programmeDownload }}" class="d-btn d-btn--outline d-btn--sm">
+                    <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                    @lang('home.landing.programme.download')
+                </a>
+            </p>
+
             {{-- Day switcher. Real links rather than tabs, because the selected day
                  is in the query string: a day is then a bookmarkable URL, it can be
                  shared, and the back button behaves. A JS tab would put the state

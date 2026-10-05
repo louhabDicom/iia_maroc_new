@@ -46,6 +46,51 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Social
+    |--------------------------------------------------------------------------
+    |
+    | The footer previously carried these three URLs as literal strings in the
+    | template, while its own docblock claimed that "everything on it is a row
+    | or a config value rather than a string typed into the template". They are
+    | config now, so the claim holds and a new channel is one entry here.
+    |
+    | Each entry carries its own label rather than the template inventing one:
+    | the mark is a glyph, and a glyph is not a name. `icon` names a Font
+    | Awesome 6 class; `image` is for the one channel whose mark is not in the
+    | icon font, and takes precedence when both are given.
+    |
+    | `label` is deliberately not translated. These are the platforms' own
+    | names, which are not rendered in Arabic or French on the platforms
+    | themselves either — translating them produces "Facebook" as a word nobody
+    | searching for the page would type.
+    |
+    */
+
+    'social' => [
+        [
+            'label' => 'LinkedIn',
+            'url' => 'https://www.linkedin.com/company/iia-maroc-amaci/?viewAsMember=true',
+            'icon' => 'fab fa-linkedin-in',
+        ],
+        [
+            'label' => 'Facebook',
+            'url' => 'https://www.facebook.com/profile.php?id=100066862488270',
+            'icon' => 'fab fa-facebook-f',
+        ],
+        [
+            'label' => 'Workplace',
+            'url' => 'https://work.me/g/5QPnbFtJq/tNBpmrtU',
+            // Workplace has no Font Awesome glyph. The mark is a raster asset,
+            // so it travels with its intrinsic size the way every other image
+            // in this config does, and the row does not reflow when it lands.
+            'image' => 'assets/images/workplace-icon.png',
+            'width' => 24,
+            'height' => 24,
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Pattern
     |--------------------------------------------------------------------------
     |

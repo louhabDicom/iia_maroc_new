@@ -6,9 +6,12 @@ namespace App\Http\Controllers;
 
 use App\Enums\Locale;
 use App\Models\ConferenceSession;
+use App\Models\Document;
 use App\Models\Edition;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * The scientific programme.
@@ -52,6 +55,15 @@ class ProgrammeController extends Controller
             'slots' => $this->groupIntoSlots($sessions),
             'selectedDay' => $day,
             'days' => $this->daysOf($edition),
+            // The downloadable programme behind the page's PDF link. Same
+            // resolution as the landing page button, so a published document
+            // wins over the file in `public/` and both pages always agree.
+            'programmeDocument' => $edition->documents()
+                ->published()
+                ->ofType(Document::TYPE_PROGRAMME)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->first(),
             'currentRoute' => 'programme',
         ]);
     }
@@ -62,7 +74,7 @@ class ProgrammeController extends Controller
      * A day outside the edition is ignored rather than 404'd: a stale bookmark
      * or a hand-edited query string should land on the programme, not an error.
      */
-    private function resolveDay(Request $request, Edition $edition): ?\Illuminate\Support\Carbon
+    private function resolveDay(Request $request, Edition $edition): ?Carbon
     {
         $requested = $request->query('day');
 
@@ -75,7 +87,7 @@ class ProgrammeController extends Controller
         return $this->daysOf($edition)[0] ?? null;
     }
 
-    /** @return list<\Illuminate\Support\Carbon> */
+    /** @return list<Carbon> */
     private function daysOf(Edition $edition): array
     {
         $days = [];
@@ -90,10 +102,10 @@ class ProgrammeController extends Controller
     /**
      * Day => start time => sessions.
      *
-     * @param  \Illuminate\Support\Collection<int, ConferenceSession>  $sessions
-     * @return array<string, array<string, \Illuminate\Support\Collection<int, ConferenceSession>>>
+     * @param  Collection<int, ConferenceSession>  $sessions
+     * @return array<string, array<string, Collection<int, ConferenceSession>>>
      */
-    private function groupIntoSlots(\Illuminate\Support\Collection $sessions): array
+    private function groupIntoSlots(Collection $sessions): array
     {
         $slots = [];
 

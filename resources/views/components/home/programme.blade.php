@@ -56,9 +56,18 @@
 
         $dayKeys = array_keys($byDay);
 
-        // A published PDF when there is one, the programme page when there is
-        // not. Never a link to a file that is not there.
-        $downloadUrl = $programmeDocument?->downloadUrl() ?? route('programme', array_filter(['locale' => request()->route('locale')]));
+        // Three rungs, in order of freshness: a published document wins, so
+        // publishing a revision updates the button instead of leaving the file
+        // committed here on the page; then the programme PDF shipped in
+        // `public/`, which is what the button serves today because the
+        // documents table is empty and a bare link to the programme page is not
+        // a download; then the programme page itself. Never a link to a file
+        // that is not there.
+        $staticProgramme = public_path('programme.pdf');
+
+        $downloadUrl = $programmeDocument?->downloadUrl()
+            ?? (is_file($staticProgramme) ? asset('programme.pdf') : null)
+            ?? route('programme', array_filter(['locale' => request()->route('locale')]));
     @endphp
 
     <section class="h-programme" aria-labelledby="programme-title">

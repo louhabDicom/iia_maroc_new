@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Locale;
 use App\Enums\SessionFormat;
+use App\Models\Document;
 use App\Models\Edition;
 use App\Models\Membership;
 use App\Models\TicketType;
@@ -137,11 +138,14 @@ class HomeController extends Controller
             // The downloadable programme behind the landing page's "Télécharger"
             // button. Taken from the documents table rather than linked to a
             // hard-coded PDF, so publishing a revision updates the button
-            // instead of leaving last year's file on the page. Null when
-            // nothing is published, and the component then points at the
-            // programme page rather than at a 404.
+            // instead of leaving last year's file on the page. Restricted to the
+            // programme type: any other published document — a technical sheet,
+            // a dossier — would otherwise win on sort_order and be served as the
+            // programme. Null when nothing is published, and the component then
+            // falls back to the PDF in `public/`, then to the programme page.
             'programmeDocument' => $edition->documents()
                 ->published()
+                ->ofType(Document::TYPE_PROGRAMME)
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->first(),
