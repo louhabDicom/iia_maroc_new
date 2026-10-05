@@ -16,9 +16,9 @@
         there is exactly one authoritative invoice per order and this document
         cannot become a second one.
 
-    It shares the design language of `pages/cart-print.blade.php` â€” the same
+    It shares the design language of `pages/cart-print.blade.php` — the same
     violet system, glass cards, violet table header, total bar and footer band
-    â€” so a proforma and an invoice that look nothing alike would be read as two
+    — so a proforma and an invoice that look nothing alike would be read as two
     different obligations rather than as one obligation at two stages.
 
     THE LAYOUT IS NOT THE SAME MARKUP, and that is deliberate. This is rendered
@@ -52,7 +52,7 @@
 
     Images therefore use `public_path()`, never `asset()`: `enable_remote` is
     false in the dompdf config, so an `http://localhost/...` URL does not fail
-    loudly â€” it silently renders nothing.
+    loudly — it silently renders nothing.
 
     The locale is passed in as `$invoiceLocale` rather than read from the
     request, for the same reason the real invoice does it: the document is
@@ -108,12 +108,12 @@
 
         /* ---- The sheet ----
            The browser design is an A4 sheet floating on the violet artwork.
-           In a PDF the sheet *is* the page, so the padding that used to be
-           the sheet's own becomes the page's. It is tight because the document
-           is meant to arrive as one sheet: the footer band follows the content
-           rather than sitting under it, so every millimetre here is a
-           millimetre the band does not get. */
-        .pad { padding: 10mm 10mm 2mm; }
+           In a PDF the sheet *is* the page, so the margins that used to be the
+           sheet's own are now the gutter columns either side of this cell. It is
+           tight because the document is meant to arrive as one sheet: the footer
+           band follows the content rather than sitting under it, so every
+           millimetre here is a millimetre the band does not get. */
+        .pad { padding: 10mm 0 2mm; }
 
         .band { background-color: #201062; color: #fff; }
         .band td { color: #fff; }
@@ -238,15 +238,20 @@
         .notes { color: #6f6a96; font-size: 9pt; }
 
         /* ---- Footer band ----
-           In the document flow, as the last table. It was tried as a
-           `position: fixed` band, which is what a browser invoice would use and
-           what repeats the band across pages, but dompdf emits an empty page for
-           each fixed element it lays out before the real content: with a
-           full-bleed background and `@page { margin: 0 }` a two-line band
-           produced three pages, two of them blank but for the band. A band that
-           follows the content is wrong on an overflow page and right everywhere
-           else; phantom blank pages are wrong always. */
-        .foot {
+           The sheet and the band are rows of ONE table rather than two
+           adjacent tables. dompdf will happily break the page between two
+           sibling tables even when the second one clearly fits: with the band
+           as its own trailing table and 28mm still free above it, the band was
+           pushed onto a page of its own. Sharing the table keeps them in one
+           flow, so the band lands at the foot of the sheet and a page break
+           only happens when the content genuinely outgrows the page.
+
+           It was tried first as a `position: fixed` band, which is what the
+           browser design uses and what would repeat it across pages, but dompdf
+           emits a blank page for each fixed element it lays out ahead of the
+           real content: a two-line band produced three pages, two of them
+           blank but for the band. */
+        .foot__inner {
             background-color: #201062;
             color: #fff;
             font-size: 8.5pt;
@@ -265,17 +270,17 @@
 </head>
 <body>
 
-{{-- The sheet. `--spacer` exists only because dompdf ignores vertical-align on
-     a cell whose sibling has no height, which is what collapses the gutter
-     columns below. --}}
+{{-- The sheet and its footer band, as rows of one table so dompdf keeps them
+     in a single flow: see the note on `.foot` above. The outer three columns
+     are the page gutter, and the band row spans them so it bleeds edge to edge
+     while the content row keeps its margins. --}}
 <table>
     <tr>
+        <td style="width: 10mm;"></td>
         <td class="pad">
-
-            <table>
-                <tr>
-                    <td style="width: 8mm;"></td>
-                    <td>
+                <table>
+                    <tr>
+                        <td>
 
                         {{-- ---- Brand ---- --}}
                         <table>
@@ -479,48 +484,49 @@
                         </table>
 
                     </td>
-                    <td style="width: 8mm;"></td>
                 </tr>
             </table>
+        </td>
+        <td style="width: 10mm;"></td>
+    </tr>
 
+    {{-- ---- Footer band ----
+         The last row of the sheet table, spanning the gutters so the band runs
+         the full width of the page. --}}
+    <tr>
+        <td class="foot__inner" colspan="3">
+            <table>
+                <tr>
+                    <td style="width: 60%;">
+                        <table>
+                            <tr>
+                                <td class="foot__mark">{{ $marks['pin'] }}</td>
+                                <td>
+                                    {{ $edition?->venue_name }} — {{ $edition?->city }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    {{ __('order.invoice.footer', ['organiser' => $edition?->organiser ?? 'ARABCIA'], $invoiceLocale) }}
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td style="width: 40%;">
+                        <table>
+                            <tr>
+                                <td class="foot__tag">
+                                    {{ $edition?->titleIn(\App\Enums\Locale::parse($invoiceLocale)) }}
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
         </td>
     </tr>
 </table>
-
-{{-- ---- Footer band ----
-     A fixed block rather than a table row: dompdf repeats a fixed element on
-     every page, so an over-long basket keeps its band. --}}
-<div class="foot">
-    <table>
-        <tr>
-            <td style="width: 62%;">
-                <table>
-                    <tr>
-                        <td class="foot__mark">{{ $marks['pin'] }}</td>
-                        <td>
-                            {{ $edition?->venue_name }} â€” {{ $edition?->city }}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>
-                            {{ __('order.invoice.footer', ['organiser' => $edition?->organiser ?? 'ARABCIA'], $invoiceLocale) }}
-                        </td>
-                    </tr>
-                </table>
-            </td>
-            <td style="width: 38%;">
-                <table>
-                    <tr>
-                        <td class="foot__tag">
-                            {{ $edition?->titleIn(\App\Enums\Locale::parse($invoiceLocale)) }}
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</div>
 
 </body>
 </html>

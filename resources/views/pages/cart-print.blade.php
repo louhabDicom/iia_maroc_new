@@ -321,7 +321,6 @@
                 @lang('order.invoice.footer', ['organiser' => $organiser])
             </div>
         </div>
-        <div class="foot__tag">@lang('order.invoice.tagline')</div>
     </footer>
 
 </main>
