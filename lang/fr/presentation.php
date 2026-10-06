@@ -2,120 +2,72 @@
 
 return [
     'title' => 'Présentation',
-    'languages_value' => 'Français / Anglais (traduction simultanée)',
-    'download_pdf' => 'Télécharger la fiche technique (PDF)',
 
     'intro' => [
-        'title' => 'Présentation de la conférence ARABCIA :year',
         'lede' => 'Une conférence internationale dédiée aux enjeux actuels de l’audit interne, de la gouvernance, des risques et de la transformation des organisations.',
-        'alt' => 'Un intervenant à la tribune devant une salle comble',
+    ],
 
-        // The theme, in three paragraphs. The first states the theme, the
-        // second explains why it matters now, the third says what the two days
-        // are for. Read in order they are the page's argument.
-        'theme_title' => 'Thème de la conférence',
+    'banner' => [
+        'title_lead' => 'La Conférence annuelle',
+        'title_accent' => 'ARABCIA :year',
+        'lede' => 'Un rendez-vous régional et international dédié à l’avenir de l’Audit Interne',
+    ],
+
+    'about' => [
+        'eyebrow' => 'À propos de la conférence',
+        'title' => 'L’Audit Interne : partenaire de confiance dans la transformation et la résilience des organisations',
+        'accent' => 7, // number of trailing title words shown in purple
+        'alt' => 'Un intervenant à la tribune devant une salle comble',
         'paragraphs' => [
-            'La Conférence annuelle ARABCIA :year place au cœur de ses travaux un thème qui traverse toutes les organisations : « L’Audit Interne : partenaire de confiance dans la transformation et la résilience des organisations ».',
-            'Dans un environnement marqué par l’accélération des transformations, la volatilité des risques et la pression sur la gouvernance, l’audit interne n’est plus un simple contrôle : il devient un acteur de confiance, capable d’éclairer les décisions et de renforcer la capacité des organisations à s’adapter.',
-            'Pendant deux jours, décideurs, auditeurs, experts et partenaires partageront leurs expériences, leurs méthodes et leurs visions pour construire ensemble des organisations plus résilientes et mieux gouvernées.',
+            'Les <strong>16 et 17 décembre :year à Rabat</strong>, la Conférence annuelle ARABCIA réunira près de 300 professionnels, dirigeants, experts et représentants institutionnels du Maroc, du monde arabe, d’Afrique et d’autres régions.',
+            'À l’heure où les organisations accélèrent leur transformation tout en faisant face à des risques de plus en plus interconnectés, cette conférence propose de réfléchir au rôle renouvelé de l’Audit Interne : anticiper les risques, éclairer la décision, renforcer la confiance et accompagner durablement la performance des organisations.',
+            'Intelligence artificielle, cyber-résilience, transformation digitale, gouvernance des données, risques géopolitiques, assurance intégrée et évolution des compétences seront au cœur des échanges.',
         ],
     ],
 
-    'highlights' => [
-        'objectives_title' => 'Objectifs',
-        'objectives_text' => 'Partager les bonnes pratiques et favoriser les échanges entre professionnels.',
-        'scope_title' => 'Thème',
-        'scope_text' => 'L’audit interne : partenaire de confiance dans la transformation et la résilience des organisations.',
-        'international_title' => 'Dimension internationale',
-        'international_text' => 'Une expertise et des retours d’expérience de haut niveau venus du monde entier.',
-    ],
-
-    // The conference, read as a three-step journey. Each step is one verb, so
-    // the reader can follow the arc without reading the descriptions.
     'journey' => [
         'eyebrow' => 'Un parcours en trois temps',
-        'title' => 'Comprendre, agir, démontrer',
-        'lede' => 'Deux journées structurées autour de trois mouvements : comprendre les mutations en cours, agir avec des méthodes concrètes et démontrer la valeur créée par l’audit interne.',
+        'title' => 'Comprendre, Agir, Démontrer',
+        'lede' => 'Trois temps forts pour explorer les enjeux d’aujourd’hui et les opportunités de demain.',
         'steps' => [
-            [
-                'key' => 'understand',
-                'icon' => 'fa-chart-line',
-                'title' => 'Comprendre',
-                'text' => 'Décrypter les évolutions réglementaires, les nouveaux risques et les attentes des parties prenantes.',
-            ],
-            [
-                'key' => 'act',
-                'icon' => 'fa-chart-line',
-                'title' => 'Agir',
-                'text' => 'Partager des méthodes, des outils et des retours d’expérience pour transformer l’audit interne.',
-            ],
-            [
-                'key' => 'demonstrate',
-                'icon' => 'fa-chart-line',
-                'title' => 'Démontrer',
-                'text' => 'Illustrer par des cas concrets et des résultats mesurables la valeur créée par l’audit interne.',
-            ],
+            ['title' => 'Comprendre', 'text' => 'Décrypter les transformations, les nouveaux risques et les évolutions qui redessinent la profession.'],
+            ['title' => 'Agir', 'text' => 'Identifier des réponses concrètes permettant à l’Audit Interne de renforcer la confiance et la résilience.'],
+            ['title' => 'Démontrer', 'text' => 'Mettre en lumière la contribution de l’Audit Interne à la performance, à la transformation et à la création de valeur durable.'],
         ],
     ],
 
     'organisations' => [
         'eyebrow' => 'Les organisateurs',
-        'title' => 'Deux institutions, une même mission',
-        'lede' => 'ARABCIA et l’IIA Maroc œuvrent ensemble pour le développement de la profession d’audit interne au Maroc et dans la région.',
-        'organiser_role' => 'Organisateur',
+        'title' => 'Deux institutions, une même ambition',
+        'lede' => 'Cette conférence est organisée par la Confédération Arabe des Instituts d’Audit Interne (ARABCIA) en collaboration avec l’Institut des Auditeurs Internes du Maroc (IIA Maroc).',
         'organiser_desc' => 'Le réseau des Auditeurs Internes Arabes, pour une profession plus forte et plus connectée.',
-        'host_role' => 'Institut hôte',
         'host_desc' => 'L’Institut des Auditeurs Internes au Maroc, acteur de référence pour la profession.',
 
-        // Detailed profiles, keyed by the organisation `code` so the view can
-        // enrich whatever rows the edition publishes. `stats` is a list of
-        // [label, value]; `cta` sits on the card's own link.
         'profiles' => [
             'ARABCIA' => [
+                'paragraphs' => [
+                    'Créée en 2022 et établie en Arabie saoudite, l’ARABCIA est une organisation professionnelle internationale à but non lucratif qui rassemble les associations et instituts d’Audit Interne du monde arabe.',
+                    'À travers ses actions, l’ARABCIA contribue au développement de la profession, à la diffusion des meilleures pratiques et des normes internationales ainsi qu’au renforcement des compétences.',
+                    'Elle ambitionne de positionner l’Audit Interne comme un partenaire stratégique de confiance, au service de la gouvernance, de la résilience et de la création de valeur.',
+                ],
                 'stats' => [
-                    ['label' => 'Créée en', 'value' => 'décembre 2022'],
-                    ['label' => 'Siège', 'value' => 'Royaume d’Arabie saoudite'],
-                    ['label' => 'Membres', 'value' => '13 pays arabes'],
+                    ['icon' => 'fa-users', 'value' => '13', 'label' => 'pays membres'],
+                    ['icon' => 'fa-globe', 'value' => 'Une communauté', 'label' => 'professionnelle à l’échelle du monde arabe'],
                 ],
                 'cta' => 'Découvrir ARABCIA',
             ],
             'IIA_MAROC' => [
-                'stats' => [
-                    ['label' => 'Créé en', 'value' => '1985'],
-                    ['label' => 'Adhérents', 'value' => 'environ 900'],
-                    ['label' => 'Expérience', 'value' => 'plus de 40 ans'],
+                'paragraphs' => [
+                    'Créé en 1985, IIA Maroc est une association professionnelle à but non lucratif, membre du réseau international The Institute of Internal Auditors – IIA Global.',
+                    'Depuis plus de 40 ans, l’Institut accompagne le développement et la professionnalisation de l’Audit Interne au Maroc.',
+                    'IIA Maroc contribue au développement des pratiques d’Audit Interne, de gouvernance, de gestion des risques, de contrôle interne et de conformité. Il est également membre de plusieurs réseaux professionnels internationaux et régionaux, notamment IIA Global, UFAI, AFIIA, ECIIA et ARABCIA.',
                 ],
-                'note' => 'Membre de IIA Global, UFAI, AFIIA, ECIIA et ARABCIA.',
+                'stats' => [
+                    ['icon' => 'fa-shield-halved', 'value' => '40+', 'label' => 'ans d’engagement'],
+                    ['icon' => 'fa-users', 'pre' => 'Près de', 'value' => '900', 'label' => 'adhérents'],
+                ],
                 'cta' => 'Découvrir IIA Maroc',
             ],
         ],
-    ],
-
-    'network' => [
-        'eyebrow' => 'Réseau',
-        'title' => 'Un réseau international au service de la profession',
-        'lede' => 'ARABCIA fédère les instituts et associations d’audit interne arabes et internationaux pour renforcer les échanges, le partage d’expertise et la montée en compétences.',
-        'cta' => 'En savoir plus',
-        'alt' => 'Carte du monde illustrant le réseau international',
-    ],
-
-    'sheet' => [
-        'title' => 'Fiche technique',
-        'lede' => 'Toutes les informations clés sur la conférence',
-        'theme' => 'Thème',
-        'dates' => 'Dates',
-        'venue' => 'Lieu',
-        'organisers' => 'Organisateurs',
-        'host' => 'Institut hôte',
-        'languages' => 'Langues',
-        'audience' => 'Public cible',
-    ],
-
-    'audience' => [
-        'eyebrow' => 'Public cible',
-        'title' => 'Une communauté de décideurs, auditeurs et experts réunie autour des grands enjeux de demain.',
-        'lede' => 'Auditeurs internes, responsables des risques, de la conformité et de la gouvernance, dirigeants, conseils d’administration, secteur public, régulateurs, instituts, étudiants, experts et partenaires.',
-        'brief' => 'Professionnels de l’audit interne, dirigeants, experts',
-        'alt' => 'Une salle de conférence pleine de participants',
     ],
 ];

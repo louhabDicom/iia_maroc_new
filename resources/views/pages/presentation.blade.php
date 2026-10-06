@@ -5,818 +5,366 @@
 
 @section('content')
 
-    {{-- Stylesheet for the four bands below. Once it works, move this <link>
-         into the <head> of layouts/app.blade.php (or your build pipeline). --}}
-    <link rel="stylesheet" href="{{ asset('assets/css/presentation.css') }}">
+@php
+    $year = $edition->year;
 
-    @php
-        $year = $edition->year;
+    /* ---- Images. Banner = online placeholder (swap for a Rabat / Oudayas photo, e.g. asset('assets/images/presentation/banner.jpg')).
+          Each section keeps a solid CSS fallback, so a dead link never breaks the layout. ---- */
+    $imgBanner = 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1800&q=80';
+    $imgAbout  = ['src' => 'assets/images/presentation/popup.png', 'width' => 660, 'height' => 430];
+    $imgSoft   = 'https://images.unsplash.com/photo-1613327986042-63d4425a1a5d?auto=format&fit=crop&w=1800&q=60';
 
-        // ---- Placeholder photographs: swap the paths here, nothing else. ----
-        // Every image is cropped with object-fit: cover, so any ratio works.
+    /* Wraps the last $n words of a title in an accent span (fr / en / ar). */
+    $accent = static function (string $text, int $n): \Illuminate\Support\HtmlString {
+        $words = preg_split('/\s+/u', trim($text)) ?: [];
+        $n = max(0, min($n, count($words) - 1));
+        if ($n === 0) {
+            return new \Illuminate\Support\HtmlString(e($text));
+        }
+        return new \Illuminate\Support\HtmlString(
+            e(implode(' ', array_slice($words, 0, -$n))) .
+            ' <span class="pr-accent">' . e(implode(' ', array_slice($words, -$n))) . '</span>'
+        );
+    };
 
-        // Intro band — portrait photo on the right (speaker in a full hall).
-        $introImage = ['src' => 'assets/images/presentation/popup.png', 'width' => 660, 'height' => 430];
+    // Journey: icon + tint per step (texts come from the lang file, in order).
+    $stepStyle = [
+        ['icon' => 'fa-brain',        'tone' => 'violet'],
+        ['icon' => 'fa-bullseye',     'tone' => 'violet'],
+        ['icon' => 'fa-chart-simple', 'tone' => 'blue'],
+    ];
+    $steps = (array) __('presentation.journey.steps');
 
-        // Network band — world map on the left.
-        $networkImage = ['src' => 'assets/images/presentation/carte.png', 'width' => 1200, 'height' => 800];
+    // Organisation cards: DB rows when published, static fallback otherwise.
+    $orgLogos = [
+        ['src' => 'assets/images/presentation/logoarabiia.png',   'width' => 628, 'height' => 206],
+        ['src' => 'assets/images/presentation/logo-iia-maroc.png', 'width' => 628, 'height' => 206],
+    ];
+    $orgTones = ['ARABCIA' => 'gold', 'IIA_MAROC' => 'navy'];
 
-        // Audience card — crowd at the bottom of the card.
-        $audienceImage = ['src' => 'assets/images/presentation/people.png', 'width' => 285, 'height' => 407];
+    $orgCards = collect($organisations ?? [])->map(static fn ($o): array => [
+        'code' => $o->code, 'name' => $o->name, 'text' => $o->description,
+        'logo' => $o->logo_path, 'url' => $o->website_url,
+    ]);
+    if ($orgCards->isEmpty()) {
+        $orgCards = collect([
+            ['code' => 'ARABCIA',   'name' => 'ARABCIA',   'text' => __('presentation.organisations.organiser_desc'), 'logo' => null, 'url' => null],
+            ['code' => 'IIA_MAROC', 'name' => 'IIA Maroc', 'text' => __('presentation.organisations.host_desc'),      'logo' => null, 'url' => null],
+        ]);
+    }
+@endphp
 
-        // Fallback logos for the two organisation cards (by position),
-        // used when the organisation row has no logo of its own.
-        $orgLogos = [
-            ['src' => 'assets/images/presentation/logoarabiia.png', 'width' => 628, 'height' => 206],
-            ['src' => 'assets/images/presentation/logo-iia-maroc.png', 'width' => 628, 'height' => 206],
-        ];
+{{-- Shared front-office hero (unchanged). --}}
+<x-front.hero
+    :title="__('presentation.title')"
+    :eyebrow="$edition->identityLabel()"
+    :lede="__('presentation.intro.lede')"
+    :crumbs="[__('nav.presentation') => null]"
+    :facts="[
+        ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
+        ['icon' => 'fa-map-marker-alt', 'label' => $edition->venueLine($locale)],
+    ]"
+    :cta-label="$edition->registration_open ? __('nav.registration') : null"
+    :cta-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
+    :secondary-label="__('nav.programme')"
+    :secondary-url="route('programme')"
+    image="assets/images/bg/about_page_bg.jpg" />
 
-        $highlightCards = [
-            ['icon' => 'fa-bullseye', 'title' => __('presentation.highlights.objectives_title'), 'text' => __('presentation.highlights.objectives_text')],
-            ['icon' => 'fa-lightbulb', 'title' => __('presentation.highlights.scope_title'), 'text' => __('presentation.highlights.scope_text')],
-            ['icon' => 'fa-globe', 'title' => __('presentation.highlights.international_title'), 'text' => __('presentation.highlights.international_text')],
-        ];
+<div class="pr-page">
 
-        $sheetRows = array_values(array_filter([
-            ['icon' => 'fa-lightbulb', 'label' => __('presentation.sheet.theme'), 'value' => $edition->theme],
-            ['icon' => 'fa-calendar-alt', 'label' => __('presentation.sheet.dates'), 'value' => $edition->dateLine($locale)],
-            ['icon' => 'fa-map-marker-alt', 'label' => __('presentation.sheet.venue'), 'value' => $edition->venueLine($locale)],
-            ['icon' => 'fa-flag', 'label' => __('presentation.sheet.organisers'), 'value' => $edition->organiser],
-            ['icon' => 'fa-building', 'label' => __('presentation.sheet.host'), 'value' => $edition->host_institute],
-            ['icon' => 'fa-language', 'label' => __('presentation.sheet.languages'), 'value' => __('presentation.languages_value')],
-            ['icon' => 'fa-users', 'label' => __('presentation.sheet.audience'), 'value' => __('presentation.audience.brief')],
-        ], static fn (array $row): bool => filled($row['value'])));
+    {{-- ================= 1. BANNER ================= --}}
+    <section class="pr-intro" aria-labelledby="presentation-banner-title">
+        <div class="pr-intro__photo" style="background-image:url('{{ $imgBanner }}')" aria-hidden="true"></div>
 
-        $sheetDocument = $edition->documents()->published()->orderBy('sort_order')->orderBy('id')->first();
+        <div class="container">
+            <div class="pr-intro__body">
+                <h2 id="presentation-banner-title" class="pr-intro__title">
+                    {{ $accent(__('presentation.banner.title_lead') . ' ' . __('presentation.banner.title_accent', ['year' => $year]), 2) }}
+                </h2>
+                <p class="pr-intro__lede">@lang('presentation.banner.lede')</p>
 
-        // Static fallback when no organisation rows are published.
-        $fallbackOrgs = [
-            ['code' => 'ARABCIA', 'name' => 'ARABCIA', 'role' => __('presentation.organisations.organiser_role'), 'text' => __('presentation.organisations.organiser_desc')],
-            ['code' => 'IIA_MAROC', 'name' => 'IIA Maroc', 'role' => __('presentation.organisations.host_role'), 'text' => __('presentation.organisations.host_desc')],
-        ];
-    @endphp
+                <ul class="pr-intro__facts">
+                    <li>
+                        <span class="pr-intro__icon" aria-hidden="true"><i class="fas fa-calendar-days"></i></span>
+                        <strong>{{ $edition->dateLine($locale) }}</strong>
+                    </li>
+                    <li>
+                        <span class="pr-intro__icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
+                        <strong>{{ $edition->venueLine($locale) }}</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
 
-    {{-- The shared front-office hero. Previously `x-home.hero` verbatim, which put
-         the organiser and the theme in the `h1` instead of the page's own
-         subject — the reader could not tell from the first screen which page
-         they had opened. --}}
-    <x-front.hero
-        :title="__('presentation.title')"
-        :eyebrow="$edition->identityLabel()"
-        :lede="__('presentation.intro.lede')"
-        :crumbs="[__('nav.presentation') => null]"
-        :facts="[
-            ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
-            ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
-        ]"
-        :cta-label="$edition->registration_open ? __('nav.registration') : null"
-        :cta-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
-        :secondary-label="__('nav.programme')"
-        :secondary-url="route('programme')"
-        image="assets/images/bg/about_page_bg.jpg" />
+    {{-- ================= 2. ABOUT ================= --}}
+    <section class="pr-about" aria-labelledby="presentation-about-title">
+        <div class="container">
+            <div class="pr-about__grid">
+                <div class="pr-about__body">
+                    <p class="pr-eyebrow pr-eyebrow--start">@lang('presentation.about.eyebrow')</p>
+                    <h2 id="presentation-about-title" class="pr-about__title">
+                        {{ $accent(__('presentation.about.title'), (int) __('presentation.about.accent')) }}
+                    </h2>
 
-    <div class="p-page">
+                    @foreach ((array) __('presentation.about.paragraphs', ['year' => $year]) as $paragraph)
+                        <p class="pr-about__text">{!! $paragraph !!}</p>
+                    @endforeach
+                </div>
 
-        {{-- Band 1 — introduction: text + 3 highlights on one side, portrait photo on the other.
-             Grid columns mirror automatically in RTL (Arabic). --}}
-        <section class="p-intro" id="presentation-intro" aria-labelledby="presentation-intro-title">
-            <div class="container">
-                <div class="p-intro__grid">
+                <figure class="pr-about__media">
+                    <img src="{{ asset($imgAbout['src']) }}" width="{{ $imgAbout['width'] }}" height="{{ $imgAbout['height'] }}"
+                         alt="@lang('presentation.about.alt')" loading="lazy" decoding="async">
+                </figure>
+            </div>
+        </div>
+    </section>
 
-                    <div class="p-intro__body">
-                        <h2 id="presentation-intro-title" class="p-intro__title">
-                            @lang('presentation.intro.title', ['year' => $year])
-                        </h2>
+    {{-- ================= 3. JOURNEY ================= --}}
+    <section class="pr-journey pr-bgimg" style="--pr-bg:url('{{ $imgSoft }}')" aria-labelledby="presentation-journey-title">
+        <div class="container">
+            <header class="pr-head">
+                <p class="pr-eyebrow">@lang('presentation.journey.eyebrow')</p>
+                <h2 id="presentation-journey-title" class="pr-title">{{ $accent(__('presentation.journey.title'), 2) }}</h2>
+                <p class="pr-lede">@lang('presentation.journey.lede')</p>
+            </header>
 
-                        <p class="p-intro__lede">@lang('presentation.intro.lede')</p>
+            <ol class="pr-steps" data-ux-stagger="90">
+                @foreach ($steps as $i => $step)
+                    <li class="pr-step pr-step--{{ $stepStyle[$i]['tone'] ?? 'violet' }} ux-reveal">
+                        <span class="pr-step__icon" aria-hidden="true"><i class="fas {{ $stepStyle[$i]['icon'] ?? 'fa-star' }}"></i></span>
+                        <div>
+                            <h3 class="pr-step__title">{{ $step['title'] }}</h3>
+                            <p class="pr-step__text">{{ $step['text'] }}</p>
+                        </div>
+                    </li>
+                @endforeach
+            </ol>
+        </div>
+    </section>
 
-                        {{-- The theme, stated in full: three paragraphs read as the
-                             page's argument before the reader reaches the cards. --}}
-                        <div class="p-theme">
-                            <h3 class="p-theme__title">@lang('presentation.intro.theme_title')</h3>
-                            @foreach (__('presentation.intro.paragraphs') as $paragraph)
-                                <p class="p-theme__text">{{ $paragraph }}</p>
-                            @endforeach
+    {{-- ================= 4. ORGANISERS ================= --}}
+    <section class="pr-orgs pr-bgimg" style="--pr-bg:url('{{ $imgSoft }}')" aria-labelledby="presentation-orgs-title">
+        <div class="container">
+            <header class="pr-head">
+                <p class="pr-eyebrow">@lang('presentation.organisations.eyebrow')</p>
+                <h2 id="presentation-orgs-title" class="pr-title">@lang('presentation.organisations.title')</h2>
+                <p class="pr-lede">@lang('presentation.organisations.lede')</p>
+            </header>
+
+            <ul class="pr-org-grid" data-ux-stagger="90">
+                @foreach ($orgCards as $org)
+                    @php
+                        $logo    = $orgLogos[$loop->index] ?? $orgLogos[0];
+                        $profile = __('presentation.organisations.profiles.' . $org['code']);
+                        $profile = is_array($profile) ? $profile : null;
+                        $tone    = $orgTones[$org['code']] ?? 'navy';
+                        $href    = $org['url'] ?: route('contact');
+                    @endphp
+
+                    <li class="pr-org ux-reveal">
+                        <span class="pr-org__mark">
+                            <img src="{{ asset($org['logo'] ?: $logo['src']) }}" width="{{ $logo['width'] }}" height="{{ $logo['height'] }}"
+                                 alt="{{ $org['name'] }}" loading="lazy" decoding="async">
+                        </span>
+
+                        <div class="pr-org__text">
+                            @if ($profile && isset($profile['paragraphs']))
+                                @foreach ($profile['paragraphs'] as $p)
+                                    <p>{{ $p }}</p>
+                                @endforeach
+                            @else
+                                <p>{{ $org['text'] }}</p>
+                            @endif
                         </div>
 
-                        <ul class="p-highlights" data-ux-stagger="90">
-                            @foreach ($highlightCards as $card)
-                                <li class="p-highlight">
-                                    <span class="p-highlight__icon" aria-hidden="true">
-                                        <i class="fas {{ $card['icon'] }}"></i>
-                                    </span>
-                                    <h3 class="p-highlight__title">{{ $card['title'] }}</h3>
-                                    <p class="p-highlight__text">{{ $card['text'] }}</p>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-
-                    <figure class="p-intro__media">
-                        <img src="{{ asset($introImage['src']) }}"
-                             width="{{ $introImage['width'] }}"
-                             height="{{ $introImage['height'] }}"
-                             alt="@lang('presentation.intro.alt')"
-                             loading="lazy" decoding="async">
-                    </figure>
-
-                </div>
-            </div>
-        </section>
-
-        {{-- Band 1.5 — the journey: three steps, one verb each. The arc reads
-             left to right on desktop and top to bottom on a phone. --}}
-        <section class="p-journey" id="presentation-journey" aria-labelledby="presentation-journey-title">
-            <div class="container">
-                <div class="p-head p-head--center">
-                    <p class="p-eyebrow p-eyebrow--center">@lang('presentation.journey.eyebrow')</p>
-                    <h2 id="presentation-journey-title" class="p-title">@lang('presentation.journey.title')</h2>
-                    <p class="p-lede">@lang('presentation.journey.lede')</p>
-                </div>
-
-                <ol class="p-steps" data-ux-stagger="100">
-                    @foreach (__('presentation.journey.steps') as $step)
-                        <li class="p-step">
-                            <span class="p-step__num" aria-hidden="true">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
-                            <span class="p-step__icon" aria-hidden="true"><i class="fas {{ $step['icon'] }}"></i></span>
-                            <h3 class="p-step__title">{{ $step['title'] }}</h3>
-                            <p class="p-step__text">{{ $step['text'] }}</p>
-                        </li>
-                    @endforeach
-                </ol>
-            </div>
-        </section>
-
-        {{-- Band 2 — organisations: heading on one side, two white cards on the other. --}}
-        <section class="p-organisations" id="presentation-organisations" aria-labelledby="presentation-organisations-title">
-            <div class="container">
-                <div class="p-split">
-
-                    <div class="p-split__body">
-                        <p class="p-eyebrow">@lang('presentation.organisations.eyebrow')</p>
-                        <h2 id="presentation-organisations-title" class="p-title">
-                            @lang('presentation.organisations.title')
-                        </h2>
-                        <p class="p-lede">@lang('presentation.organisations.lede')</p>
-                    </div>
-
-                    <ul class="p-orgs" data-ux-stagger="90">
-                        @forelse ($organisations as $organisation)
-                            @php
-                                $logo = $orgLogos[$loop->index] ?? $orgLogos[0];
-                                $profile = __('presentation.organisations.profiles.'.$organisation->code);
-                                $profile = is_array($profile) ? $profile : null;
-                            @endphp
-                            <li class="p-org">
-                                <span class="p-org__mark">
-                                    <img src="{{ asset($organisation->logo_path ?? $logo['src']) }}"
-                                         width="{{ $logo['width'] }}" height="{{ $logo['height'] }}"
-                                         alt="{{ $organisation->name }}"
-                                         loading="lazy" decoding="async">
-                                </span>
-
-                                <div class="p-org__body">
-                                    <h3 class="p-org__name">{{ $organisation->name }}</h3>
-                                    @if ($organisation->role)
-                                        <p class="p-org__role">{{ $organisation->role }}</p>
-                                    @endif
-                                    <p class="p-org__lede">{{ $organisation->description }}</p>
-
-                                    @if ($profile)
-                                        <dl class="p-org__stats">
-                                            @foreach ($profile['stats'] as $stat)
-                                                <div class="p-org__stat">
-                                                    <dt>{{ $stat['label'] }}</dt>
-                                                    <dd>{{ $stat['value'] }}</dd>
-                                                </div>
-                                            @endforeach
-                                        </dl>
-
-                                        @isset($profile['note'])
-                                            <p class="p-org__note">{{ $profile['note'] }}</p>
-                                        @endisset
-                                    @endif
-                                </div>
-
-                                @if ($profile)
-                                    <a class="p-org__cta" href="{{ $organisation->website_url ?: route('contact') }}"
-                                       @if ($organisation->website_url) rel="noopener noreferrer" target="_blank" @endif>
-                                        <span>{{ $profile['cta'] }}</span>
-                                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                                    </a>
-                                @elseif ($organisation->website_url)
-                                    <a class="p-org__link" href="{{ $organisation->website_url }}"
-                                       rel="noopener noreferrer" target="_blank">
-                                        <span class="visually-hidden">{{ $organisation->name }}</span>
-                                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                                    </a>
-                                @endif
-                            </li>
-                        @empty
-                            @foreach ($fallbackOrgs as $fallback)
-                                @php
-                                    $logo = $orgLogos[$loop->index];
-                                    $profile = __('presentation.organisations.profiles.'.$fallback['code']);
-                                    $profile = is_array($profile) ? $profile : null;
-                                @endphp
-                                <li class="p-org">
-                                    <span class="p-org__mark">
-                                        <img src="{{ asset($logo['src']) }}"
-                                             width="{{ $logo['width'] }}" height="{{ $logo['height'] }}"
-                                             alt="{{ $fallback['name'] }}"
-                                             loading="lazy" decoding="async">
-                                    </span>
-                                    <div class="p-org__body">
-                                        <h3 class="p-org__name">{{ $fallback['name'] }}</h3>
-                                        <p class="p-org__role">{{ $fallback['role'] }}</p>
-                                        <p class="p-org__lede">{{ $fallback['text'] }}</p>
-
-                                        @if ($profile)
-                                            <dl class="p-org__stats">
-                                                @foreach ($profile['stats'] as $stat)
-                                                    <div class="p-org__stat">
-                                                        <dt>{{ $stat['label'] }}</dt>
-                                                        <dd>{{ $stat['value'] }}</dd>
-                                                    </div>
-                                                @endforeach
-                                            </dl>
-
-                                            @isset($profile['note'])
-                                                <p class="p-org__note">{{ $profile['note'] }}</p>
-                                            @endisset
-                                        @endif
-                                    </div>
-                                    @if ($profile)
-                                        <a class="p-org__cta" href="{{ route('contact') }}">
-                                            <span>{{ $profile['cta'] }}</span>
-                                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                                        </a>
-                                    @endif
-                                </li>
-                            @endforeach
-                        @endforelse
-                    </ul>
-
-                </div>
-            </div>
-        </section>
-
-        {{-- Band 3 — network: rounded photo on one side, copy + outline button on the other. --}}
-        <section class="p-network" aria-labelledby="presentation-network-title">
-            <div class="container">
-                <div class="p-network__grid">
-
-                    <figure class="p-network__media">
-                        <img src="{{ asset($networkImage['src']) }}"
-                             width="{{ $networkImage['width'] }}"
-                             height="{{ $networkImage['height'] }}"
-                             alt="@lang('presentation.network.alt')"
-                             loading="lazy" decoding="async">
-                    </figure>
-
-                    <div class="p-network__body">
-                        <p class="p-eyebrow">@lang('presentation.network.eyebrow')</p>
-                        <h2 id="presentation-network-title" class="p-title">
-                            @lang('presentation.network.title')
-                        </h2>
-                        <p class="p-lede">@lang('presentation.network.lede')</p>
-
-                        <a href="{{ route('sponsors') }}" class="p-btn-outline">
-                            <span>@lang('presentation.network.cta')</span>
-                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                        </a>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        {{-- Band 4 — technical sheet (purple panel) + target audience card. --}}
-        <section class="p-sheet" aria-labelledby="presentation-sheet-title">
-            <div class="container">
-                <div class="p-sheet__grid">
-
-                    <div class="p-sheet__panel ux-reveal">
-                        <x-aurora :speed="0.4" />
-
-                        <div class="p-sheet__inner">
-                            <div class="p-sheet__head">
-                                <span class="p-sheet__icon" aria-hidden="true"><i class="fas fa-file-alt"></i></span>
-                                <div>
-                                    <h2 id="presentation-sheet-title" class="p-sheet__title">@lang('presentation.sheet.title')</h2>
-                                    <p class="p-sheet__lede">@lang('presentation.sheet.lede')</p>
-                                </div>
-                            </div>
-
-                            <dl class="p-sheet__rows">
-                                @foreach ($sheetRows as $row)
-                                    <div class="p-sheet__row">
-                                        <dt>
-                                            <span class="p-sheet__row-icon" aria-hidden="true"><i class="fas {{ $row['icon'] }}"></i></span>
-                                            <span>{{ $row['label'] }}</span>
-                                        </dt>
-                                        <dd>{{ $row['value'] }}</dd>
+                        @if ($profile && isset($profile['stats']))
+                            <dl class="pr-org__stats">
+                                @foreach ($profile['stats'] as $stat)
+                                    <div class="pr-org__stat">
+                                        <dt class="pr-org__stat-icon" aria-hidden="true"><i class="fas {{ $stat['icon'] }}"></i></dt>
+                                        <dd>
+                                            @isset($stat['pre'])<small>{{ $stat['pre'] }}</small>@endisset
+                                            <strong>{{ $stat['value'] }}</strong>
+                                            <span>{{ $stat['label'] }}</span>
+                                        </dd>
                                     </div>
                                 @endforeach
                             </dl>
+                        @endif
 
-                            @if ($sheetDocument)
-                                <a href="{{ $sheetDocument->downloadUrl() }}" class="p-sheet__cta">
-                                    <i class="fas fa-download" aria-hidden="true"></i>
-                                    <span>@lang('presentation.download_pdf')</span>
-                                </a>
-                            @endif
-                        </div>
-                    </div>
+                        <a href="{{ $href }}" class="pr-org__cta pr-org__cta--{{ $tone }}"
+                           @if ($org['url']) rel="noopener noreferrer" target="_blank" @endif>
+                            <span>{{ $profile['cta'] ?? $org['name'] }}</span>
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </section>
+</div>
 
-                    <div class="p-audience ux-reveal">
-                        <div class="p-audience__body">
-                            <p class="p-audience__eyebrow">
-                                <i class="fas fa-users" aria-hidden="true"></i>
-                                <span>@lang('presentation.audience.eyebrow')</span>
-                            </p>
-                            <h2 class="p-audience__title">@lang('presentation.audience.title')</h2>
-                            <p class="p-audience__text">@lang('presentation.audience.lede')</p>
-                        </div>
+{{-- Styles live INSIDE the section on purpose: anything after @endsection in a
+     child view is printed before <!DOCTYPE>, which forces quirks mode. --}}
+<style>
+    .pr-page {
+        --pr-ink: #14106a;
+        --pr-brand: #2f27b8;
+        --pr-accent: #6c3fe6;
+        --pr-muted: #3f3d8f;
+        --pr-line: #d3d9f4;
+        --pr-gold: #b9822a;
 
-                        <figure class="p-audience__media">
-                            <img src="{{ asset($audienceImage['src']) }}"
-                                 width="{{ $audienceImage['width'] }}"
-                                 height="{{ $audienceImage['height'] }}"
-                                 alt="@lang('presentation.audience.alt')"
-                                 loading="lazy" decoding="async">
-                        </figure>
-                    </div>
+        --pr-lat: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.3'%3E%3Crect x='22' y='22' width='44' height='44'/%3E%3Crect x='22' y='22' width='44' height='44' transform='rotate(45 44 44)'/%3E%3Ccircle cx='44' cy='44' r='10'/%3E%3Cpath d='M0 0L22 22M88 0L66 22M0 88L22 66M88 88L66 66'/%3E%3C/g%3E%3C/svg%3E");
+        --pr-wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220' preserveAspectRatio='none'%3E%3Cpath d='M0 150C240 70 470 210 760 135S1210 60 1440 120V220H0Z' fill='%23ffffff' fill-opacity='.38'/%3E%3Cpath d='M0 150C240 70 470 210 760 135S1210 60 1440 120' fill='none' stroke='%23ffffff' stroke-opacity='.9' stroke-width='2'/%3E%3Cpath d='M0 175C260 110 520 220 800 160S1230 100 1440 150' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3C/svg%3E");
 
-                </div>
-            </div>
-        </section>
+        --pr-to-start: to right;
+        --pr-to-end: to left;
+        color: var(--pr-ink);
+    }
+    [dir="rtl"] .pr-page { --pr-to-start: to left; --pr-to-end: to right; }
 
-    </div>
+    .pr-page section { overflow: hidden; position: relative; }
+    .pr-page h2, .pr-page h3, .pr-page p, .pr-page ul, .pr-page ol, .pr-page dl, .pr-page dd { margin: 0; }
+    .pr-page ul, .pr-page ol { list-style: none; padding: 0; }
+    [dir="rtl"] .pr-page .fa-chevron-right { transform: scaleX(-1); }
+    .pr-accent { color: var(--pr-accent); }
 
-    {{-- The mockup goes straight from the sheet to the footer, so the
-         <x-cta-band> that used to sit here has been removed. --}}
+    /* Photo washed with lavender so it only reads as texture */
+    .pr-bgimg {
+        background-color: #f4f2ff;
+        background-image: linear-gradient(180deg, rgb(250 249 255 / 93%) 0%, rgb(240 237 254 / 95%) 100%), var(--pr-bg, none);
+        background-position: center;
+        background-size: cover;
+        isolation: isolate;
+    }
+
+    /* ---------- Shared headings ---------- */
+    .pr-head { margin-block-end: 2.25rem; text-align: center; }
+    .pr-eyebrow { color: var(--pr-brand); font-size: .72rem; font-weight: 800; letter-spacing: .2em; margin-block-end: .5rem; text-transform: uppercase; }
+    .pr-eyebrow::after { background: linear-gradient(90deg, var(--pr-brand), #c13bd8); border-radius: 2px; content: ''; display: block; height: 2px; margin: .4rem auto 0; width: 2.6rem; }
+    .pr-eyebrow--start::after { margin-inline: 0 auto; }
+    [dir="rtl"] .pr-eyebrow { letter-spacing: .04em; }
+    .pr-title { font-size: clamp(1.6rem, 1.25rem + 1.5vw, 2.1rem); font-weight: 800; line-height: 1.2; margin-block-end: .6rem; }
+    .pr-lede { color: var(--pr-muted); font-size: .92rem; line-height: 1.6; margin-inline: auto; max-width: 46rem; }
+
+    /* ---------- 1. Banner ---------- */
+    .pr-intro {
+        background:
+            radial-gradient(80% 90% at 0% 0%, rgb(255 255 255 / 85%) 0%, transparent 60%),
+            linear-gradient(120deg, #f4f0ff 0%, #e6e0fd 50%, #d6cdf8 100%);
+        isolation: isolate;
+        min-height: 21rem;
+        padding-block: clamp(2.25rem, 4.5vw, 3.25rem);
+    }
+    .pr-intro__photo {
+        -webkit-mask-image: linear-gradient(var(--pr-to-end), #000 55%, transparent 100%);
+        mask-image: linear-gradient(var(--pr-to-end), #000 55%, transparent 100%);
+        background-color: #8b7bd8;
+        background-position: center 45%;
+        background-repeat: no-repeat;
+        background-size: cover;
+        inset-block: 0;
+        inset-inline-end: 0;
+        position: absolute;
+        width: min(66%, 980px);
+        z-index: -1;
+    }
+    .pr-intro::before {
+        -webkit-mask-image: linear-gradient(var(--pr-to-start), #000 0%, transparent 100%);
+        mask-image: linear-gradient(var(--pr-to-start), #000 0%, transparent 100%);
+        background-image: var(--pr-lat);
+        background-size: 88px 88px;
+        content: '';
+        inset-block: 0;
+        inset-inline-start: 0;
+        position: absolute;
+        width: min(16%, 240px);
+        z-index: -1;
+    }
+    .pr-intro::after {
+        background: var(--pr-wave) bottom / 100% 100% no-repeat, radial-gradient(70% 100% at 10% 120%, rgb(140 120 255 / 45%) 0%, transparent 70%);
+        content: '';
+        height: 38%;
+        inset: auto 0 0 0;
+        pointer-events: none;
+        position: absolute;
+        z-index: -1;
+    }
+    .pr-intro__body { max-width: 34rem; }
+    .pr-intro__body::before { background: var(--pr-brand); border-radius: 2px; content: ''; display: block; height: 4px; margin-block-end: 1rem; width: 3.2rem; }
+    .pr-intro__title { color: var(--pr-ink); font-size: clamp(2rem, 1.3rem + 2.4vw, 3rem); font-weight: 800; line-height: 1.08; margin-block-end: 1rem; }
+    [dir="rtl"] .pr-intro__title { line-height: 1.35; }
+    .pr-intro__title .pr-accent { background: linear-gradient(90deg, #5a35e0, #8a5cf6); -webkit-background-clip: text; background-clip: text; color: transparent; display: block; }
+    .pr-intro__lede { color: #1d1a5e; font-size: 1.05rem; line-height: 1.55; margin-block-end: 1.4rem; max-width: 28rem; }
+    .pr-intro__facts { align-items: center; display: flex; flex-wrap: wrap; gap: .75rem 0; }
+    .pr-intro__facts li { align-items: center; color: #2c22a8; display: flex; gap: .75rem; }
+    .pr-intro__facts li + li { border-inline-start: 1px solid rgb(42 31 110 / 28%); margin-inline-start: 1.4rem; padding-inline-start: 1.4rem; }
+    .pr-intro__facts strong { font-size: .85rem; line-height: 1.3; max-width: 13rem; }
+    .pr-intro__icon { color: #4b2fd0; font-size: 1.7rem; line-height: 1; }
+
+    /* ---------- 2. About ---------- */
+    .pr-about { background: #fff; padding-block: clamp(2.25rem, 5vw, 3.5rem); }
+    .pr-about__grid { align-items: center; display: grid; gap: 3rem; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+    .pr-about__title { color: var(--pr-ink); font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.2rem); font-weight: 800; line-height: 1.2; margin-block-end: 1.25rem; }
+    .pr-about__text { color: var(--pr-muted); font-size: .9rem; line-height: 1.7; margin-block-end: .9rem; max-width: 36rem; }
+    .pr-about__text strong { color: var(--pr-ink); }
+    .pr-about__media { aspect-ratio: 4 / 3; border-radius: 14px; box-shadow: 0 28px 50px -26px rgba(60, 40, 160, .5); margin: 0; overflow: hidden; }
+    .pr-about__media img { display: block; height: 100%; object-fit: cover; width: 100%; }
+
+    /* ---------- 3. Journey ---------- */
+    .pr-journey { padding-block: clamp(2.25rem, 5vw, 3.25rem); }
+    .pr-steps { display: grid; gap: 1.1rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .pr-step { align-items: center; border: 1px solid #e4e1f8; border-radius: 10px; box-shadow: 0 10px 28px rgb(42 31 110 / 8%); display: flex; gap: 1.1rem; padding: 1.25rem 1.3rem; }
+    .pr-step--violet { background: #f4f1ff; }
+    .pr-step--blue { background: #eef4ff; }
+    .pr-step__icon { align-items: center; background: #e6e0fd; border-radius: 50%; color: #5b3fd9; display: inline-flex; flex: 0 0 auto; font-size: 1.6rem; height: 4rem; justify-content: center; width: 4rem; }
+    .pr-step--blue .pr-step__icon { background: #dbe8ff; color: #2f6bd9; }
+    .pr-step__title { color: var(--pr-ink); font-size: .9rem; font-weight: 800; margin-block-end: .35rem; text-transform: uppercase; }
+    .pr-step__text { color: var(--pr-muted); font-size: .78rem; line-height: 1.5; }
+
+    /* ---------- 4. Organisers ---------- */
+    .pr-orgs { padding-block: clamp(2.25rem, 5vw, 3.25rem); }
+    .pr-orgs .pr-lede { max-width: 38rem; }
+    .pr-org-grid { align-items: stretch; display: grid; gap: 1.5rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pr-org { background: #fff; border-radius: 22px; box-shadow: 0 14px 40px rgb(42 31 110 / 14%); display: flex; flex-direction: column; gap: 1.1rem; padding: 1.75rem 1.9rem; }
+    .pr-org__mark { display: block; height: 4.2rem; }
+    .pr-org__mark img { height: 100%; max-width: 100%; object-fit: contain; object-position: left center; width: auto; }
+    [dir="rtl"] .pr-org__mark img { object-position: right center; }
+    .pr-org__text { display: grid; gap: .65rem; }
+    .pr-org__text p { color: var(--pr-muted); font-size: .8rem; line-height: 1.6; }
+
+    .pr-org__stats { align-items: center; display: flex; flex-wrap: wrap; gap: 1rem 0; margin-block-start: auto; }
+    .pr-org__stat { align-items: center; display: flex; gap: .75rem; padding-inline-end: 1.25rem; }
+    .pr-org__stat + .pr-org__stat { border-inline-start: 1px solid var(--pr-line); padding-inline-start: 1.25rem; }
+    .pr-org__stat-icon { color: var(--pr-brand); font-size: 1.7rem; line-height: 1; }
+    .pr-org__stat dd { color: var(--pr-muted); display: grid; font-size: .74rem; line-height: 1.25; }
+    .pr-org__stat small { font-size: .7rem; }
+    .pr-org__stat strong { color: var(--pr-ink); font-size: 1.45rem; font-weight: 800; line-height: 1.1; }
+
+    .pr-org__cta {margin-top: 2%; align-items: center; align-self: flex-start; border-radius: 4px; color: #fff; display: inline-flex; font-size: .76rem; font-weight: 800; gap: .9rem; padding: .8rem 1.4rem; text-decoration: none; text-transform: uppercase; transition: transform .2s, filter .2s; }
+    .pr-org__cta i { font-size: .72em; }
+    .pr-org__cta:hover { color: #fff; filter: brightness(1.08); transform: translateY(-2px); }
+    .pr-org__cta--gold { background: var(--pr-gold); }
+    .pr-org__cta--navy { background: linear-gradient(135deg, #2f27b8 0%, #1d4fa8 100%); }
+    .pr-org__cta:focus-visible { outline: 3px solid rgb(115 132 255 / 55%); outline-offset: 2px; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 991.98px) {
+        .pr-about__grid, .pr-org-grid { grid-template-columns: 1fr; }
+        .pr-steps { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 767.98px) {
+        .pr-intro__photo { opacity: .3; width: 100%; }
+        .pr-intro::before { display: none; }
+        .pr-intro__facts li + li { border: 0; margin: 0; padding: 0; }
+        .pr-org { padding: 1.4rem 1.25rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .pr-org__cta { transition: none; }
+        .pr-org__cta:hover { transform: none; }
+    }
+</style>
 
 @endsection
-
-<style>
-    /* =========================================================================
-   Presentation page — the four bands under the hero.
-   Logical properties only, so French / English (LTR) and Arabic (RTL)
-   share one stylesheet. Place in public/assets/css/presentation.css
-   ========================================================================= */
-
-.p-page {
-    --p-ink: #1b1464;
-    --p-brand: #4f3cc9;
-    --p-muted: #5f6384;
-    --p-tint: #ece8ff;
-    --p-line: #ddd8f5;
-    --p-panel-a: #6a4fd6;
-    --p-panel-b: #3f2a9f;
-    color: var(--p-ink);
-}
-
-.p-page section { position: relative; overflow: hidden; }
-.p-page h2, .p-page h3, .p-page p, .p-page ul, .p-page dl { margin: 0; }
-.p-page ul { list-style: none; padding: 0; }
-
-/* RTL: mirror directional arrows */
-[dir="rtl"] .p-page .fa-arrow-right { transform: scaleX(-1); }
-
-/* ---------- Shared bits ---------- */
-.p-eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-block-end: 14px;
-    font-size: .78rem;
-    font-weight: 700;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: var(--p-brand);
-}
-.p-eyebrow::after {
-    content: "";
-    width: 44px;
-    height: 1px;
-    background: currentColor;
-    opacity: .45;
-}
-[dir="rtl"] .p-eyebrow { letter-spacing: 0; }
-
-.p-title {
-    margin-block-end: 16px;
-    font-size: clamp(1.6rem, 2.6vw, 2.15rem);
-    font-weight: 700;
-    line-height: 1.2;
-    color: var(--p-ink);
-}
-.p-lede {
-    max-width: 46ch;
-    font-size: .95rem;
-    line-height: 1.75;
-    color: var(--p-muted);
-}
-
-/* ---------- Band 1 — intro ---------- */
-.p-intro {
-    padding-block: 72px 64px;
-    background: #fff;
-}
-.p-intro::after {
-    content: "";
-    position: absolute;
-    inset-inline-start: -12%;
-    inset-block-end: -140px;
-    width: 65%;
-    height: 260px;
-    pointer-events: none;
-}
-.p-intro .container { position: relative; z-index: 1; }
-
-.p-intro__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.55fr) minmax(0, .8fr);
-    gap: 56px;
-    align-items: center;
-}
-.p-intro__title {
-    max-width: 15em;
-    font-size: clamp(2rem, 3.6vw, 2.9rem);
-    font-weight: 700;
-    line-height: 1.15;
-    color: #14102e;
-}
-.p-intro__lede {
-    max-width: 30em;
-    margin-block: 26px 52px;
-    font-size: 1.15rem;
-    line-height: 1.75;
-    color: #4a4d6b;
-}
-.p-intro__media {
-    margin: 0;
-    aspect-ratio: 4 / 5;
-    border-radius: 22px;
-    overflow: hidden;
-    box-shadow: 0 28px 50px -26px rgba(60, 40, 160, .5);
-}
-.p-intro__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-.p-highlights {
-    margin-top: 100px;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.p-highlight { padding-inline: 22px; }
-.p-highlight:first-child { padding-inline-start: 0; }
-.p-highlight + .p-highlight { border-inline-start: 1px solid var(--p-line); }
-.p-highlight__icon {
-    display: grid;
-    place-items: center;
-    width: 52px;
-    height: 52px;
-    margin-block-end: 14px;
-    border-radius: 14px;
-    background: var(--p-tint);
-    color: var(--p-brand);
-    font-size: 1.2rem;
-}
-.p-highlight__title {
-    margin-block-end: 6px;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #2a1f9d;
-}
-.p-highlight__text {
-    font-size: .8rem;
-    line-height: 1.55;
-    color: var(--p-muted);
-}
-
-/* ---------- Centered heads ---------- */
-.p-head--center { text-align: center; }
-.p-eyebrow--center { justify-content: center; }
-.p-head--center .p-lede { margin-inline: auto; }
-
-/* ---------- Theme, inside Band 1 ---------- */
-.p-theme { margin-block-start: 34px; }
-.p-theme__title {
-    margin-block-end: 12px;
-    font-size: .82rem;
-    font-weight: 700;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--p-brand);
-}
-[dir="rtl"] .p-theme__title { letter-spacing: 0; }
-.p-theme__text {
-    max-width: 60ch;
-    margin-block-end: 12px;
-    font-size: .9rem;
-    line-height: 1.8;
-    color: #4a4d6b;
-}
-.p-theme__text:last-child { margin-block-end: 0; }
-
-/* ---------- Band 1.5 — journey ---------- */
-.p-journey {
-    padding-block: 72px;
-    background: linear-gradient(180deg, #f6f4ff 0%, #fff 100%);
-}
-.p-steps {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 22px;
-    counter-reset: p-step;
-}
-.p-step {
-    position: relative;
-    padding: 32px 26px 28px;
-    border-radius: 20px;
-    background: #fff;
-    border: 1px solid var(--p-line);
-    box-shadow: 0 20px 44px -30px rgba(60, 40, 160, .45);
-}
-.p-step__num {
-    position: absolute;
-    inset-block-start: 22px;
-    inset-inline-end: 24px;
-    font-size: 1.6rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--p-tint);
-}
-.p-step__icon {
-    display: grid;
-    place-items: center;
-    width: 52px;
-    height: 52px;
-    margin-block-end: 18px;
-    border-radius: 15px;
-    background: var(--p-tint);
-    color: var(--p-brand);
-    font-size: 1.2rem;
-}
-.p-step__title {
-    margin-block-end: 8px;
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #2a1f9d;
-}
-.p-step__text {
-    font-size: .84rem;
-    line-height: 1.65;
-    color: var(--p-muted);
-}
-
-/* ---------- Band 2 — organisations ---------- */
-.p-organisations {
-    padding-block: 72px;
-    background-image: url('../../../public/assets/images/presentation/slide.png');
-        background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-
-    /* ../images/presentation/slide.png */
-}
-.p-split {
-    display: grid;
-    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
-    gap: 48px;
-    align-items: center;
-}
-.p-split__body .p-lede { max-width: 34ch; font-size: .88rem; }
-
-.p-orgs {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-}
-.p-org {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    min-height: 260px;
-    padding: 24px;
-    border-radius: 18px;
-    background: #fff;
-    box-shadow: 0 18px 40px -22px rgba(60, 40, 160, .35);
-}
-.p-org__mark { display: block; height: 58px; }
-.p-org__mark img { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: start center; }
-.p-org__name { font-size: 1rem; font-weight: 700; color: var(--p-ink); }
-.p-org__role { margin-block: 2px 10px; font-size: .82rem; color: #8a8ca6; }
-.p-org__lede { font-size: .8rem; line-height: 1.6; color: var(--p-muted); }
-.p-org__link {
-    display: grid;
-    place-items: center;
-    width: 34px;
-    height: 34px;
-    margin-block-start: auto;
-    margin-inline-start: auto;
-    border-radius: 50%;
-    background: var(--p-tint);
-    color: var(--p-brand);
-    font-size: .8rem;
-    text-decoration: none;
-    transition: background-color .2s, color .2s;
-}
-a.p-org__link:hover, a.p-org__link:focus-visible { background: var(--p-brand); color: #fff; }
-
-.p-org__stats {
-    display: grid;
-    gap: 6px;
-    margin-block-start: 16px;
-    padding-block-start: 14px;
-    border-block-start: 1px solid var(--p-line);
-}
-.p-org__stat {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    font-size: .78rem;
-}
-.p-org__stat dt { color: #8a8ca6; }
-.p-org__stat dd { margin: 0; font-weight: 700; color: var(--p-ink); }
-.p-org__note {
-    margin-block-start: 12px;
-    font-size: .74rem;
-    line-height: 1.5;
-    color: var(--p-brand);
-}
-.p-org__cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    margin-block-start: auto;
-    padding: 12px 20px;
-    border-radius: 999px;
-    background: var(--p-tint);
-    font-size: .76rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .02em;
-    color: var(--p-brand);
-    text-decoration: none;
-    transition: background-color .2s, color .2s;
-}
-.p-org__cta:hover, .p-org__cta:focus-visible { background: var(--p-brand); color: #fff; }
-
-/* ---------- Band 3 — network ---------- */
-.p-network {
-    padding-block: 64px;
-    background: linear-gradient(180deg, #f3f1ff 0%, #fff 100%);
-}
-.p-network__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
-    gap: 56px;
-    align-items: center;
-}
-.p-network__media {
-    margin: 0;
-    aspect-ratio: 3 / 2;
-    border-radius: 28px;
-    border-end-end-radius: 72px;
-    overflow: hidden;
-}
-.p-network__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.p-network__body .p-lede { max-width: 52ch; font-size: .88rem; }
-
-.p-btn-outline {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-block-start: 26px;
-    padding: 11px 24px;
-    border: 1.5px solid var(--p-brand);
-    border-radius: 999px;
-    background: transparent;
-    font-size: .82rem;
-    font-weight: 600;
-    color: var(--p-brand);
-    text-decoration: none;
-    transition: background-color .2s, color .2s;
-}
-.p-btn-outline:hover, .p-btn-outline:focus-visible { background: var(--p-brand); color: #fff; }
-
-/* ---------- Band 4 — technical sheet + audience ---------- */
-.p-sheet { padding-block: 40px 72px; background: #fff; }
-.p-sheet__grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-    align-items: stretch;
-}
-
-.p-sheet__panel {
-    position: relative;
-    border-radius: 20px;
-    overflow: hidden;
-    color: #fff;
-    background: linear-gradient(135deg, var(--p-panel-a) 0%, var(--p-panel-b) 100%);
-}
-.p-sheet__inner { position: relative; padding: 40px 36px; }
-.p-sheet__head { display: flex; align-items: center; gap: 16px; margin-block-end: 30px; }
-.p-sheet__icon { font-size: 2rem; line-height: 1; opacity: .95; }
-.p-sheet__title { font-size: 1.15rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #fff; }
-[dir="rtl"] .p-sheet__title { letter-spacing: 0; }
-.p-sheet__lede { margin-block-start: 2px; font-size: .85rem; color: rgba(255, 255, 255, .8); }
-
-.p-sheet__rows { display: grid; gap: 14px; }
-.p-sheet__row {
-    display: grid;
-    grid-template-columns: minmax(130px, 38%) minmax(0, 1fr);
-    gap: 14px;
-    align-items: center;
-    font-size: .8rem;
-}
-.p-sheet__row dt { display: flex; align-items: center; gap: 14px; font-weight: 600; }
-.p-sheet__row dd { margin: 0; color: rgba(255, 255, 255, .88); line-height: 1.45; }
-.p-sheet__row-icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 28px;
-    height: 28px;
-    border: 1.5px solid rgba(255, 255, 255, .55);
-    border-radius: 50%;
-    font-size: .7rem;
-}
-
-.p-sheet__cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-block-start: 34px;
-    padding: 13px 28px;
-    border-radius: 999px;
-    background: #fff;
-    font-size: .82rem;
-    font-weight: 700;
-    color: #2a1f9d;
-    text-decoration: none;
-    transition: transform .2s;
-}
-.p-sheet__cta:hover, .p-sheet__cta:focus-visible { transform: translateY(-2px); }
-
-.p-audience {
-    display: flex;
-    flex-direction: column;
-    border-radius: 20px;
-    overflow: hidden;
-    background: linear-gradient(180deg, #f6f4ff 0%, #e9e5ff 100%);
-}
-.p-audience__body { padding: 40px 40px 24px; }
-.p-audience__eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-block-end: 18px;
-    font-size: .85rem;
-    font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: #2a1f9d;
-}
-.p-audience__eyebrow i { font-size: 1.4rem; color: var(--p-brand); }
-[dir="rtl"] .p-audience__eyebrow { letter-spacing: 0; }
-.p-audience__title {
-    margin-block-end: 16px;
-    font-size: clamp(1.3rem, 2vw, 1.65rem);
-    font-weight: 700;
-    line-height: 1.3;
-    color: var(--p-ink);
-}
-.p-audience__text { max-width: 46ch; font-size: .8rem; line-height: 1.75; color: var(--p-muted); }
-.p-audience__media {
-    position: relative;
-    margin: auto 0 0;
-    margin-top: 30% !important;
-    overflow: hidden;
-    clip-path: ellipse(80% 100% at 50% 100%);
-}
-.p-audience__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-/* ---------- Responsive ---------- */
-@media (max-width: 991.98px) {
-    .p-intro__grid,
-    .p-split,
-    .p-network__grid,
-    .p-sheet__grid,
-    .p-steps { grid-template-columns: minmax(0, 1fr); gap: 36px; }
-    .p-intro__media { aspect-ratio: 16 / 10; }
-}
-@media (max-width: 640px) {
-    .p-highlights { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-    .p-highlight, .p-highlight:first-child { padding-inline: 0; }
-    .p-highlight + .p-highlight { border-inline-start: 0; border-block-start: 1px solid var(--p-line); padding-block-start: 24px; }
-    .p-orgs { grid-template-columns: minmax(0, 1fr); }
-    .p-sheet__inner, .p-audience__body { padding: 28px 22px; }
-    .p-sheet__row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-}
-</style>

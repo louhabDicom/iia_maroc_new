@@ -6,67 +6,73 @@
 @section('content')
 
 @php
-$year = $edition->year;
+    $year = $edition->year;
 
-// Closing band photograph (placeholder, swap the path here).
-$closingImage = ['src' => 'assets/images/sponsoring/ban3.png', 'width' => 613, 'height' => 408];
+    /* ---- Online images (Unsplash CDN). Each has a CSS fallback, so a dead link never breaks the layout.
+          To use your own files, replace the URL with asset('assets/images/sponsoring/xxx.jpg'). ---- */
+    $imgBanner  = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1800&q=80'; // conference hall, stage & audience
+    $imgWhy     = 'https://images.unsplash.com/photo-1613327986042-63d4425a1a5d?auto=format&fit=crop&w=1800&q=60'; // soft purple/white abstract
+    $imgOffer   = 'https://images.unsplash.com/photo-1583339522870-0d9f28cef33f?auto=format&fit=crop&w=1800&q=60'; // lavender draped textile
+    $imgClosing = 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1800&q=80'; // hotel, palms & pool at dusk
 
-$reasons = [
-    ['icon' => 'fa-bullseye', 'title' => __('sponsoring.why.reach.title'), 'text' => __('sponsoring.why.reach.text')],
-    ['icon' => 'fa-user-tie', 'title' => __('sponsoring.why.profiles.title'), 'text' => __('sponsoring.why.profiles.text')],
-    ['icon' => 'fa-handshake', 'title' => __('sponsoring.why.decision.title'), 'text' => __('sponsoring.why.decision.text')],
-    ['icon' => 'fa-bullhorn', 'title' => __('sponsoring.why.visibility.title'), 'text' => __('sponsoring.why.visibility.text')],
-    ['icon' => 'fa-bullhorn', 'title' => __('sponsoring.why.community.title'), 'text' => __('sponsoring.why.community.text')],
-];
+    /* Wraps the last $n words of a title in an accent span (works in fr / en / ar). */
+    $accent = static function (string $text, int $n): \Illuminate\Support\HtmlString {
+        $words = preg_split('/\s+/u', trim($text)) ?: [];
+        $n = max(0, min($n, count($words) - 1));
+        if ($n === 0) {
+            return new \Illuminate\Support\HtmlString(e($text));
+        }
+        return new \Illuminate\Support\HtmlString(
+            e(implode(' ', array_slice($words, 0, -$n))) .
+            ' <span class="sp-accent">' . e(implode(' ', array_slice($words, -$n))) . '</span>'
+        );
+    };
 
-// The four sponsorship formulas, drawn from one array so a fifth tier is a
-// data change rather than a new markup block. The price is split from its
-// unit so the amount can sit on its own line and be read as a figure.
-$formulas = collect([
-    ['key' => 'platinum', 'icon' => 'fa-gem', 'tone' => 'dark'],
-    ['key' => 'gold', 'icon' => 'fa-award', 'tone' => 'gold'],
-    ['key' => 'silver', 'icon' => 'fa-medal', 'tone' => 'silver'],
-    ['key' => 'lab', 'icon' => 'fa-flask', 'tone' => 'lab'],
-])->map(static fn (array $formula): array => [
-    ...$formula,
-    ...__('sponsoring.packages.'.$formula['key']),
-]);
+    $reasons = [
+        ['icon' => 'fa-users',       'key' => 'reach'],
+        ['icon' => 'fa-bullseye',    'key' => 'profiles'],
+        ['icon' => 'fa-share-nodes', 'key' => 'decision'],
+        ['icon' => 'fa-chart-simple','key' => 'visibility'],
+        ['icon' => 'fa-handshake',   'key' => 'community'],
+    ];
 
-// À-la-carte activations: name, price, one or more lines. Kept as arrays
-// rather than objects so the same list serves all three languages.
-$activations = __('sponsoring.activations.items');
+    // The four formulas, drawn from one array so a fifth tier is a data change.
+    $formulas = collect([
+        ['key' => 'platinum', 'icon' => 'fa-gem',          'tone' => 'dark'],
+        ['key' => 'gold',     'icon' => 'fa-star',         'tone' => 'gold'],
+        ['key' => 'silver',   'icon' => 'fa-chart-column', 'tone' => 'silver'],
+        ['key' => 'lab',      'icon' => 'fa-lightbulb',    'tone' => 'lab'],
+    ])->map(static fn (array $formula): array => [
+        ...$formula,
+        ...__('sponsoring.packages.' . $formula['key']),
+    ]);
 
+    $activationIcons = ['fa-chalkboard', 'fa-utensils', 'fa-mug-hot', 'fa-id-badge', 'fa-gift', 'fa-globe'];
+    $activations = (array) __('sponsoring.activations.items');
+    $per = __('sponsoring.packages.per');
 
-// "Download the dossier" card: the first word is printed on its own,
-// lighter line, as in the design. Works in fr / en / ar.
-$dossierTitle = __('sponsoring.dossier.title', ['year' => $year]);
-$dossierFirst = \Illuminate\Support\Str::before($dossierTitle, ' ');
-$dossierRest = \Illuminate\Support\Str::after($dossierTitle, ' ');
+    // Previous partners — ONLINE logos. 'logo' (your own file/URL) wins, then the Simple Icons CDN
+    // ('slug' + 'color'), then Google's favicon service as a last resort (also used if a logo fails to load).
+    $favicon = fn (string $domain): string => 'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=https://' . $domain;
+    $allies = [
+        ['name' => 'BDO',       'domain' => 'bdo.com'],
+        ['name' => 'Deloitte',  'domain' => 'deloitte.com',  'slug' => 'deloitte', 'color' => '000000'],
+        ['name' => 'KPMG',      'domain' => 'kpmg.com',      'slug' => 'kpmg',     'color' => '00338D'],
+        ['name' => 'PwC',       'domain' => 'pwc.com',       'slug' => 'pwc',      'color' => 'D04A02'],
+        ['name' => 'EY',        'domain' => 'ey.com',        'slug' => 'ey',       'color' => '2E2E38'],
+        ['name' => 'Mazars',    'domain' => 'mazars.com'],
+        ['name' => 'Microsoft', 'domain' => 'microsoft.com', 'slug' => 'microsoft','color' => '5E5E5E'],
+        ['name' => 'SAS',       'domain' => 'sas.com',       'slug' => 'sas',      'color' => '0766D1'],
+        ['name' => 'Oracle',    'domain' => 'oracle.com',    'slug' => 'oracle',   'color' => 'F80000'],
+    ];
+    $allyLogo = static fn (array $a, callable $fav): string => $a['logo']
+        ?? (isset($a['slug']) ? 'https://cdn.simpleicons.org/' . $a['slug'] . '/' . ($a['color'] ?? '000000') : $fav($a['domain']));
 
-// Previous partners — ONLINE logos. Each logo is fetched from Google's
-// favicon service by domain (placeholder quality). To use a real
-// wordmark, add 'logo' => 'https://…/logo.png' to the entry and it wins.
-// Rows: the first 4 entries form the centred top row, the rest the bottom row.
-$favicon = fn (string $domain): string => 'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=https://' . $domain;
-$allies = [
-['name' => 'Banque Populaire', 'domain' => 'groupebcp.com'],
-['name' => 'Al Omrane', 'domain' => 'alomrane.ma'],
-['name' => 'Wolters Kluwer', 'domain' => 'wolterskluwer.com'],
-['name' => 'Marsa Maroc', 'domain' => 'marsamaroc.co.ma'],
-['name' => 'Mazars', 'domain' => 'mazars.com'],
-['name' => 'Caseware', 'domain' => 'caseware.com'],
-['name' => 'Mega', 'domain' => 'mega.ma'],
-['name' => 'Finances', 'domain' => 'finances.ma'],
-['name' => 'PRC', 'domain' => 'prc.ma'],
-['name' => 'Medizine', 'domain' => 'medizine.ma'],
-];
-$allyRows = [array_slice($allies, 0, 4), array_slice($allies, 4)];
+    $dossierUrl = $dossier ? $dossier->downloadUrl() : route('contact');
 @endphp
 
-{{-- The shared front-office hero, with the sponsors page's own title and
-     pitch. Previously this page mounted `x-home.hero` verbatim, which put the
-     organiser's name and the edition's theme in the `h1` and sent the reader
-     back to the sponsors page from the sponsors page. --}}
+{{-- Shared front-office hero (its own default buttons are used: the dossier and
+     "become a partner" buttons now live in the banner right below, as in the design). --}}
 <x-front.hero
     :title="__('sponsoring.hero.title_lead').' '.__('sponsoring.hero.title_accent')"
     :eyebrow="__('sponsoring.hero.eyebrow')"
@@ -76,1418 +82,701 @@ $allyRows = [array_slice($allies, 0, 4), array_slice($allies, 4)];
         ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
         ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
     ]"
-    :cta-label="__('sponsoring.hero_actions.download')"
-    :cta-url="$dossier ? $dossier->downloadUrl() : route('contact')"
-    :secondary-label="__('sponsoring.hero_actions.partner')"
-    :secondary-url="route('contact')"
     image="assets/images/bg/hero_bg1.jpg" />
 
 <div class="sp-page">
 
-    {{-- Band 1 — the pitch --}}
+    {{-- ================= 1. BANNER ================= --}}
     <section class="sp-intro" aria-labelledby="sponsoring-intro-title">
+        <div class="sp-intro__photo" style="background-image:url('{{ $imgBanner }}')" aria-hidden="true"></div>
+
         <div class="container">
-            <div class="sp-intro__grid">
-                <div class="sp-intro__body">
-                    <p class="sp-eyebrow">@lang('sponsoring.hero.eyebrow')</p>
-                    <h2 id="sponsoring-intro-title" class="sp-intro__title">
-                        <span>@lang('sponsoring.hero.title_lead')</span>
-                        <span class="sp-intro__title-accent">@lang('sponsoring.hero.title_accent')</span>
-                    </h2>
-                    <p class="sp-lede">@lang('sponsoring.hero.lede', ['year' => $year])</p>
+            <div class="sp-intro__body">
+                <p class="sp-intro__eyebrow">@lang('sponsoring.hero.eyebrow', ['year' => $year])</p>
+
+                <h2 id="sponsoring-intro-title" class="sp-intro__title">
+                    {{ $accent(__('sponsoring.hero.title_lead') . ' ' . __('sponsoring.hero.title_accent'), 4) }}
+                </h2>
+
+                <p class="sp-intro__lede">@lang('sponsoring.hero.lede', ['year' => $year])</p>
+
+                <ul class="sp-intro__facts">
+                    <li>
+                        <span class="sp-intro__icon" aria-hidden="true"><i class="fas fa-calendar-days"></i></span>
+                        <strong>{{ $edition->dateLine($locale) }}</strong>
+                    </li>
+                    <li>
+                        <span class="sp-intro__icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
+                        <strong>{{ $edition->venueLine($locale) }}</strong>
+                    </li>
+                </ul>
+
+                <div class="sp-intro__actions">
+                    <a href="{{ $dossierUrl }}" class="sp-btn sp-btn--solid">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        <span>@lang('sponsoring.hero_actions.download')</span>
+                    </a>
+                    <a href="{{ route('contact') }}" class="sp-btn sp-btn--outline">
+                        <span>@lang('sponsoring.hero_actions.partner')</span>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    {{-- Band 2 — why --}}
-    <section class="sp-why" aria-labelledby="sponsoring-why-title">
+    {{-- ================= 2. WHY ================= --}}
+    <section class="sp-why sp-bgimg" style="--sp-bg:url('{{ $imgWhy }}')" aria-labelledby="sponsoring-why-title">
         <div class="container">
-            <div class="sp-why__grid">
-                <div class="sp-why__body">
-                    <p class="sp-eyebrow">@lang('sponsoring.why.eyebrow')</p>
-                    <h2 id="sponsoring-why-title" class="sp-title">@lang('sponsoring.why.title')</h2>
-                    <p class="sp-lede">@lang('sponsoring.why.lede')</p>
-                </div>
+            <header class="sp-head">
+                <p class="sp-eyebrow">@lang('sponsoring.why.eyebrow')</p>
+                <h2 id="sponsoring-why-title" class="sp-title">{{ $accent(__('sponsoring.why.title'), 3) }}</h2>
+            </header>
 
-                <ul class="sp-reasons" data-ux-stagger="90">
-                    @foreach ($reasons as $reason)
+            <ul class="sp-reasons" data-ux-stagger="90">
+                @foreach ($reasons as $reason)
                     <li class="sp-reason ux-reveal">
                         <span class="sp-reason__icon" aria-hidden="true"><i class="fas {{ $reason['icon'] }}"></i></span>
-                        <h3 class="sp-reason__title">{{ $reason['title'] }}</h3>
-                        <p class="sp-reason__text">{{ $reason['text'] }}</p>
+                        <h3 class="sp-reason__title">@lang('sponsoring.why.' . $reason['key'] . '.title')</h3>
+                        <p class="sp-reason__text">@lang('sponsoring.why.' . $reason['key'] . '.text')</p>
                     </li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    {{-- Band 2.5 — the four sponsorship formulas. This is the commercial core
-             of the page: price, scarcity and inclusions, in that order, so a
-             sponsor can compare without opening the dossier. --}}
-    <section class="sp-packages" aria-labelledby="sponsoring-packages-title">
-        <div class="container">
-            <div class="sp-head sp-head--center">
-                <p class="sp-eyebrow sp-eyebrow--center">@lang('sponsoring.packages.eyebrow')</p>
-                <h2 id="sponsoring-packages-title" class="sp-title">@lang('sponsoring.packages.title')</h2>
-            </div>
-
-            <div class="sp-package-grid" data-ux-stagger="90">
-                @foreach ($formulas as $formula)
-                <article class="sp-package sp-package--{{ $formula['tone'] }} ux-reveal">
-                    <header class="sp-package__head">
-                        <span class="sp-package__icon" aria-hidden="true"><i class="fas {{ $formula['icon'] }}"></i></span>
-                        <h3 class="sp-package__name">{{ $formula['name'] }}</h3>
-                    </header>
-
-                    <p class="sp-package__price">
-                        <span class="sp-package__amount" dir="ltr">{{ $formula['price'] }}</span>
-                        <span class="sp-package__unit">@lang('sponsoring.packages.per')</span>
-                    </p>
-
-                    <p class="sp-package__limit">{{ $formula['limit'] }}</p>
-
-                    <p class="sp-package__summary">{{ $formula['summary'] }}</p>
-
-                    <ul class="sp-package__features">
-                        @foreach ($formula['features'] as $feature)
-                            <li>{{ $feature }}</li>
-                        @endforeach
-                    </ul>
-
-                    <a href="{{ route('contact') }}" class="sp-package__cta">
-                        <span>{{ $formula['cta'] }}</span>
-                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                    </a>
-                </article>
-                @endforeach
-            </div>
-
-            <div class="sp-packages__foot">
-                <a href="{{ route('contact') }}" class="sp-btn-outline">
-                    <span>@lang('sponsoring.packages.compare')</span>
-                    <i class="fas fa-columns" aria-hidden="true"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    {{-- Band 2.6 — à-la-carte activations. Six tiles rather than a table: the
-             entries are short and independent, and a visitor picking one is
-             scanning for a name, not comparing columns. --}}
-    <section class="sp-activations" aria-labelledby="sponsoring-activations-title">
-        <div class="container">
-            <div class="sp-head sp-head--center">
-                <p class="sp-eyebrow sp-eyebrow--center">@lang('sponsoring.activations.eyebrow')</p>
-                <h2 id="sponsoring-activations-title" class="sp-title">@lang('sponsoring.activations.title')</h2>
-            </div>
-
-            <div class="sp-activation-grid" data-ux-stagger="70">
-                @foreach ($activations as $activation)
-                <article class="sp-activation ux-reveal">
-                    <div class="sp-activation__top">
-                        <h3 class="sp-activation__name">{{ $activation['name'] }}</h3>
-                        <p class="sp-activation__price" dir="ltr">{{ $activation['price'] }}</p>
-                    </div>
-
-                    <ul class="sp-activation__features">
-                        @foreach ($activation['features'] as $feature)
-                            <li>{{ $feature }}</li>
-                        @endforeach
-                    </ul>
-                </article>
-                @endforeach
-            </div>
-
-            <div class="sp-bespoke">
-                <span class="sp-bespoke__icon" aria-hidden="true"><i class="fas fa-bullhorn"></i></span>
-                <div class="sp-bespoke__body">
-                    <h3 class="sp-bespoke__title">@lang('sponsoring.bespoke.title')</h3>
-                    <p class="sp-bespoke__text">@lang('sponsoring.bespoke.text')</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Band 3 — the ask: indigo panel + dossier card --}}
-    <section class="sp-cta-pair" aria-labelledby="sponsoring-build-title">
-        <div class="container">
-            <div class="sp-cta-pair__grid">
-
-                <div class="sp-cta-panel ux-reveal">
-                    <div class="sp-cta-panel__inner">
-                        <p class="sp-eyebrow sp-eyebrow--on-dark">@lang('sponsoring.build.eyebrow')</p>
-                        <h2 id="sponsoring-build-title" class="sp-cta-panel__title">@lang('sponsoring.build.title')</h2>
-                        <p class="sp-cta-panel__text">@lang('sponsoring.build.lede', ['year' => $year])</p>
-
-                        <a href="{{ route('contact') }}" class="sp-btn-light">
-                            <span>@lang('sponsoring.build.cta')</span>
-                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="sp-dossier ux-reveal">
-                    <div class="sp-dossier__head">
-                        <span class="sp-dossier__icon" aria-hidden="true"><i class="far fa-file-alt"></i></span>
-
-                        <h3 class="sp-dossier__title">
-                            <span class="sp-dossier__lead">{{ $dossierFirst }}</span>
-                            {{ $dossierRest }}
-                        </h3>
-
-                        {{-- Always drawn, as in the design. With no published
-                                 dossier it leads to the contact page instead. --}}
-                        <a href="{{ $dossier ? $dossier->downloadUrl() : route('contact') }}" class="sp-dossier__download">
-                            <i class="fas fa-download" aria-hidden="true"></i>
-                            <span class="visually-hidden">@lang($dossier ? 'sponsoring.dossier.cta' : 'sponsoring.build.cta')</span>
-                        </a>
-                    </div>
-
-                    <p class="sp-dossier__text">@lang('sponsoring.dossier.lede')</p>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    {{-- Band 4 — this edition's sponsors --}}
-    <section class="sp-roster" aria-labelledby="sponsoring-roster-title">
-        <div class="container">
-            <div class="sp-head">
-                <p class="sp-eyebrow">@lang('sponsoring.roster.eyebrow', ['year' => $year])</p>
-                <h2 id="sponsoring-roster-title" class="sp-title">@lang('sponsoring.roster.title', ['year' => $year])</h2>
-                <p class="sp-lede">@lang('sponsoring.roster.lede')</p>
-            </div>
-
-            <ul class="sp-wall" data-ux-stagger="70">
-                @foreach ($sponsors as $sponsor)
-                <li class="sp-plate">
-                    @if ($sponsor->website_url)
-                    <a href="{{ $sponsor->website_url }}" rel="noopener noreferrer sponsored" target="_blank">
-                        <x-sponsor-logo :sponsor="$sponsor" />
-                    </a>
-                    @else
-                    <x-sponsor-logo :sponsor="$sponsor" />
-                    @endif
-                </li>
-                @endforeach
-
-                @foreach ($pendingSlots as $slot)
-                <li class="sp-plate sp-plate--pending" aria-hidden="true">
-                    <i class="fas fa-image"></i>
-                    <span>@lang('sponsoring.roster.pending')</span>
-                </li>
                 @endforeach
             </ul>
         </div>
     </section>
 
-    {{-- Band 5 — previous partners: two rows of online logos (4 + 6),
-             the arrows rotate the logos through the two rows. --}}
+    {{-- ================= 3. OFFER: formulas + à-la-carte + bespoke ================= --}}
+    <section class="sp-offer sp-bgimg" style="--sp-bg:url('{{ $imgOffer }}')" aria-labelledby="sponsoring-packages-title">
+        <div class="container">
+
+            {{-- 3a. The four formulas --}}
+            <header class="sp-head">
+                <p class="sp-eyebrow">@lang('sponsoring.packages.eyebrow')</p>
+                <h2 id="sponsoring-packages-title" class="sp-title">{{ $accent(__('sponsoring.packages.title'), 1) }}</h2>
+            </header>
+
+            <div class="sp-package-grid" data-ux-stagger="90">
+                @foreach ($formulas as $formula)
+                    @php
+                        // "100 000 MAD" -> figure "100 000" + currency "MAD" (then "HT")
+                        $figure = $formula['price']; $currency = '';
+                        if (preg_match('/^([\d\s\x{00A0}\x{202F},.]+?)\s*(\D.*)$/u', $formula['price'], $m)) {
+                            $figure = trim($m[1]); $currency = trim($m[2]);
+                        }
+
+                        // "Maximum 2 partenaires" -> "MAX. 2 PARTENAIRES" (falls back to the raw text when no digit)
+                        $badge = preg_match('/\d+/', $formula['limit'], $n)
+                            ? __('sponsoring_ui.' . ($formula['key'] === 'lab' ? 'max_sessions' : 'max_partners'), ['n' => $n[0]])
+                            : $formula['limit'];
+
+                        $ctaLabel = $formula['key'] === 'lab' ? $formula['cta'] : __('sponsoring_ui.cta_partner');
+                    @endphp
+
+                    <article class="sp-package sp-package--{{ $formula['tone'] }} ux-reveal">
+                        <header class="sp-package__head">
+                            <span class="sp-package__icon" aria-hidden="true"><i class="fas {{ $formula['icon'] }}"></i></span>
+                            <h3 class="sp-package__name">{{ $formula['name'] }}</h3>
+                            <span class="sp-package__badge">{{ $badge }}</span>
+                        </header>
+
+                        <div class="sp-package__body">
+                            <p class="sp-package__price">
+                                <span class="sp-package__amount" dir="ltr">{{ $figure }}</span>
+                                <span class="sp-package__unit">{{ $currency }} {{ $per }}</span>
+                            </p>
+
+                            <p class="sp-package__summary">{{ $formula['summary'] }}</p>
+
+                            <ul class="sp-package__features">
+                                @foreach ($formula['features'] as $feature)
+                                    <li>{{ $feature }}</li>
+                                @endforeach
+                            </ul>
+
+                            <a href="{{ route('contact') }}" class="sp-package__cta">
+                                <span>{{ $ctaLabel }}</span>
+                                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+
+            <div class="sp-offer__foot">
+                <a href="{{ route('contact') }}" class="sp-compare">
+                    <i class="fas fa-scale-balanced" aria-hidden="true"></i>
+                    <span>@lang('sponsoring.packages.compare')</span>
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </a>
+            </div>
+
+            {{-- 3b. À-la-carte activations --}}
+            <h2 class="sp-title sp-title--sub" id="sponsoring-activations-title">@lang('sponsoring.activations.title')</h2>
+
+            <div class="sp-activation-grid" data-ux-stagger="70" aria-labelledby="sponsoring-activations-title">
+                @foreach ($activations as $i => $activation)
+                    @php
+                        // "40 000 MAD / jour" -> "40 000 MAD HT / jour"
+                        [$base, $suffix] = array_pad(explode(' / ', $activation['price'], 2), 2, null);
+                        $priceLine = $base . ' ' . $per . ($suffix ? ' / ' . $suffix : '');
+                        $many = count($activation['features']) > 1;
+                    @endphp
+
+                    <article class="sp-activation ux-reveal">
+                        <span class="sp-activation__icon" aria-hidden="true"><i class="fas {{ $activationIcons[$i] ?? 'fa-star' }}"></i></span>
+                        <h3 class="sp-activation__name">{{ $activation['name'] }}</h3>
+                        <p class="sp-activation__price">{{ $priceLine }}</p>
+
+                        <ul @class(['sp-activation__features', 'is-check' => $many])>
+                            @foreach ($activation['features'] as $feature)
+                                <li>{{ $feature }}</li>
+                            @endforeach
+                        </ul>
+
+                        <a href="{{ route('contact') }}" class="sp-activation__more">@lang('sponsoring_ui.more')</a>
+                    </article>
+                @endforeach
+            </div>
+
+            {{-- 3c. Bespoke --}}
+            <aside class="sp-bespoke" role="note">
+                <span class="sp-bespoke__icon" aria-hidden="true"><i class="fas fa-circle-info"></i></span>
+                <h3 class="sp-bespoke__title">@lang('sponsoring.bespoke.title')</h3>
+                <p class="sp-bespoke__text">@lang('sponsoring.bespoke.text')</p>
+            </aside>
+        </div>
+    </section>
+
+    {{-- ================= 4. THIS EDITION'S SPONSORS (only when some are confirmed) ================= --}}
+    @if (isset($sponsors) && count($sponsors) > 0)
+        <section class="sp-roster" aria-labelledby="sponsoring-roster-title">
+            <div class="container">
+                <header class="sp-head">
+                    <p class="sp-eyebrow">@lang('sponsoring.roster.eyebrow', ['year' => $year])</p>
+                    <h2 id="sponsoring-roster-title" class="sp-title">@lang('sponsoring.roster.title', ['year' => $year])</h2>
+                </header>
+
+                <ul class="sp-wall" data-ux-stagger="70">
+                    @foreach ($sponsors as $sponsor)
+                        <li class="sp-plate">
+                            @if ($sponsor->website_url)
+                                <a href="{{ $sponsor->website_url }}" rel="noopener noreferrer sponsored" target="_blank">
+                                    <x-sponsor-logo :sponsor="$sponsor" />
+                                </a>
+                            @else
+                                <x-sponsor-logo :sponsor="$sponsor" />
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </section>
+    @endif
+
+    {{-- ================= 5. PREVIOUS PARTNERS ================= --}}
     <section class="sp-allies" aria-labelledby="sponsoring-allies-title">
         <div class="container">
-            <div class="sp-head">
+            <header class="sp-head">
                 <p class="sp-eyebrow">@lang('sponsoring.allies.eyebrow')</p>
                 <h2 id="sponsoring-allies-title" class="sp-title">@lang('sponsoring.allies.title')</h2>
-                <p class="sp-lede">@lang('sponsoring.allies.lede')</p>
-            </div>
+            </header>
 
-            <div class="sp-allies__stage" data-allies>
-                <button type="button" class="sp-arrow sp-arrow--edge sp-arrow--prev" data-allies-prev>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M15 5l-7 7 7 7"></path>
-                    </svg>
-                    <span class="visually-hidden">@lang('sponsoring.rail.previous')</span>
-                </button>
-
-                @foreach ($allyRows as $rowIndex => $row)
-                <ul class="sp-allies__row {{ $rowIndex === 0 ? 'sp-allies__row--lead' : '' }}">
-                    @foreach ($row as $ally)
+            <ul class="sp-allies__row">
+                @foreach ($allies as $ally)
                     <li class="sp-ally">
-                        <a href="https://{{ $ally['domain'] }}" rel="noopener noreferrer sponsored" target="_blank">
-                            <img src="{{ $ally['logo'] ?? $favicon($ally['domain']) }}"
-                                alt="{{ $ally['name'] }}"
-                                width="120" height="48"
-                                loading="lazy" decoding="async" referrerpolicy="no-referrer">
+                        <a href="https://{{ $ally['domain'] }}" rel="noopener noreferrer sponsored" target="_blank" title="{{ $ally['name'] }}">
+                            <img src="{{ $allyLogo($ally, $favicon) }}"
+                                 onerror="this.onerror=null;this.src='{{ $favicon($ally['domain']) }}'"
+                                 alt="{{ $ally['name'] }}" height="44"
+                                 loading="lazy" decoding="async" referrerpolicy="no-referrer">
                         </a>
                     </li>
-                    @endforeach
-                </ul>
                 @endforeach
-
-                <button type="button" class="sp-arrow sp-arrow--edge sp-arrow--next" data-allies-next>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M9 5l7 7-7 7"></path>
-                    </svg>
-                    <span class="visually-hidden">@lang('sponsoring.rail.next')</span>
-                </button>
-            </div>
+            </ul>
         </div>
     </section>
 
-    {{-- Band 6 — previous editions in pictures --}}
-    <section class="sp-gallery" aria-labelledby="sponsoring-gallery-title">
-        <div class="container">
-            <div class="sp-head">
-                <p class="sp-eyebrow">@lang('sponsoring.gallery.eyebrow')</p>
-                <h2 id="sponsoring-gallery-title" class="sp-title">@lang('sponsoring.gallery.title')</h2>
-            </div>
-
-            @if ($gallery->isNotEmpty())
-            <div class="sp-rail-wrap">
-                <button type="button" class="sp-arrow sp-arrow--prev" data-rail-prev data-rail="gallery" hidden>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M15 5l-7 7 7 7"></path>
-                    </svg>
-                    <span class="visually-hidden">@lang('sponsoring.rail.previous')</span>
-                </button>
-
-                <ul class="sp-gallery__rail" data-rail-track="gallery">
-                    @foreach ($gallery as $index => $photo)
-                    <li>
-                        <a href="{{ asset($photo['file']) }}"
-                            data-lightbox="sponsoring-gallery"
-                            data-caption="@lang('sponsoring.gallery.alt', ['number' => $index + 1])">
-                            <img src="{{ asset($photo['file']) }}"
-                                width="{{ $photo['width'] }}" height="{{ $photo['height'] }}"
-                                alt="@lang('sponsoring.gallery.alt', ['number' => $index + 1])"
-                                loading="lazy" decoding="async">
-                        </a>
-                    </li>
-                    @endforeach
-                </ul>
-
-                <button type="button" class="sp-arrow sp-arrow--next" data-rail-next data-rail="gallery" hidden>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M9 5l7 7-7 7"></path>
-                    </svg>
-                    <span class="visually-hidden">@lang('sponsoring.rail.next')</span>
-                </button>
-            </div>
-            @endif
-        </div>
-    </section>
-
-    {{-- Closing band --}}
+    {{-- ================= 6. CLOSING BAND ================= --}}
     <section class="sp-closing" aria-labelledby="sponsoring-closing-title">
-        <img class="sp-closing__bg"
-            src="{{ asset($closingImage['src']) }}"
-            width="{{ $closingImage['width'] }}" height="{{ $closingImage['height'] }}"
-            alt="" loading="lazy" decoding="async" aria-hidden="true">
+        <div class="sp-closing__photo" style="background-image:url('{{ $imgClosing }}')" aria-hidden="true"></div>
 
+        <div class="container">
+            <div class="sp-closing__body">
+                <p class="sp-closing__eyebrow">@lang('sponsoring.cta.title')</p>
+                <h2 id="sponsoring-closing-title" class="sp-closing__title">@lang('sponsoring.cta.lede', ['year' => $year])</h2>
+                <p class="sp-closing__text">@lang('sponsoring.cta.text')</p>
 
-        <div class="container sp-closing__inner">
-            <div class="sp-closing__content">
-                <h2 id="sponsoring-closing-title" class="sp-closing__title">
-                    @lang('sponsoring.cta.title', ['year' => $year])
-                </h2>
-                <span class="sp-closing__line" aria-hidden="true"></span>
+                <a href="{{ route('contact') }}" class="sp-btn sp-btn--light">
+                    <span>@lang('sponsoring.cta.button')</span>
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </a>
             </div>
-
-            <a href="{{ route('contact') }}" class="sp-btn-light sp-closing__btn">
-                <span>@lang('sponsoring.cta.button')</span>
-                <i class="fas fa-arrow-right" aria-hidden="true"></i>
-            </a>
         </div>
     </section>
 </div>
 
-{{-- Styles live INSIDE the section on purpose: anything after @endsection
-         in a child view is printed before <!DOCTYPE>, which forces quirks mode.
-         Movable to public/assets/css/sponsoring.css once settled. --}}
+{{-- Styles live INSIDE the section on purpose: anything after @endsection in a
+     child view is printed before <!DOCTYPE>, which forces quirks mode. --}}
 <style>
     .sp-page {
-        --sp-ink: #1b1464;
-        --sp-brand: #4f3cc9;
-        --sp-accent: #6d3bd6;
-        --sp-muted: #5f6384;
-        --sp-tint: #ece8ff;
-        --sp-line: #ddd8f5;
-        --sp-surface: #f6f4ff;
-        --sp-deep: #2f1f9c;
+        --sp-ink: #14106a;
+        --sp-brand: #2f27b8;
+        --sp-accent: #6c3fe6;
+        --sp-muted: #4a4a8c;
+        --sp-tint: #ece8fe;
+        --sp-line: #d3d9f4;
+        --sp-gold: #b9822a;
+
+        --sp-lat-white: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.3'%3E%3Crect x='22' y='22' width='44' height='44'/%3E%3Crect x='22' y='22' width='44' height='44' transform='rotate(45 44 44)'/%3E%3Ccircle cx='44' cy='44' r='10'/%3E%3Cpath d='M0 0L22 22M88 0L66 22M0 88L22 66M88 88L66 66'/%3E%3C/g%3E%3C/svg%3E");
+        --sp-wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220' preserveAspectRatio='none'%3E%3Cpath d='M0 150C240 70 470 210 760 135S1210 60 1440 120V220H0Z' fill='%23ffffff' fill-opacity='.38'/%3E%3Cpath d='M0 150C240 70 470 210 760 135S1210 60 1440 120' fill='none' stroke='%23ffffff' stroke-opacity='.9' stroke-width='2'/%3E%3Cpath d='M0 175C260 110 520 220 800 160S1230 100 1440 150' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3C/svg%3E");
+
+        --sp-to-start: to right;
+        --sp-to-end: to left;
         color: var(--sp-ink);
     }
+    [dir="rtl"] .sp-page { --sp-to-start: to left; --sp-to-end: to right; }
 
-    .sp-page section {
-        position: relative;
-        overflow: hidden;
+    .sp-page section { overflow: hidden; position: relative; }
+    .sp-page h2, .sp-page h3, .sp-page p, .sp-page ul { margin: 0; }
+    .sp-page ul { list-style: none; padding: 0; }
+    .sp-page img { max-width: 100%; }
+    [dir="rtl"] .sp-page .fa-chevron-right { transform: scaleX(-1); }
+    .sp-accent { color: var(--sp-accent); }
+
+    /* Photo background washed with lavender so it only reads as texture */
+    .sp-bgimg {
+        background-color: #f4f2ff;
+        background-image:
+            linear-gradient(180deg, rgb(250 249 255 / 92%) 0%, rgb(240 237 254 / 94%) 100%),
+            var(--sp-bg, none);
+        background-position: center;
+        background-size: cover;
+        isolation: isolate;
     }
 
-    .sp-page h2,
-    .sp-page h3,
-    .sp-page p,
-    .sp-page ul {
-        margin: 0;
-    }
+    /* ---------- Shared headings ---------- */
+    .sp-head { margin-block-end: 2.25rem; text-align: center; }
 
-    .sp-page ul {
-        list-style: none;
-        padding: 0;
-    }
-
-    .sp-page img {
-        max-width: 100%;
-    }
-
-    [dir="rtl"] .sp-page .fa-arrow-right,
-    [dir="rtl"] .sp-arrow svg {
-        transform: scaleX(-1);
-    }
-
-    /* ---------- Shared ---------- */
     .sp-eyebrow {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-block-end: 14px;
-        font-size: .78rem;
-        font-weight: 700;
-        letter-spacing: .14em;
+        color: var(--sp-brand);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .2em;
+        margin-block-end: .5rem;
         text-transform: uppercase;
-        color: var(--sp-brand);
     }
-
-    .sp-eyebrow::before {
-        content: "";
-        width: 44px;
-        height: 1px;
-        background: currentColor;
-        opacity: .45;
-    }
-
-    [dir="rtl"] .sp-eyebrow {
-        letter-spacing: 0;
-    }
-
-    .sp-title {
-        margin-block-end: 16px;
-        font-size: clamp(1.6rem, 2.6vw, 2.15rem);
-        font-weight: 700;
-        line-height: 1.2;
-        color: var(--sp-ink);
-    }
-
-    .sp-lede {
-        max-width: 46ch;
-        font-size: .95rem;
-        line-height: 1.75;
-        color: var(--sp-muted);
-    }
-
-    .sp-head {
-        margin-block-end: 40px;
-    }
-
-    /* ---------- Band 1 ---------- */
-    .sp-intro {
-        padding-block: 76px 64px;
-background: url('{{ asset('assets/images/sponsoring/ban.png') }}') center / cover no-repeat;       
-    }
-
-    .sp-intro__grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
-        gap: 56px;
-        align-items: center;
-    }
-
-    .sp-intro__title {
-        max-width: 14em;
-        margin-block-end: 26px;
-        font-size: clamp(2rem, 3.6vw, 2.9rem);
-        font-weight: 700;
-        line-height: 1.15;
-        color: var(--sp-ink);
-    }
-
-    .sp-intro__title span {
+    .sp-eyebrow::after {
+        background: linear-gradient(90deg, var(--sp-brand), #c13bd8);
+        border-radius: 2px;
+        content: '';
         display: block;
+        height: 2px;
+        margin: .4rem auto 0;
+        width: 2.6rem;
     }
+    [dir="rtl"] .sp-eyebrow { letter-spacing: .04em; }
 
-    .sp-intro__title-accent {
-        color: var(--sp-accent);
-    }
+    .sp-title { color: var(--sp-ink); font-size: clamp(1.6rem, 1.25rem + 1.5vw, 2.1rem); font-weight: 800; line-height: 1.2; }
+    .sp-title--sub { margin: 3.25rem 0 1.75rem; text-align: center; }
 
-    /* ---------- Band 2 ---------- */
-    .sp-why {
-        padding-block: 72px;
-background: url('{{ asset('assets/images/sponsoring/ban1.png') }}') center / cover no-repeat; 
-   }
-
-    .sp-why__grid {
-        display: grid;
-        grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
-        gap: 56px;
+    /* ---------- Buttons ---------- */
+    .sp-btn {
         align-items: center;
-    }
-
-    .sp-why__body .sp-lede {
-        max-width: 42ch;
-    }
-
-    .sp-reasons {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 20px;
-    }
-
-    .sp-reason {
-        padding: 26px 22px;
-        border-radius: 18px;
-        background: #fff;
-        box-shadow: 0 18px 40px -26px rgba(60, 40, 160, .4);
-    }
-
-    .sp-reason__icon {
-        display: grid;
-        place-items: center;
-        width: 48px;
-        height: 48px;
-        margin-block-end: 16px;
-        border-radius: 14px;
-        background: var(--sp-tint);
-        color: var(--sp-brand);
-        font-size: 1.15rem;
-    }
-
-    .sp-reason__title {
-        margin-block-end: 8px;
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--sp-brand);
-    }
-
-    .sp-reason__text {
-        font-size: .8rem;
-        line-height: 1.6;
-        color: var(--sp-muted);
-    }
-
-    /* ---------- Centered section heads ---------- */
-    .sp-head--center {
-        text-align: center;
-    }
-
-    .sp-eyebrow--center {
+        border: 2px solid var(--sp-brand);
+        border-radius: 6px;
+        display: inline-flex;
+        font-size: .76rem;
+        font-weight: 800;
+        gap: .8rem;
         justify-content: center;
+        letter-spacing: .02em;
+        line-height: 1.25;
+        padding: .8rem 1.4rem;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: background-color .2s, color .2s, transform .2s, box-shadow .2s;
+    }
+    .sp-btn i { font-size: .8em; }
+    .sp-btn--solid { background: linear-gradient(135deg, #2f27b8 0%, #231a9a 100%); color: #fff; max-width: 17rem; text-align: start; }
+    .sp-btn--solid i { border-inline-end: 1px solid rgb(255 255 255 / 40%); font-size: 1.15rem; padding-inline-end: .8rem; }
+    .sp-btn--solid:hover { box-shadow: 0 12px 24px -14px rgba(35, 26, 154, .9); color: #fff; transform: translateY(-2px); }
+    .sp-btn--outline { background: #fff; color: var(--sp-brand); min-width: 13rem; }
+    .sp-btn--outline:hover { background: var(--sp-brand); color: #fff; transform: translateY(-2px); }
+    .sp-btn--light { background: #fff; border-color: #fff; color: var(--sp-ink); justify-content: space-between; min-width: 14rem; }
+    .sp-btn--light:hover { box-shadow: 0 12px 26px -14px rgba(0, 0, 0, .55); color: var(--sp-ink); transform: translateY(-2px); }
+    .sp-btn:focus-visible, .sp-package__cta:focus-visible, .sp-compare:focus-visible, .sp-activation__more:focus-visible {
+        outline: 3px solid rgb(115 132 255 / 55%);
+        outline-offset: 2px;
     }
 
-    .sp-head--center .sp-lede {
-        margin-inline: auto;
+    /* ---------- 1. Banner ---------- */
+    .sp-intro {
+        background:
+            radial-gradient(80% 90% at 0% 0%, rgb(255 255 255 / 85%) 0%, transparent 60%),
+            linear-gradient(120deg, #f4f0ff 0%, #e6e0fd 50%, #d6cdf8 100%);
+        isolation: isolate;
+        min-height: 22rem;
+        padding-block: clamp(2.25rem, 4.5vw, 3.25rem);
+    }
+    .sp-intro__photo {
+        -webkit-mask-image: linear-gradient(var(--sp-to-end), #000 55%, transparent 100%);
+        mask-image: linear-gradient(var(--sp-to-end), #000 55%, transparent 100%);
+        background-color: #8b7bd8;
+        background-position: center 40%;
+        background-repeat: no-repeat;
+        background-size: cover;
+        inset-block: 0;
+        inset-inline-end: 0;
+        position: absolute;
+        width: min(62%, 920px);
+        z-index: -1;
+    }
+    .sp-intro::before {
+        -webkit-mask-image: linear-gradient(var(--sp-to-start), #000 0%, transparent 100%);
+        mask-image: linear-gradient(var(--sp-to-start), #000 0%, transparent 100%);
+        background-image: var(--sp-lat-white);
+        background-size: 88px 88px;
+        content: '';
+        inset-block: 0;
+        inset-inline-start: 0;
+        position: absolute;
+        width: min(16%, 240px);
+        z-index: -1;
+    }
+    .sp-intro::after {
+        background:
+            var(--sp-wave) bottom / 100% 100% no-repeat,
+            radial-gradient(70% 100% at 10% 120%, rgb(140 120 255 / 45%) 0%, transparent 70%);
+        content: '';
+        height: 38%;
+        inset: auto 0 0 0;
+        pointer-events: none;
+        position: absolute;
+        z-index: -1;
     }
 
-    /* ---------- Band 2.5 — the four formulas ---------- */
-    .sp-packages {
-        padding-block: 76px 64px;
-        background: var(--sp-surface);
+    .sp-intro__body { max-width: 37rem; }
+    .sp-intro__eyebrow {
+        align-items: center;
+        color: var(--sp-brand);
+        display: flex;
+        font-size: .72rem;
+        font-weight: 800;
+        gap: .6rem;
+        letter-spacing: .16em;
+        margin-block-end: .9rem;
+        text-transform: uppercase;
+    }
+    .sp-intro__eyebrow::before { background: var(--sp-brand); border-radius: 2px; content: ''; flex: 0 0 auto; height: 3px; width: 3rem; }
+    [dir="rtl"] .sp-intro__eyebrow { letter-spacing: .02em; }
+
+    .sp-intro__title { color: var(--sp-ink); font-size: clamp(1.9rem, 1.3rem + 2.2vw, 2.7rem); font-weight: 800; line-height: 1.12; margin-block-end: 1rem; }
+    [dir="rtl"] .sp-intro__title { line-height: 1.35; }
+    .sp-intro__lede { color: #1d1a5e; font-size: .95rem; line-height: 1.6; margin-block-end: 1.25rem; max-width: 32rem; }
+
+    .sp-intro__facts { align-items: center; display: flex; flex-wrap: wrap; gap: .75rem 0; margin-block-end: 1.4rem !important; }
+    .sp-intro__facts li { align-items: center; color: #2c22a8; display: flex; gap: .75rem; }
+    .sp-intro__facts li + li { border-inline-start: 1px solid rgb(42 31 110 / 28%); margin-inline-start: 1.4rem; padding-inline-start: 1.4rem; }
+    .sp-intro__facts strong { font-size: .85rem; line-height: 1.3; max-width: 13rem; }
+    .sp-intro__icon { color: #4b2fd0; font-size: 1.7rem; line-height: 1; }
+
+    .sp-intro__actions { display: flex; flex-wrap: wrap; gap: .9rem; }
+
+    /* ---------- 2. Why ---------- */
+    .sp-why { padding-block: clamp(2.25rem, 5vw, 3.25rem); background-image: linear-gradient(180deg, rgb(255 255 255 / 95%), rgb(248 246 255 / 96%)), var(--sp-bg, none); }
+
+    .sp-reasons { display: grid; gap: 1.75rem 0; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .sp-reason { padding-inline: 1.1rem; position: relative; text-align: center; }
+    .sp-reason + .sp-reason::before { background: var(--sp-line); content: ''; inset-block: 1.2rem .8rem; inset-inline-start: 0; position: absolute; width: 1px; }
+    .sp-reason__icon {
+        align-items: center;
+        background: #ece8fe;
+        border-radius: 50%;
+        color: #5b3fd9;
+        display: inline-flex;
+        font-size: 1.55rem;
+        height: 4rem;
+        justify-content: center;
+        margin-block-end: .8rem;
+        width: 4rem;
+    }
+    .sp-reason__title { color: var(--sp-ink); font-size: .95rem; font-weight: 800; line-height: 1.3; margin-block-end: .4rem; }
+    .sp-reason__text { color: var(--sp-muted); font-size: .8rem; line-height: 1.55; }
+
+    @media (max-width: 1099.98px) {
+        .sp-reasons { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .sp-reason:nth-child(4)::before { display: none; }
+    }
+    @media (max-width: 767.98px) {
+        .sp-reasons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .sp-reason::before { display: none; }
+    }
+    @media (max-width: 479.98px) { .sp-reasons { grid-template-columns: 1fr; } }
+
+    /* ---------- 3. Offer ---------- */
+    .sp-offer { padding-block: clamp(2rem, 4.5vw, 3rem) clamp(2.25rem, 5vw, 3.25rem); }
+    .sp-offer::before {
+        -webkit-mask-image: linear-gradient(var(--sp-to-end), #000, transparent);
+        mask-image: linear-gradient(var(--sp-to-end), #000, transparent);
+        background-image: var(--sp-lat-white);
+        background-size: 88px 88px;
+        content: '';
+        inset-block: 0 auto;
+        height: 36rem;
+        inset-inline-end: 0;
+        opacity: .7;
+        position: absolute;
+        width: min(26%, 380px);
+        z-index: -1;
     }
 
-    .sp-package-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 22px;
-        align-items: start;
-    }
+    .sp-package-grid { align-items: stretch; display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    @media (max-width: 1099.98px) { .sp-package-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 575.98px) { .sp-package-grid { grid-template-columns: 1fr; } }
 
     .sp-package {
-        height: 105%;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgb(42 31 110 / 12%);
         display: flex;
         flex-direction: column;
-        padding: 30px 26px;
-        border-radius: 20px;
-        background: #fff;
-        border: 1px solid var(--sp-line);
-        box-shadow: 0 20px 44px -30px rgba(60, 40, 160, .5);
-    }
-
-    /* The top tier reads as the default choice: darker frame and a lift. */
-    .sp-package--dark {
-        border-color: transparent;
-        background: linear-gradient(160deg, #2b1d9a 0%, #3a27b3 100%);
-        color: #fff;
-        transform: translateY(-10px);
-        box-shadow: 0 30px 60px -34px rgba(43, 29, 154, .85);
+        overflow: hidden;
     }
 
     .sp-package__head {
-        display: flex;
         align-items: center;
-        gap: 12px;
-        margin-block-end: 20px;
-    }
-
-    .sp-package__icon {
-        display: grid;
-        place-items: center;
-        width: 44px;
-        height: 44px;
-        border-radius: 13px;
-        background: var(--sp-tint);
-        color: var(--sp-brand);
-        font-size: 1.05rem;
-        flex: 0 0 auto;
-    }
-
-    .sp-package__name {
-        font-size: .95rem;
-        font-weight: 700;
-        letter-spacing: .02em;
-        color: var(--sp-ink);
-    }
-
-    .sp-package__price {
+        color: #fff;
         display: flex;
-        align-items: baseline;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding-block-end: 14px;
-        border-block-end: 1px solid var(--sp-line);
-    }
-
-    .sp-package__amount {
-        font-size: 1.5rem;
-        font-weight: 700;
-        line-height: 1.1;
-        color: var(--sp-accent);
-    }
-
-    .sp-package__unit {
-        font-size: .72rem;
-        font-weight: 600;
-        letter-spacing: .06em;
-        text-transform: uppercase;
-        color: var(--sp-muted);
-    }
-
-    .sp-package__limit {
-        margin-block-start: 12px;
-        font-size: .74rem;
-        font-weight: 700;
-        letter-spacing: .04em;
-        text-transform: uppercase;
-        color: var(--sp-brand);
-    }
-
-    .sp-package__summary {
-        margin-block-start: 12px;
-        margin-block-end: 18px;
-        font-size: .84rem;
-        line-height: 1.65;
-        color: var(--sp-muted);
-    }
-
-    .sp-package__features {
-        display: grid;
-        gap: 9px;
-        margin-block-end: 24px;
-    }
-
-    .sp-package__features li {
+        gap: .8rem;
+        min-height: 4.1rem;
+        padding: .8rem 4.6rem .8rem 1rem;
         position: relative;
-        padding-inline-start: 22px;
-        font-size: .82rem;
-        line-height: 1.5;
-        color: var(--sp-ink);
     }
+    [dir="rtl"] .sp-package__head { padding: .8rem 1rem .8rem 4.6rem; }
+    .sp-package--dark .sp-package__head   { background: linear-gradient(135deg, #4a35cf 0%, #3326b8 100%); }
+    .sp-package--gold .sp-package__head   { background: linear-gradient(135deg, #d3a54f 0%, #b9822a 100%); }
+    .sp-package--silver .sp-package__head { background: linear-gradient(135deg, #8d9bb2 0%, #6f7e97 100%); }
+    .sp-package--lab .sp-package__head    { background: #d9d3fb; color: var(--sp-ink); }
 
-.sp-package__features li::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    inset-block-start: .18em;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background-color: var(--sp-tint);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 10px 10px;
-    /* checkmark, stroke colour = #4f3cc9 (--sp-brand) */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f3cc9' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
-}
-.sp-package__cta {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-block-start: auto;
-    padding: 14px 52px;          /* side padding leaves room for the arrow */
-    border-radius: 999px;
-    background: var(--sp-deep);
-    font-size: .76rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .02em;
-    text-align: center;
-    color: #fff;
-    text-decoration: none;
-    transition: transform .2s, box-shadow .2s;
-}
+    .sp-package__icon { flex: 0 0 auto; font-size: 1.9rem; line-height: 1; text-align: center; width: 2.2rem; }
+    .sp-package__name { color: inherit; font-size: .8rem; font-weight: 800; letter-spacing: .02em; line-height: 1.25; text-transform: uppercase; }
+    [dir="rtl"] .sp-package__name { letter-spacing: 0; }
 
-.sp-package__cta i {
-    position: absolute;
-    inset-inline-end: 22px;      /* arrow stays at the end (flips automatically in RTL) */
-    inset-block-start: 50%;
-    transform: translateY(-50%);
-}
-
-    .sp-package__cta:hover,
-    .sp-package__cta:focus-visible {
-        transform: translateY(-2px);
-        box-shadow: 0 14px 28px -16px rgba(43, 29, 154, .8);
-        color: #fff;
-    }
-
-    .sp-package--dark .sp-package__name,
-    .sp-package--dark .sp-package__features li {
-        color: #fff;
-    }
-
-    .sp-package--dark .sp-package__price {
-        border-block-end-color: rgba(255, 255, 255, .25);
-    }
-
-    .sp-package--dark .sp-package__amount,
-    .sp-package--dark .sp-package__limit {
-        color: #d9d2ff;
-    }
-
-    .sp-package--dark .sp-package__unit,
-    .sp-package--dark .sp-package__summary {
-        color: rgba(255, 255, 255, .75);
-    }
-
-    .sp-package--dark .sp-package__features li::before {
-        color: #fff;
-    }
-
-    .sp-package--dark .sp-package__cta {
-        background: #fff;
-        color: var(--sp-deep);
-    }
-
-    .sp-package--dark .sp-package__cta:hover,
-    .sp-package--dark .sp-package__cta:focus-visible {
-        color: var(--sp-deep);
-    }
-
-    .sp-packages__foot {
-        display: flex;
-        justify-content: center;
-        margin-block-start: 70px;
-    }
-
-    .sp-btn-outline {
-        display: inline-flex;
-        align-items: center;
-        gap: 14px;
-        padding: 15px 32px;
-        border: 1.5px solid var(--sp-brand);
-        border-radius: 999px;
-        font-size: .78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .03em;
-        color: var(--sp-brand);
-        text-decoration: none;
-        transition: background .2s, color .2s;
-    }
-
-    .sp-btn-outline:hover,
-    .sp-btn-outline:focus-visible {
-        background: var(--sp-brand);
-        color: #fff;
-    }
-
-    /* ---------- Band 2.6 — activations ---------- */
-    .sp-activations {
-        padding-block: 72px;
-        background: #fff;
-    }
-
-    .sp-activation-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 20px;
-    }
-
-    .sp-activation {
-        display: flex;
-        flex-direction: column;
-        padding: 24px 22px;
-        border-radius: 16px;
-        background: var(--sp-surface);
-        border: 1px solid var(--sp-line);
-    }
-
-    .sp-activation__top {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 8px 16px;
-        margin-block-end: 14px;
-    }
-
-    .sp-activation__name {
-        font-size: .88rem;
-        font-weight: 700;
-        letter-spacing: .02em;
-        color: var(--sp-ink);
-    }
-
-    .sp-activation__price {
-        font-size: .82rem;
-        font-weight: 700;
-        color: var(--sp-accent);
-        white-space: nowrap;
-    }
-
-    .sp-activation__features {
-        display: grid;
-        gap: 7px;
-    }
-
-    .sp-activation__features li {
-        position: relative;
-        padding-inline-start: 18px;
-        font-size: .79rem;
-        line-height: 1.55;
-        color: var(--sp-muted);
-    }
-
-    .sp-activation__features li::before {
-        content: "";
-        position: absolute;
-        inset-inline-start: 0;
-        inset-block-start: .55em;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--sp-brand);
-    }
-
-    .sp-bespoke {
-        display: flex;
-        gap: 20px;
-        align-items: flex-start;
-        margin-block-start: 30px;
-        padding: 28px 30px;
-        border-radius: 18px;
-        background: var(--sp-tint);
-        border: 1px dashed #c3b8f0;
-    }
-
-    .sp-bespoke__icon {
-        display: grid;
-        place-items: center;
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        background: #fff;
-        color: var(--sp-brand);
-        font-size: 1.15rem;
-        flex: 0 0 auto;
-    }
-
-    .sp-bespoke__title {
-        margin-block-end: 8px;
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--sp-ink);
-    }
-
-    .sp-bespoke__text {
-        max-width: 68ch;
-        font-size: .86rem;
-        line-height: 1.7;
-        color: var(--sp-muted);
-    }
-
-    /* ---------- Band 3 — "Une collaboration sur mesure" ---------- */
-    .sp-cta-pair {
-        padding-block: 40px 56px;
-        background: #fff;
-    }
-
-    .sp-cta-pair__grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
-        gap: 19px;
-        align-items: stretch;
-    }
-
-    .sp-cta-panel {
-        position: relative;
-        border-radius: 10px;
-        overflow: hidden;
-        background: linear-gradient(120deg, #2b1d9a 0%, #3a27b3 62%, #2d1f9e 100%);
-        box-shadow: 0 26px 46px -30px rgba(43, 29, 154, .7);
-    }
-
-    /* faint zellige line-art in the top corner */
-    .sp-cta-panel::after {
-        content: "";
-        position: absolute;
+    .sp-package__badge {
+        background: rgb(255 255 255 / 20%);
+        border-end-start-radius: 6px;
+        font-size: .56rem;
+        font-weight: 800;
         inset-block-start: 0;
         inset-inline-end: 0;
-        width: 260px;
-        height: 220px;
-        opacity: .16;
-        pointer-events: none;
-        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='220'%3E%3Cdefs%3E%3Cpattern id='p' width='60' height='60' patternUnits='userSpaceOnUse'%3E%3Cg fill='none' stroke='%23fff' stroke-width='1'%3E%3Crect x='15' y='15' width='30' height='30'/%3E%3Crect x='15' y='15' width='30' height='30' transform='rotate(45 30 30)'/%3E%3Ccircle cx='30' cy='30' r='8'/%3E%3C/g%3E%3C/pattern%3E%3C/defs%3E%3Crect width='260' height='220' fill='url(%23p)'/%3E%3C/svg%3E");
-        -webkit-mask-image: linear-gradient(to left, #000 20%, transparent);
-        mask-image: linear-gradient(to left, #000 20%, transparent);
-    }
-
-    [dir="rtl"] .sp-cta-panel::after {
-        transform: scaleX(-1);
-    }
-/* Keep the layout identical in every language */
-[dir="rtl"] .sp-intro__grid {
-    direction: ltr;
-}
-
-/* ...but keep the Arabic text itself right-to-left */
-[dir="rtl"] .sp-intro__body {
-    direction: rtl;
-}
-    .sp-cta-panel__inner {
-        position: relative;
-        z-index: 1;
-        padding: 48px 44px 36px;
-    }
-
-    .sp-eyebrow--on-dark {
-        gap: 18px;
-        font-size: .85rem;
-        font-weight: 500;
-        letter-spacing: .03em;
-        color: rgba(255, 255, 255, .88);
-    }
-
-    .sp-eyebrow--on-dark::before {
-        width: 32px;
-        opacity: .85;
-    }
-
-    .sp-cta-panel__title {
-        margin-block-end: 16px;
-        font-size: clamp(1.6rem, 2.7vw, 2.2rem);
-        font-weight: 500;
-        line-height: 1.2;
-        color: #fff;
-    }
-
-    .sp-cta-panel__text {
-        max-width: 35rem;
-        margin-block-end: 26px;
-        font-size: 1rem;
-        line-height: 1.75;
-        color: #fff;
-    }
-
-    .sp-btn-light {
-        display: inline-flex;
-        align-items: end;
-        justify-content: space-between;
-        gap: 40px;
-        min-width: min(100%, 360px);
-        padding: 16px 34px;
-        border-radius: 999px;
-        background: #fff;
-        font-size: .82rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .01em;
-        color: #1b1464;
-        text-decoration: none;
-        transition: transform .2s, box-shadow .2s;
-    }
-
-    .sp-btn-light:hover,
-    .sp-btn-light:focus-visible {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 26px -14px rgba(0, 0, 0, .55);
-        color: #1b1464;
-    }
-
-    .sp-dossier {
-        display: flex;
-        flex-direction: column;
-        padding: 38px;
-        border-radius: 10px;
-        background: #f5f4fd;
-        border: 1px solid #e8e5f7;
-    }
-
-    .sp-dossier__head {
-        display: grid;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        gap: 16px;
-        align-items: start;
-        margin-block-end: 16px;
-    }
-
-    .sp-dossier__icon {
-        padding-block-start: 6px;
-        font-size: 2rem;
-        line-height: 1;
-        color: var(--sp-deep);
-    }
-
-    .sp-dossier__title {
-        padding-block-start: 4px;
-        font-size: .95rem;
-        font-weight: 700;
-        line-height: 1.4;
-        letter-spacing: .01em;
-        text-transform: uppercase;
-        color: #1b1464;
-        text-wrap: balance;
-    }
-
-    .sp-dossier__lead {
-        display: block;
-        font-weight: 500;
-        color: var(--sp-brand);
-    }
-
-    [dir="rtl"] .sp-dossier__title {
-        letter-spacing: 0;
-    }
-
-    .sp-dossier__download {
-        display: grid;
-        place-items: center;
-        width: clamp(56px, 5.6vw, 80px);
-        aspect-ratio: 1;
-        border-radius: 50%;
-        background: var(--sp-deep);
-        color: #fff;
-        font-size: 1.3rem;
-        text-decoration: none;
-        box-shadow: 0 14px 26px -14px rgba(43, 29, 154, .8);
-        transition: transform .2s;
-    }
-
-    .sp-dossier__download:hover,
-    .sp-dossier__download:focus-visible {
-        transform: translateY(-2px);
-        color: #fff;
-    }
-
-    .sp-dossier__text {
-        font-size: .95rem;
-        line-height: 1.7;
-        color: #6b6f92;
-    }
-
-    /* ---------- Band 4 ---------- */
-    .sp-roster {
-        padding-block: 68px;
-        background: var(--sp-surface);
-    }
-
-    .sp-wall {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 22px;
-    }
-
-    .sp-plate {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 132px;
-        padding: 22px;
-        border: 1px solid var(--sp-line);
-        border-radius: 16px;
-        background: #fff;
-        transition: box-shadow .25s linear, transform .25s linear;
-    }
-
-    .sp-plate:hover {
-        box-shadow: 0 14px 30px -18px rgba(60, 40, 160, .45);
-        transform: translateY(-3px);
-    }
-
-    .sp-plate img {
-        max-height: 62px;
-        max-width: 100%;
-        object-fit: contain;
-    }
-
-    .sp-plate--pending {
-        flex-direction: column;
-        gap: 10px;
-        border-style: dashed;
-        border-color: #cfc9ec;
-        background: var(--sp-surface);
-        color: #9a97b8;
-    }
-
-    .sp-plate--pending i {
-        font-size: 1.3rem;
-    }
-
-    .sp-plate--pending span {
-        font-size: .74rem;
-    }
-
-    /* ---------- Band 5 — "Ils nous ont accompagnés" ---------- */
-    .sp-allies {
-        padding-block: 56px 64px;
-        background: #fff;
-    }
-
-    .sp-allies .sp-head {
-        margin-block-end: 34px;
-    }
-
-    .sp-allies__stage {
-        position: relative;
-        display: grid;
-        gap: 12px;
-    }
-
-    .sp-allies__row {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 12px;
-    }
-
-    .sp-ally {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 96px;
-        padding: 14px 20px;
-        border: 1px solid #eeebfa;
-        border-radius: 12px;
-        background: #fff;
-        box-shadow: 0 14px 28px -22px rgba(60, 40, 160, .4);
-        transition: box-shadow .25s linear, transform .25s linear;
-    }
-
-    .sp-ally:hover {
-        box-shadow: 0 16px 30px -18px rgba(60, 40, 160, .5);
-        transform: translateY(-2px);
-    }
-
-    .sp-allies__row--lead .sp-ally {
-        flex: 0 1 220px;
-    }
-
-    .sp-allies__row:not(.sp-allies__row--lead) .sp-ally {
-        flex: 1 1 150px;
-    }
-
-    .sp-ally a {
-        display: grid;
-        place-items: center;
-        width: 100%;
-        height: 100%;
-    }
-
-    .sp-ally img {
-        width: auto;
-        max-width: 100%;
-        height: auto;
-        max-height: 52px;
-        object-fit: contain;
-    }
-
-    /* ---------- Rails / arrows (gallery + allies) ---------- */
-    .sp-rail-wrap {
-        position: relative;
-    }
-
-    .sp-gallery__rail {
-        display: flex;
-        gap: 16px;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        scroll-behavior: smooth;
-        padding-block: 6px 14px;
-        scrollbar-width: thin;
-    }
-
-    .sp-gallery__rail>li {
-        flex: 0 0 auto;
-        scroll-snap-align: start;
-        width: clamp(230px, 28vw, 330px);
-    }
-
-    .sp-arrow {
+        letter-spacing: .04em;
+        line-height: 1.25;
+        max-width: 4.6rem;
+        padding: .35rem .5rem;
         position: absolute;
-        inset-block-start: 50%;
-        z-index: 2;
-        display: grid;
-        place-items: center;
-        width: 46px;
-        height: 46px;
-        margin-block-start: -23px;
-        border: 1px solid var(--sp-line);
-        border-radius: 50%;
-        background: #fff;
-        color: var(--sp-brand);
-        box-shadow: 0 10px 24px -14px rgba(60, 40, 160, .5);
-        cursor: pointer;
-        transition: background .2s, color .2s, opacity .2s;
+        text-align: center;
+        text-transform: uppercase;
+    }
+    [dir="rtl"] .sp-package__badge { border-end-start-radius: 0; border-end-end-radius: 6px; letter-spacing: 0; }
+    .sp-package--lab .sp-package__badge { background: rgb(47 39 184 / 12%); }
+
+    .sp-package__body { display: flex; flex: 1 1 auto; flex-direction: column; padding: 1rem 1.1rem 1.15rem; }
+
+    .sp-package__price { align-items: baseline; color: var(--sp-ink); display: flex; flex-wrap: wrap; gap: .35rem; justify-content: center; margin-block-end: .6rem !important; }
+    .sp-package__amount { font-size: 1.75rem; font-weight: 800; line-height: 1.1; }
+    .sp-package__unit { font-size: .85rem; font-weight: 700; }
+
+    .sp-package__summary { color: var(--sp-muted); font-size: .8rem; line-height: 1.5; margin-block-end: .9rem !important; text-align: center; }
+    .sp-package--lab .sp-package__summary { color: #5b3fd9; }
+
+    .sp-package__features { display: grid; gap: .4rem; margin-block-end: 1.1rem !important; }
+    .sp-package__features li { color: var(--sp-muted); font-size: .76rem; line-height: 1.4; padding-inline-start: 1.5rem; position: relative; }
+    .sp-package__features li::before {
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f3cc9' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5l5 5L20 6.5'/%3E%3C/svg%3E") center / contain no-repeat;
+        content: '';
+        height: .95rem;
+        inset-block-start: .1rem;
+        inset-inline-start: .2rem;
+        position: absolute;
+        width: .95rem;
     }
 
-    .sp-arrow:hover {
-        background: var(--sp-brand);
+    .sp-package__cta {
+        align-items: center;
+        border-radius: 5px;
         color: #fff;
+        display: flex;
+        font-size: .74rem;
+        font-weight: 800;
+        gap: .6rem;
+        justify-content: center;
+        margin-block-start: auto;
+        padding: .8rem 1rem;
+        text-align: center;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: transform .2s, box-shadow .2s, filter .2s;
     }
+    .sp-package__cta i { font-size: .72em; }
+    .sp-package__cta:hover { color: #fff; filter: brightness(1.08); transform: translateY(-2px); }
+    .sp-package--dark .sp-package__cta,
+    .sp-package--lab .sp-package__cta    { background: linear-gradient(135deg, #3a2fd0 0%, #2a1fa8 100%); }
+    .sp-package--gold .sp-package__cta   { background: var(--sp-gold); }
+    .sp-package--silver .sp-package__cta { background: #6f7e97; }
 
-    .sp-arrow svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    .sp-arrow--prev {
-        inset-inline-start: -14px;
-    }
-
-    .sp-arrow--next {
-        inset-inline-end: -14px;
-    }
-
-    .sp-arrow:disabled {
-        opacity: .35;
-        cursor: default;
-    }
-
-    .sp-arrow:disabled:hover {
+    .sp-offer__foot { display: flex; justify-content: center; margin-block-start: 1.4rem; }
+    .sp-compare {
+        align-items: center;
         background: #fff;
-        color: var(--sp-brand);
+        border: 1.5px solid var(--sp-brand);
+        border-radius: 5px;
+        color: var(--sp-ink);
+        display: inline-flex;
+        font-size: .76rem;
+        font-weight: 800;
+        gap: .9rem;
+        padding: .75rem 1.6rem;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: background-color .2s, color .2s;
     }
+    .sp-compare i { color: var(--sp-brand); font-size: 1.1rem; }
+    .sp-compare i:last-child { font-size: .7rem; }
+    .sp-compare:hover { background: var(--sp-brand); color: #fff; }
+    .sp-compare:hover i { color: #fff; }
 
-    /* ---------- Band 6 ---------- */
-    .sp-gallery {
-        padding-block: 68px;
-        background: var(--sp-surface);
-    }
+    /* ---- À la carte ---- */
+    .sp-activation-grid { display: grid; gap: .8rem; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    @media (max-width: 1199.98px) { .sp-activation-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 767.98px)  { .sp-activation-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 479.98px)  { .sp-activation-grid { grid-template-columns: 1fr; } }
 
-    .sp-gallery__rail a {
-        display: block;
-        border-radius: 14px;
-        overflow: hidden;
-        box-shadow: 0 14px 30px -20px rgba(60, 40, 160, .5);
-    }
-
-    .sp-gallery__rail img {
-        display: block;
-        width: 100%;
-        aspect-ratio: 3 / 2;
-        object-fit: cover;
-        transition: transform .4s ease-out;
-    }
-
-    .sp-gallery__rail a:hover img,
-    .sp-gallery__rail a:focus-visible img {
-        transform: scale(1.04);
-    }
-
-
-/* ---------- Closing banner ---------- */
-.sp-closing {
-    position: relative;
-    display: flex;
-    align-items: center;
-    min-height: 150px;
-    padding-block: 130px;
-    text-align: start;
-    color: #fff;
-    isolation: isolate;
-}
-
-.sp-closing__bg {
-    position: absolute;
-    inset: 0;
-    z-index: -2;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center 55%;
-}
-
-.sp-closing::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: linear-gradient(
-        90deg,
-        rgba(29, 15, 125, 0.82) 0%,
-        rgba(39, 24, 157, 0.76) 55%,
-        rgba(25, 17, 112, 0.82) 100%
-    );
-}
-
-.sp-closing__inner {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 32px;
-}
-
-.sp-closing__content {
-    flex: 1 1 0;
-    min-width: 0;
-}
-
-.sp-closing__title {
-    max-width: 15em;
-    margin: 0;
-    color: #fff;
-    font-size: clamp(1.25rem, 2.2vw, 1.75rem);
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.sp-closing__line {
-    display: block;
-    width: 64px;
-    height: 2px;
-    margin-top: 16px;
-    background: #fff;
-}
-
-.sp-closing__btn {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-    min-width: 220px;
-    padding: 12px 22px;
-    font-size: 0.7rem;
-    white-space: nowrap;
-}
-
-/* ---------- Responsive ---------- */
-@media (max-width: 767.98px) {
-    .sp-closing {
-        min-height: 180px;
-        padding-block: 30px;
-    }
-
-    .sp-closing__inner {
+    .sp-activation {
+        background: #fff;
+        border: 1px solid #e4e1f8;
+        border-radius: 6px;
+        box-shadow: 0 8px 22px rgb(42 31 110 / 8%);
+        display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        gap: 22px;
+        padding: 1rem .85rem .9rem;
+        text-align: center;
+    }
+    .sp-activation__icon { color: var(--sp-brand); font-size: 1.9rem; line-height: 1; margin-block-end: .6rem; }
+    .sp-activation__name { color: var(--sp-ink); font-size: .74rem; font-weight: 800; line-height: 1.25; margin-block-end: .3rem; text-transform: uppercase; }
+    .sp-activation__price { color: var(--sp-accent); font-size: .78rem; font-weight: 800; line-height: 1.35; margin-block-end: .7rem !important; unicode-bidi: plaintext; }
+
+    .sp-activation__features { display: grid; gap: .3rem; margin-block-end: .9rem !important; text-align: start; }
+    .sp-activation__features li { color: var(--sp-muted); font-size: .72rem; line-height: 1.4; padding-inline-start: 1rem; position: relative; }
+    .sp-activation__features li::before { background: var(--sp-brand); border-radius: 50%; content: ''; height: 5px; inset-block-start: .5em; inset-inline-start: .15rem; position: absolute; width: 5px; }
+    .sp-activation__features.is-check li::before {
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f3cc9' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5l5 5L20 6.5'/%3E%3C/svg%3E") center / contain no-repeat;
+        border-radius: 0;
+        height: .8rem;
+        inset-block-start: .15em;
+        inset-inline-start: 0;
+        width: .8rem;
     }
 
-    .sp-closing__title {
-        font-size: 1.35rem;
+    .sp-activation__more {
+        border: 1.5px solid var(--sp-brand);
+        border-radius: 4px;
+        color: var(--sp-brand);
+        font-size: .66rem;
+        font-weight: 800;
+        margin-block-start: auto;
+        padding: .45rem .5rem;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: background-color .2s, color .2s;
     }
+    .sp-activation__more:hover { background: var(--sp-brand); color: #fff; }
 
-    .sp-closing__btn {
-        min-width: 0;
-        max-width: 100%;
-        white-space: normal;
+    /* ---- Bespoke ---- */
+    .sp-bespoke {
+        align-items: center;
+        background: rgb(255 255 255 / 70%);
+        border: 1px solid #ddd9f6;
+        border-radius: 6px;
+        display: flex;
+        gap: 1rem 1.25rem;
+        margin-block-start: 1rem;
+        padding: .8rem 1.1rem;
     }
-}
+    .sp-bespoke__icon { color: var(--sp-accent); flex: 0 0 auto; font-size: 1.6rem; line-height: 1; }
+    .sp-bespoke__title { color: var(--sp-brand); flex: 0 0 auto; font-size: .76rem; font-weight: 800; text-transform: uppercase; }
+    .sp-bespoke__text { color: var(--sp-muted); flex: 1 1 auto; font-size: .76rem; line-height: 1.5; }
+    @media (max-width: 767.98px) { .sp-bespoke { align-items: flex-start; flex-direction: column; } }
 
-    /* ---------- Responsive ---------- */
-    @media (min-width: 1300px) {
-        .sp-arrow--edge.sp-arrow--prev {
-            inset-inline-start: -56px;
-        }
+    /* ---------- 4. Roster (only when sponsors exist) ---------- */
+    .sp-roster { background: #f6f4ff; padding-block: 3rem; }
+    .sp-wall { display: grid; gap: 1.2rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    @media (max-width: 767.98px) { .sp-wall { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .sp-plate { align-items: center; background: #fff; border: 1px solid var(--sp-line); border-radius: 12px; display: flex; justify-content: center; min-height: 7rem; padding: 1.2rem; transition: box-shadow .25s, transform .25s; }
+    .sp-plate:hover { box-shadow: 0 14px 30px -18px rgba(60, 40, 160, .45); transform: translateY(-3px); }
+    .sp-plate img { max-height: 3.6rem; max-width: 100%; object-fit: contain; }
 
-        .sp-arrow--edge.sp-arrow--next {
-            inset-inline-end: -56px;
-        }
+    /* ---------- 5. Previous partners ---------- */
+    .sp-allies { background: #fff; padding-block: clamp(1.75rem, 4vw, 2.5rem) clamp(2rem, 4.5vw, 2.75rem); }
+    .sp-allies .sp-head { margin-block-end: 1.5rem; }
+    .sp-allies .sp-title { font-size: clamp(1.25rem, 1.05rem + .9vw, 1.6rem); }
+
+    .sp-allies__row { align-items: center; display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: space-between; }
+    .sp-ally { align-items: center; display: flex; flex: 1 1 5.5rem; height: 3.2rem; justify-content: center; }
+    .sp-ally a { align-items: center; display: flex; height: 100%; justify-content: center; width: 100%; }
+    .sp-ally img { height: auto; max-height: 2.4rem; max-width: 6.5rem; object-fit: contain; transition: transform .2s; width: auto; }
+    .sp-ally a:hover img { transform: scale(1.06); }
+
+    /* ---------- 6. Closing band ---------- */
+    .sp-closing {
+        background: linear-gradient(110deg, #1d0f7d 0%, #2d1fa3 60%, #3a27b3 100%);
+        isolation: isolate;
+        padding-block: clamp(1.75rem, 4vw, 2.5rem);
     }
-
-    @media (max-width: 991.98px) {
-
-        .sp-intro__grid,
-        .sp-why__grid,
-        .sp-cta-pair__grid {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 28px;
-        }
-
-        .sp-package-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .sp-package--dark {
-            transform: none;
-        }
-
-        .sp-cta-panel__inner,
-        .sp-dossier {
-            padding: 32px 26px;
-        }
+    .sp-closing__photo {
+        -webkit-mask-image: linear-gradient(var(--sp-to-end), #000 55%, transparent 100%);
+        mask-image: linear-gradient(var(--sp-to-end), #000 55%, transparent 100%);
+        background-color: #5a45c8;
+        background-position: center 55%;
+        background-repeat: no-repeat;
+        background-size: cover;
+        inset-block: 0;
+        inset-inline-end: 0;
+        position: absolute;
+        width: min(58%, 840px);
+        z-index: -1;
     }
+    .sp-closing::before {
+        -webkit-mask-image: linear-gradient(var(--sp-to-start), #000, transparent);
+        mask-image: linear-gradient(var(--sp-to-start), #000, transparent);
+        background-image: var(--sp-lat-white);
+        background-size: 88px 88px;
+        content: '';
+        inset-block: 0;
+        inset-inline-start: 0;
+        opacity: .18;
+        position: absolute;
+        width: min(22%, 320px);
+        z-index: -1;
+    }
+    .sp-closing__body { color: #fff; max-width: 36rem; }
+    .sp-closing__eyebrow { color: rgb(255 255 255 / 85%); font-size: .68rem; font-weight: 800; letter-spacing: .16em; margin-block-end: .4rem; text-transform: uppercase; }
+    [dir="rtl"] .sp-closing__eyebrow { letter-spacing: .02em; }
+    .sp-closing__title { color: #fff; font-size: clamp(1.15rem, 1rem + .7vw, 1.5rem); font-weight: 800; line-height: 1.25; margin-block-end: .5rem; }
+    .sp-closing__text { color: rgb(255 255 255 / 90%); font-size: .8rem; line-height: 1.55; margin-block-end: 1rem !important; }
+    .sp-closing .sp-btn--light { min-width: 12.5rem; padding-block: .7rem; }
 
     @media (max-width: 767.98px) {
-        .sp-wall {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
+        .sp-intro__photo, .sp-closing__photo { opacity: .3; width: 100%; }
+        .sp-intro::before { display: none; }
+        .sp-intro__facts li + li { border: 0; margin: 0; padding: 0; }
+        .sp-btn--solid { max-width: none; }
+        .sp-allies__row { justify-content: center; }
+    }
 
-        .sp-reasons,
-        .sp-package-grid,
-        .sp-activation-grid {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 18px;
-        }
-
-        .sp-bespoke {
-            flex-direction: column;
-        }
-
-        .sp-allies__row--lead .sp-ally {
-            flex-basis: 150px;
-        }
-
-        .sp-arrow--prev {
-            inset-inline-start: -6px;
-        }
-
-        .sp-arrow--next {
-            inset-inline-end: -6px;
-        }
-
-        .sp-closing {
-            padding-block: 64px;
-        }
-
-        .sp-btn-light {
-            gap: 20px;
-            padding-inline: 24px;
-        }
+    @media (prefers-reduced-motion: reduce) {
+        .sp-btn, .sp-package__cta, .sp-ally img, .sp-plate { transition: none; }
+        .sp-btn:hover, .sp-package__cta:hover, .sp-plate:hover { transform: none; }
     }
 </style>
-
-{{-- Arrows of the "previous partners" band: rotate the logos through the
-         two rows (4 + 6) so the layout always stays the same. --}}
-<script>
-    (function() {
-        var stage = document.querySelector('[data-allies]');
-        if (!stage) return;
-        var rows = stage.querySelectorAll('.sp-allies__row');
-        var a = rows[0],
-            b = rows[1];
-        stage.querySelector('[data-allies-next]').addEventListener('click', function() {
-            a.appendChild(b.firstElementChild);
-            b.appendChild(a.firstElementChild);
-        });
-        stage.querySelector('[data-allies-prev]').addEventListener('click', function() {
-            a.insertBefore(b.lastElementChild, a.firstElementChild);
-            b.insertBefore(a.lastElementChild, b.firstElementChild);
-        });
-    })();
-</script>
 
 @endsection

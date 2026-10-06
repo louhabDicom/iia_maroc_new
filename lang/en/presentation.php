@@ -2,112 +2,72 @@
 
 return [
     'title' => 'About the conference',
-    'languages_value' => 'French / English (simultaneous interpretation)',
-    'download_pdf' => 'Download the fact sheet (PDF)',
 
     'intro' => [
-        'title' => 'About the ARABCIA :year conference',
         'lede' => 'An international conference on the current challenges of internal audit, governance, risk and the transformation of organisations.',
-        'alt' => 'A speaker at the podium in front of a packed hall',
-
-        'theme_title' => 'Conference theme',
-        'paragraphs' => [
-            'The ARABCIA :year Annual Conference puts at the heart of its work a theme that runs through every organisation: “Internal audit: a trusted partner in the transformation and resilience of organisations”.',
-            'In an environment shaped by accelerating transformation, volatile risk and mounting pressure on governance, internal audit is no longer a mere control: it has become a trusted player, able to inform decisions and strengthen an organisation’s ability to adapt.',
-            'Over two days, decision-makers, auditors, experts and partners will share their experience, methods and vision to build together more resilient and better-governed organisations.',
-        ],
     ],
 
-    'highlights' => [
-        'objectives_title' => 'Objectives',
-        'objectives_text' => 'Share good practices and encourage exchange between professionals.',
-        'scope_title' => 'Theme',
-        'scope_text' => 'Internal audit: a trusted partner in the transformation and resilience of organisations.',
-        'international_title' => 'International dimension',
-        'international_text' => 'High-level expertise and lessons learned from around the world.',
+    'banner' => [
+        'title_lead' => 'The Annual Conference',
+        'title_accent' => 'ARABCIA :year',
+        'lede' => 'A regional and international gathering dedicated to the future of Internal Audit',
+    ],
+
+    'about' => [
+        'eyebrow' => 'About the conference',
+        'title' => 'Internal Audit: a trusted partner in the transformation and resilience of organisations',
+        'accent' => 6,
+        'alt' => 'A speaker at the podium in front of a packed hall',
+        'paragraphs' => [
+            'On <strong>16 and 17 December :year in Rabat</strong>, the ARABCIA Annual Conference will bring together nearly 300 professionals, executives, experts and institutional representatives from Morocco, the Arab world, Africa and other regions.',
+            'As organisations accelerate their transformation while facing increasingly interconnected risks, this conference reflects on the renewed role of Internal Audit: anticipating risks, informing decisions, strengthening trust and sustainably supporting organisational performance.',
+            'Artificial intelligence, cyber-resilience, digital transformation, data governance, geopolitical risks, combined assurance and the evolution of skills will be at the heart of the discussions.',
+        ],
     ],
 
     'journey' => [
         'eyebrow' => 'A journey in three movements',
-        'title' => 'Understand, act, demonstrate',
-        'lede' => 'Two days structured around three movements: understand the shifts under way, act with concrete methods, and demonstrate the value created by internal audit.',
+        'title' => 'Understand, Act, Demonstrate',
+        'lede' => 'Three highlights to explore today’s challenges and tomorrow’s opportunities.',
         'steps' => [
-            [
-                'key' => 'understand',
-                'icon' => 'fa-chart-line',
-                'title' => 'Understand',
-                'text' => 'Make sense of regulatory change, emerging risks and stakeholder expectations.',
-            ],
-            [
-                'key' => 'act',
-                'icon' => 'fa-chart-line',
-                'title' => 'Act',
-                'text' => 'Share methods, tools and lessons learned to transform internal audit.',
-            ],
-            [
-                'key' => 'demonstrate',
-                'icon' => 'fa-chart-line',
-                'title' => 'Demonstrate',
-                'text' => 'Illustrate, through concrete cases and measurable results, the value internal audit creates.',
-            ],
+            ['title' => 'Understand', 'text' => 'Make sense of the transformations, new risks and shifts that are reshaping the profession.'],
+            ['title' => 'Act', 'text' => 'Identify concrete responses that allow Internal Audit to strengthen trust and resilience.'],
+            ['title' => 'Demonstrate', 'text' => 'Highlight Internal Audit’s contribution to performance, transformation and lasting value creation.'],
         ],
     ],
 
     'organisations' => [
         'eyebrow' => 'The organisers',
-        'title' => 'Two institutions, one mission',
-        'lede' => 'ARABCIA and IIA Morocco work together to develop the internal audit profession in Morocco and across the region.',
-        'organiser_role' => 'Organiser',
+        'title' => 'Two institutions, one ambition',
+        'lede' => 'This conference is organised by the Arab Confederation of Internal Auditors (ARABCIA) in collaboration with the Institute of Internal Auditors of Morocco (IIA Morocco).',
         'organiser_desc' => 'The network of Arab Internal Auditors, for a stronger and better-connected profession.',
-        'host_role' => 'Host institute',
         'host_desc' => 'The Institute of Internal Auditors in Morocco, a leading voice for the profession.',
 
         'profiles' => [
             'ARABCIA' => [
+                'paragraphs' => [
+                    'Founded in 2022 and based in Saudi Arabia, ARABCIA is an international non-profit professional organisation that brings together the Internal Audit associations and institutes of the Arab world.',
+                    'Through its actions, ARABCIA contributes to the development of the profession, the dissemination of best practices and international standards, and the strengthening of skills.',
+                    'It aims to position Internal Audit as a trusted strategic partner serving governance, resilience and value creation.',
+                ],
                 'stats' => [
-                    ['label' => 'Founded', 'value' => 'December 2022'],
-                    ['label' => 'Headquarters', 'value' => 'Kingdom of Saudi Arabia'],
-                    ['label' => 'Members', 'value' => '13 Arab countries'],
+                    ['icon' => 'fa-users', 'value' => '13', 'label' => 'member countries'],
+                    ['icon' => 'fa-globe', 'value' => 'A community', 'label' => 'of professionals across the Arab world'],
                 ],
                 'cta' => 'Discover ARABCIA',
             ],
             'IIA_MAROC' => [
-                'stats' => [
-                    ['label' => 'Founded', 'value' => '1985'],
-                    ['label' => 'Members', 'value' => 'around 900'],
-                    ['label' => 'Experience', 'value' => 'more than 40 years'],
+                'paragraphs' => [
+                    'Founded in 1985, IIA Morocco is a non-profit professional association and a member of the international network The Institute of Internal Auditors – IIA Global.',
+                    'For over 40 years, the Institute has supported the development and professionalisation of Internal Audit in Morocco.',
+                    'IIA Morocco contributes to the development of Internal Audit, governance, risk management, internal control and compliance practices. It is also a member of several international and regional professional networks, including IIA Global, UFAI, AFIIA, ECIIA and ARABCIA.',
                 ],
-                'note' => 'A member of IIA Global, UFAI, AFIIA, ECIIA and ARABCIA.',
+                'stats' => [
+                    ['icon' => 'fa-shield-halved', 'value' => '40+', 'label' => 'years of commitment'],
+                    ['icon' => 'fa-users', 'pre' => 'Nearly', 'value' => '900', 'label' => 'members'],
+                ],
                 'cta' => 'Discover IIA Morocco',
             ],
         ],
-    ],
-
-    'network' => [
-        'eyebrow' => 'Network',
-        'title' => 'An international network serving the profession',
-        'lede' => 'ARABCIA brings together Arab and international internal audit institutes and associations to strengthen exchange, share expertise and build skills.',
-        'cta' => 'Learn more',
-        'alt' => 'World map illustrating the international network',
-    ],
-
-    'sheet' => [
-        'title' => 'Fact sheet',
-        'lede' => 'All the key information about the conference',
-        'theme' => 'Theme',
-        'dates' => 'Dates',
-        'venue' => 'Venue',
-        'organisers' => 'Organisers',
-        'host' => 'Host institute',
-        'languages' => 'Languages',
-        'audience' => 'Audience',
-    ],
-
-    'audience' => [
-        'eyebrow' => 'Target audience',
-        'title' => 'A community of decision-makers, auditors and experts gathered around tomorrow’s biggest challenges.',
-        'lede' => 'Internal auditors, risk, compliance and governance officers, executives, boards of directors, public sector, regulators, institutes, students, experts and partners.',
-        'brief' => 'Internal audit professionals, executives, experts',
-        'alt' => 'A conference hall full of attendees',
     ],
 ];
