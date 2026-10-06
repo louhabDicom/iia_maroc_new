@@ -297,7 +297,8 @@
 
     {{-- ================= 6. CLOSING BAND ================= --}}
     <section class="sp-closing" aria-labelledby="sponsoring-closing-title">
-        <div class="sp-closing__photo" style="background-image: url('{{ asset('assets/images/ban_presentation.webp') }}') background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
+        <div class="sp-closing__photo" style="background-image: url('{{ asset('assets/images/ban_presentation.webp') }}') ;background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
+
         <div class="container">
             <div class="sp-closing__body">
                 <p class="sp-closing__eyebrow">@lang('sponsoring.cta.title')</p>
