@@ -236,7 +236,6 @@
                                 <x-form.field name="subject_type" :label="__('contact.topic_label')" required>
                                     <select name="subject_type" id="subject_type" required
                                             @class(['c-input', 'c-select', 'is-invalid' => $errors->has('subject_type')])>
-                                        <option value="" disabled @selected($selectedTopic === null)>{{ __('contact.choose_topic') }}</option>
                                         @foreach ($topics as $topic)
                                             <option value="{{ $topic['value'] }}" @selected($selectedTopic === $topic['value'])>{{ $topic['label'] }}</option>
                                         @endforeach
