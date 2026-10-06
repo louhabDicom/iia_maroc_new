@@ -82,7 +82,7 @@
                     {{ $accent(__('presentation.banner.title_lead') . ' ' . __('presentation.banner.title_accent', ['year' => $year]), 2) }}
                 </h2>
                 <p class="pr-intro__lede">@lang('presentation.banner.lede')</p>
-
+<!-- 
                 <ul class="pr-intro__facts">
                     <li>
                         <span class="pr-intro__icon" aria-hidden="true"><i class="fas fa-calendar-days"></i></span>
@@ -92,7 +92,7 @@
                         <span class="pr-intro__icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
                         <strong>{{ $edition->venueLine($locale) }}</strong>
                     </li>
-                </ul>
+                </ul> -->
             </div>
         </div>
     </section>

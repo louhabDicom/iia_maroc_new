@@ -101,14 +101,14 @@
                 <p class="sp-intro__lede">@lang('sponsoring.hero.lede', ['year' => $year])</p>
 
                 <ul class="sp-intro__facts">
-                    <li>
+                    <!-- <li>
                         <span class="sp-intro__icon" aria-hidden="true"><i class="fas fa-calendar-days"></i></span>
                         <strong>{{ $edition->dateLine($locale) }}</strong>
                     </li>
                     <li>
                         <span class="sp-intro__icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
                         <strong>{{ $edition->venueLine($locale) }}</strong>
-                    </li>
+                    </li> -->
                 </ul>
 
                 <div class="sp-intro__actions">
