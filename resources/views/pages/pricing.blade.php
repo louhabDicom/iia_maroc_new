@@ -13,7 +13,7 @@
     $imgPaths   = 'https://images.unsplash.com/photo-1629196914168-3a2652305f9f?auto=format&fit=crop&w=1800&q=60'; // lavender watercolour
 
     $hasReset    = \Illuminate\Support\Facades\Route::has('password.request');
-    $accessIcons = ['fa-calendar-days', 'fa-microphone', 'fa-file-circle-check', 'fa-users'];
+    $accessIcons = ['fa-users', 'fa-microphone', 'fa-file', 'fa-users'];
     $trustIcons  = ['fa-shield-halved', 'fa-file-lines', 'fa-headset'];
     $madPerUsd   = (float) config('brand.mad_per_usd', 10); // 7 500 MAD -> 750 USD, 8 500 MAD -> 850 USD
 @endphp

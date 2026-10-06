@@ -31,8 +31,8 @@
     $reasons = [
         ['icon' => 'fa-users',       'key' => 'reach'],
         ['icon' => 'fa-bullseye',    'key' => 'profiles'],
-        ['icon' => 'fa-share-nodes', 'key' => 'decision'],
-        ['icon' => 'fa-chart-simple','key' => 'visibility'],
+        ['icon' => 'fa-bullseye', 'key' => 'decision'],
+        ['icon' => 'fa-bullseye','key' => 'visibility'],
         ['icon' => 'fa-handshake',   'key' => 'community'],
     ];
 
