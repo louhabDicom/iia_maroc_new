@@ -16,7 +16,7 @@ $reasons = [
     ['icon' => 'fa-user-tie', 'title' => __('sponsoring.why.profiles.title'), 'text' => __('sponsoring.why.profiles.text')],
     ['icon' => 'fa-handshake', 'title' => __('sponsoring.why.decision.title'), 'text' => __('sponsoring.why.decision.text')],
     ['icon' => 'fa-bullhorn', 'title' => __('sponsoring.why.visibility.title'), 'text' => __('sponsoring.why.visibility.text')],
-    ['icon' => 'fa-people-group', 'title' => __('sponsoring.why.community.title'), 'text' => __('sponsoring.why.community.text')],
+    ['icon' => 'fa-bullhorn', 'title' => __('sponsoring.why.community.title'), 'text' => __('sponsoring.why.community.text')],
 ];
 
 // The four sponsorship formulas, drawn from one array so a fifth tier is a
@@ -201,7 +201,7 @@ $allyRows = [array_slice($allies, 0, 4), array_slice($allies, 4)];
             </div>
 
             <div class="sp-bespoke">
-                <span class="sp-bespoke__icon" aria-hidden="true"><i class="fas fa-pen-ruler"></i></span>
+                <span class="sp-bespoke__icon" aria-hidden="true"><i class="fas fa-bullhorn"></i></span>
                 <div class="sp-bespoke__body">
                     <h3 class="sp-bespoke__title">@lang('sponsoring.bespoke.title')</h3>
                     <p class="sp-bespoke__text">@lang('sponsoring.bespoke.text')</p>
@@ -592,6 +592,7 @@ background: url('{{ asset('assets/images/sponsoring/ban1.png') }}') center / cov
     }
 
     .sp-package {
+        height: 105%;
         display: flex;
         flex-direction: column;
         padding: 30px 26px;
@@ -691,33 +692,46 @@ background: url('{{ asset('assets/images/sponsoring/ban1.png') }}') center / cov
         color: var(--sp-ink);
     }
 
-    .sp-package__features li::before {
-        content: "\f00c";
-        position: absolute;
-        inset-inline-start: 0;
-        font-family: "Font Awesome 6 Free";
-        font-weight: 900;
-        font-size: .7rem;
-        color: var(--sp-brand);
-    }
+.sp-package__features li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: .18em;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--sp-tint);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 10px 10px;
+    /* checkmark, stroke colour = #4f3cc9 (--sp-brand) */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f3cc9' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+}
+.sp-package__cta {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-block-start: auto;
+    padding: 14px 52px;          /* side padding leaves room for the arrow */
+    border-radius: 999px;
+    background: var(--sp-deep);
+    font-size: .76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    text-align: center;
+    color: #fff;
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
+}
 
-    .sp-package__cta {
-        display: inline-flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        margin-block-start: auto;
-        padding: 14px 22px;
-        border-radius: 999px;
-        background: var(--sp-deep);
-        font-size: .76rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .02em;
-        color: #fff;
-        text-decoration: none;
-        transition: transform .2s, box-shadow .2s;
-    }
+.sp-package__cta i {
+    position: absolute;
+    inset-inline-end: 22px;      /* arrow stays at the end (flips automatically in RTL) */
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+}
 
     .sp-package__cta:hover,
     .sp-package__cta:focus-visible {
@@ -762,7 +776,7 @@ background: url('{{ asset('assets/images/sponsoring/ban1.png') }}') center / cov
     .sp-packages__foot {
         display: flex;
         justify-content: center;
-        margin-block-start: 40px;
+        margin-block-start: 70px;
     }
 
     .sp-btn-outline {
@@ -931,7 +945,15 @@ background: url('{{ asset('assets/images/sponsoring/ban1.png') }}') center / cov
     [dir="rtl"] .sp-cta-panel::after {
         transform: scaleX(-1);
     }
+/* Keep the layout identical in every language */
+[dir="rtl"] .sp-intro__grid {
+    direction: ltr;
+}
 
+/* ...but keep the Arabic text itself right-to-left */
+[dir="rtl"] .sp-intro__body {
+    direction: rtl;
+}
     .sp-cta-panel__inner {
         position: relative;
         z-index: 1;

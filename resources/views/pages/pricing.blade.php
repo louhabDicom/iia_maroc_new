@@ -22,7 +22,7 @@
     {{-- What a place buys, stated once in three lines before the tariffs. The
          individual inclusions live on each card; this is the summary above the
          fold so the visitor knows the deal before comparing figures. --}}
-    <section class="section-padding-04 pt-0" aria-labelledby="pricing-what-title">
+    <section class="section-padding-04" aria-labelledby="pricing-what-title">
         <div class="container">
             <div class="pricing-includes ux-reveal">
                 <x-design.section-head id="pricing-what-title" :title="__('pricing.what.title')" />

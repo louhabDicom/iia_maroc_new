@@ -34,13 +34,13 @@ return [
         'steps' => [
             [
                 'key' => 'understand',
-                'icon' => 'fa-magnifying-glass',
+                'icon' => 'fa-chart-line',
                 'title' => 'Understand',
                 'text' => 'Make sense of regulatory change, emerging risks and stakeholder expectations.',
             ],
             [
                 'key' => 'act',
-                'icon' => 'fa-gears',
+                'icon' => 'fa-chart-line',
                 'title' => 'Act',
                 'text' => 'Share methods, tools and lessons learned to transform internal audit.',
             ],

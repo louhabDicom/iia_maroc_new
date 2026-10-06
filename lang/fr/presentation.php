@@ -39,13 +39,13 @@ return [
         'steps' => [
             [
                 'key' => 'understand',
-                'icon' => 'fa-magnifying-glass',
+                'icon' => 'fa-chart-line',
                 'title' => 'Comprendre',
                 'text' => 'Décrypter les évolutions réglementaires, les nouveaux risques et les attentes des parties prenantes.',
             ],
             [
                 'key' => 'act',
-                'icon' => 'fa-gears',
+                'icon' => 'fa-chart-line',
                 'title' => 'Agir',
                 'text' => 'Partager des méthodes, des outils et des retours d’expérience pour transformer l’audit interne.',
             ],

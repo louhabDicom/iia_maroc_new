@@ -34,13 +34,13 @@ return [
         'steps' => [
             [
                 'key' => 'understand',
-                'icon' => 'fa-magnifying-glass',
+                'icon' => 'fa-chart-line',
                 'title' => 'الفهم',
                 'text' => 'تحليل التطورات التنظيمية والمخاطر الناشئة وتوقعات الأطراف المعنية.',
             ],
             [
                 'key' => 'act',
-                'icon' => 'fa-gears',
+                'icon' => 'fa-chart-line',
                 'title' => 'العمل',
                 'text' => 'تقاسم الأساليب والأدوات والتجارب لتحويل التدقيق الداخلي.',
             ],
