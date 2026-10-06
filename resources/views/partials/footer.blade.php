@@ -59,11 +59,9 @@
                     @foreach ([
                         ['home', __('nav.home')],
                         ['programme', __('nav.programme')],
-                        ['speakers', __('nav.speakers')],
                         ['pricing', __('nav.pricing')],
-                        ['venue', __('nav.venue')],
                         ['sponsors', __('nav.sponsors')],
-                        ['archive', __('nav.archive')],
+
                     ] as [$route, $label])
                         @continue(! Route::has($route))
                         <li><a href="{{ route($route) }}">{{ $label }}</a></li>

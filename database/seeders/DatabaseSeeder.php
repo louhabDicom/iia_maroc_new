@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             SpeakersSeeder::class,
             ProgrammeSeeder::class,
             DemoUserSeeder::class,
+            LegacyUsersSeeder::class,
         ]);
     }
 }
