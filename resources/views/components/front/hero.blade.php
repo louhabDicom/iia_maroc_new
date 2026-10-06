@@ -99,9 +99,9 @@
                 <p class="h-hero__kicker">{{ $eyebrow }}</p>
             @endif
 
-            @if ($lede)
+            <!-- @if ($lede)
                 <p class="h-hero__theme">{{ $lede }}</p>
-            @endif
+            @endif -->
 
             {{-- Breadcrumbs, below the copy rather than above the title. A
                  breadcrumb above an `h1` is read before the reader knows what

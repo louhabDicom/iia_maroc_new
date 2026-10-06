@@ -42,10 +42,15 @@
 
     <x-home.about :edition="$edition" />
 
-    <x-home.pricing
-        :ticket-types="$ticketTypes"
-        :edition="$edition"
-        :is-member="$isMember" />
+
+<x-home.pricing
+    :ticket-types="$ticketTypes"
+    :edition="$edition"
+    :is-member="$isMember"
+    :registration-open="$registrationOpen"
+    :can-order="$canOrder"
+/>
+
 
     <x-home.programme
         :days="$days"
@@ -55,7 +60,7 @@
         :programme-document="$programmeDocument"
         route-name="home" />
 
-    <x-home.speakers :speakers="$speakers" />
+    <!-- <x-home.speakers :speakers="$speakers" /> -->
 
     <x-home.partners :sponsors="$sponsors" />
 

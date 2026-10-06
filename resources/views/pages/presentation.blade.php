@@ -41,34 +41,27 @@
         ['src' => 'assets/images/presentation/logo-iia-maroc.png', 'width' => 628, 'height' => 206],
     ];
     $orgTones = ['ARABCIA' => 'gold', 'IIA_MAROC' => 'navy'];
-
-    $orgCards = collect($organisations ?? [])->map(static fn ($o): array => [
-        'code' => $o->code, 'name' => $o->name, 'text' => $o->description,
-        'logo' => $o->logo_path, 'url' => $o->website_url,
-    ]);
-    if ($orgCards->isEmpty()) {
-        $orgCards = collect([
-            ['code' => 'ARABCIA',   'name' => 'ARABCIA',   'text' => __('presentation.organisations.organiser_desc'), 'logo' => null, 'url' => null],
-            ['code' => 'IIA_MAROC', 'name' => 'IIA Maroc', 'text' => __('presentation.organisations.host_desc'),      'logo' => null, 'url' => null],
-        ]);
-    }
+$orgWebsites = [ 'ARABCIA' => 'https://arabciia.org/ar/', 'IIA_MAROC' => 'https://www.iiamaroc.org/', ];
+   $orgCards = collect($organisations ?? [])->map(static function ($o) use ($orgWebsites): array { return [ 'code' => $o->code, 'name' => $o->name, 'text' => $o->description, 'logo' => $o->logo_path, 'url' => $orgWebsites[$o->code] ?? $o->website_url, ]; }); if ($orgCards->isEmpty()) { $orgCards = collect([ [ 'code' => 'ARABCIA', 'name' => 'ARABCIA', 'text' => __('presentation.organisations.organiser_desc'), 'logo' => null, 'url' => $orgWebsites['ARABCIA'], ], [ 'code' => 'IIA_MAROC', 'name' => 'IIA Maroc', 'text' => __('presentation.organisations.host_desc'), 'logo' => null, 'url' => $orgWebsites['IIA_MAROC'], ], ]); } @endphp
 @endphp
 
 {{-- Shared front-office hero (unchanged). --}}
-<x-front.hero
-    :title="__('presentation.title')"
-    :eyebrow="$edition->identityLabel()"
-    :lede="__('presentation.intro.lede')"
-    :crumbs="[__('nav.presentation') => null]"
-    :facts="[
-        ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
-        ['icon' => 'fa-map-marker-alt', 'label' => $edition->venueLine($locale)],
-    ]"
-    :cta-label="$edition->registration_open ? __('nav.registration') : null"
-    :cta-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
-    :secondary-label="__('nav.programme')"
-    :secondary-url="route('programme')"
-    image="assets/images/bg/about_page_bg.jpg" />
+<div class="presentation-hero" style="transform: translateY(-4.5%);">
+    <x-front.hero
+        :title="__('presentation.title')"
+        :eyebrow="$edition->identityLabel()"
+        :lede="__('presentation.intro.lede')"
+        :crumbs="[__('nav.presentation') => null]"
+        :facts="[
+            ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
+            ['icon' => 'fa-map-marker-alt', 'label' => $edition->venueLine($locale)],
+        ]"
+        :cta-label="$edition->registration_open ? __('nav.registration') : null"
+        :cta-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
+        :secondary-label="__('nav.programme')"
+        :secondary-url="route('programme')"
+    />
+</div>
 
 <div class="pr-page">
 
@@ -154,13 +147,7 @@
 
             <ul class="pr-org-grid" data-ux-stagger="90">
                 @foreach ($orgCards as $org)
-                    @php
-                        $logo    = $orgLogos[$loop->index] ?? $orgLogos[0];
-                        $profile = __('presentation.organisations.profiles.' . $org['code']);
-                        $profile = is_array($profile) ? $profile : null;
-                        $tone    = $orgTones[$org['code']] ?? 'navy';
-                        $href    = $org['url'] ?: route('contact');
-                    @endphp
+                  @php $logo = $orgLogos[$loop->index] ?? $orgLogos[0]; $profile = __('presentation.organisations.profiles.' . $org['code']); $profile = is_array($profile) ? $profile : null; $tone = $orgTones[$org['code']] ?? 'navy'; $href = $org['url'] ?: route('contact'); $isExternal = !empty($org['url']); @endphp
 
                     <li class="pr-org ux-reveal">
                         <span class="pr-org__mark">
@@ -193,11 +180,7 @@
                             </dl>
                         @endif
 
-                        <a href="{{ $href }}" class="pr-org__cta pr-org__cta--{{ $tone }}"
-                           @if ($org['url']) rel="noopener noreferrer" target="_blank" @endif>
-                            <span>{{ $profile['cta'] ?? $org['name'] }}</span>
-                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
-                        </a>
+                        <a href="{{ $href }}" class="pr-org__cta pr-org__cta--{{ $tone }}" @if ($isExternal) target="_blank" rel="noopener noreferrer" @endif> <span>{{ $profile['cta'] ?? $org['name'] }}</span> <i class="fas fa-chevron-right" aria-hidden="true"></i> </a>
                     </li>
                 @endforeach
             </ul>
