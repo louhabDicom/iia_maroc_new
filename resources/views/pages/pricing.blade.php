@@ -9,15 +9,32 @@
          under the cards. A tariff the visitor cannot interpret is a tariff they
          will not act on, and the note is short enough to belong in the lede. --}}
     <x-front.hero
-        :title="__('pricing.title')"
+        :title="__('pricing.hero.title', ['year' => $edition->year])"
         :eyebrow="$edition->identityLabel()"
-        :lede="__('pricing.currency_note')"
+        :lede="__('pricing.hero.lede')"
         :crumbs="[__('nav.pricing') => null]"
         :facts="[
             ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
             ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
         ]"
         image="assets/images/bg/price_bg.jpg" />
+
+    {{-- What a place buys, stated once in three lines before the tariffs. The
+         individual inclusions live on each card; this is the summary above the
+         fold so the visitor knows the deal before comparing figures. --}}
+    <section class="section-padding-04 pt-0" aria-labelledby="pricing-what-title">
+        <div class="container">
+            <div class="pricing-includes ux-reveal">
+                <h2 id="pricing-what-title" class="ux-section-title">@lang('pricing.what.title')</h2>
+
+                <ul class="ux-checks ux-checks--row text-start">
+                    @foreach (__('pricing.what.items') as $item)
+                        <li class="ux-checks__item">{{ $item }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </section>
 
     <section class="ux-section section-padding-03 ux-section--defer"
              aria-labelledby="pricing-heading">
