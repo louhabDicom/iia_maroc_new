@@ -74,7 +74,7 @@
 
     {{-- ================= 1. BANNER ================= --}}
     <section class="pr-intro" aria-labelledby="presentation-banner-title">
-        <div class="pr-intro__photo" style="background-image: url('/assets/images/ban_presentation.webp'); background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
+        <div class="pr-intro__photo" style="background-image: url('{{ asset('assets/images/ban_presentation.webp') }}'); background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
 
         <div class="container">
             <div class="pr-intro__body">

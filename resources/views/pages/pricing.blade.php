@@ -35,7 +35,7 @@
     {{-- ================= 0. BANNER ================= --}}
     <section class="reg-banner" aria-labelledby="reg-banner-title">
 
-        <div class="reg-banner__photo" style="background-image: url('/assets/images/sponsors_ban.png'); background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
+        <div class="reg-banner__photo" style="background-image: url('{{ asset('assets/images/sponsors_ban.png') }}'); background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
 
         <div class="container reg-banner__inner">
             <p class="reg-banner__eyebrow">{{ __('pricing.banner.eyebrow') }}</p>
