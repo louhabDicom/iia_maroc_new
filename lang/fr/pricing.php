@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 return [
     'early_bird' => 'Le tarif early bird se termine le 30 novembre 2026.',
-
     'closed' => 'Les inscriptions sont fermées.',
     'currency_note' => 'Les tarifs sont exprimés en dirhams marocains (MAD) et en dollars américains (USD).',
     'includes' => 'Comprend',
@@ -15,44 +14,74 @@ return [
     'sold_out' => 'Complet',
     'standard' => 'Non-adhérent',
     'title' => 'Tarifs d\'inscription',
+    'note' => 'Votre place est confirmée après paiement. Vous recevrez un e-mail de confirmation.',
 
-    // The hero of the registration page. The pitch, then the two dates and
-    // the city, which are the only facts a delegate checks before the price.
     'hero' => [
         'title' => 'Participez à la Conférence annuelle ARABCIA :year',
         'lede' => 'Deux journées pour comprendre, agir et démontrer la valeur de l’audit interne — 16 et 17 décembre 2026, Rabat.',
     ],
 
-    'note' => 'Votre place est confirmée après paiement. Vous recevrez un e-mail de confirmation.',
+    'banner' => [
+        'eyebrow' => 'Conférence annuelle ARABCIA 2026',
+        'title_a' => 'Inscription à la Conférence annuelle',
+        'title_b' => 'ARABCIA 2026',
+        'lede' => 'Deux jours d’échanges, d’expertise et de rencontres autour de l’avenir de l’Audit Interne.',
+    ],
 
-    // What a place buys, in three lines, before the tariffs themselves.
-    'what' => [
-        'title' => 'Votre inscription comprend',
+    'access' => [
+        'eyebrow' => 'Votre inscription vous donne accès à',
+        'title_a' => 'Une expérience complète',
+        'title_b' => 'sur deux jours',
         'items' => [
-            '2 jours de conférence',
-            'Conférences & interventions',
-            'Certificat de participation',
+            ['title' => '2 jours de conférence', 'text' => 'Accès à l’ensemble des deux journées de la conférence.'],
+            ['title' => 'Conférences & interventions', 'text' => 'Accès aux différentes interventions prévues au programme.'],
+            ['title' => 'Certificat de participation', 'text' => 'Un certificat de participation vous sera délivré à l’issue de la conférence.'],
+            ['title' => 'Networking', 'text' => 'Des opportunités d’échanges et de rencontres avec des professionnels du Maroc, du monde arabe, d’Afrique et d’autres régions.'],
         ],
     ],
 
-    // Recruitment band between the tariffs and the two account paths.
+    'tariffs' => [
+        'eyebrow' => 'Tarifs d’inscription',
+        'title_a' => 'Choisissez',
+        'title_b' => 'votre tarif',
+        'member' => 'Adhérents IIA Maroc',
+        'member_badge' => 'Tarif préférentiel réservé aux membres',
+        'standard' => 'Non-adhérents',
+        'or' => 'ou',
+        'cta' => 'Je m’inscris',
+        'note' => 'Les tarifs donnent accès aux deux journées de la conférence, aux interventions et au certificat de participation.',
+    ],
+
     'membership' => [
-        'title' => 'Vous n’êtes pas encore adhérent à l’IIA Maroc ?',
-        'text' => 'Devenez membre pour bénéficier du tarif adhérent et rejoindre la communauté des professionnels de l’audit interne au Maroc.',
+        'title' => 'Vous n’êtes pas encore adhérent à IIA Maroc ?',
+        'text' => 'Profitez de votre participation à la Conférence annuelle ARABCIA 2026 pour rejoindre IIA Maroc et sa communauté de professionnels de l’Audit Interne.',
+        'text_2' => 'En devenant adhérent, vous bénéficiez du tarif préférentiel réservé aux membres, ainsi que des avantages liés à votre adhésion à IIA Maroc.',
         'cta' => 'Découvrir l’adhésion à IIA Maroc',
     ],
 
-    // The fork: sign in, or create an account. Neither is the "right" one —
-    // an existing member arrives already a member, a new delegate does not.
     'paths' => [
-        'title' => 'Comment souhaitez-vous vous inscrire ?',
-        'lede' => 'Connectez-vous à votre compte existant ou créez-en un nouveau en quelques instants.',
-        'existing_title' => 'J’ai déjà un compte',
-        'existing_text' => 'Identifiez-vous pour que votre statut d’adhérent soit reconnu automatiquement et votre tarif appliqué.',
-        'existing_submit' => 'Se connecter et s’inscrire',
+        'eyebrow' => 'Comment souhaitez-vous vous inscrire ?',
+        'title' => 'Deux possibilités pour accéder à votre inscription',
+        'existing_title' => 'Vous avez déjà un compte IIA Maroc ?',
+        'existing_text' => 'Connectez-vous avec vos identifiants habituels pour poursuivre votre inscription à la Conférence annuelle ARABCIA 2026.',
+        'identifier_ph' => 'Votre e-mail ou identifiant',
+        'password_ph' => 'Votre mot de passe',
+        'show_password' => 'Afficher le mot de passe',
         'forgot' => 'Mot de passe oublié ?',
-        'create_title' => 'Je crée mon compte',
-        'create_text' => 'Nouveau participant ? Créez votre compte pour finaliser votre inscription.',
+        'existing_submit' => 'Se connecter et poursuivre mon inscription',
+        'or' => 'OU',
+        'create_title' => 'Vous n’avez pas encore de compte ?',
+        'create_text' => 'Créez votre compte pour vous inscrire à la Conférence annuelle ARABCIA 2026.',
+        'create_text_2' => 'La création de votre compte vous permettra de renseigner vos informations et de poursuivre votre inscription.',
         'create_cta' => 'Créer mon compte',
+    ],
+
+    'trust' => [
+        'label' => 'Garanties',
+        'items' => [
+            ['title' => 'Paiement sécurisé', 'text' => 'Vos transactions sont sécurisées et protégées.'],
+            ['title' => 'Confirmation par e-mail', 'text' => 'Vous recevrez une confirmation de votre inscription ainsi que toutes les informations pratiques.'],
+            ['title' => 'Une question ?', 'text' => 'Notre équipe est à votre disposition. Contactez-nous via la page Contact du site.'],
+        ],
     ],
 ];
