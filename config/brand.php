@@ -149,11 +149,15 @@ return [
         // Shown in the partners band when no sponsor row carries a logo yet.
         // One designed mark reads as a wall of one; an empty dark block reads
         // as a page that failed to load.
-        'partners_fallback' => [
-            'src' => 'assets/images/logo/cih-logo.png',
-            'width' => 349,
-            'height' => 800,
-        ],
+    'partners_fallback' => [
+    ['name' => 'CIH Bank',       'src' => 'assets/images/logo/cih-logo.png'],
+    ['name' => 'Al Omrane',      'src' => 'assets/parteners/alomrane-logo.jpg'],
+    ['name' => 'Banque Populaire','src' => 'assets/parteners/banque-populaire-logo.png'],
+    ['name' => 'CaseWare',       'src' => 'assets/parteners/CaseWare-logo.jpg'],
+    ['name' => 'Marsa Maroc',    'src' => 'assets/parteners/Marsa-Maroc-logo.png'],
+    ['name' => 'Mazars',         'src' => 'assets/parteners/mazars-logo.png'],
+    ['name' => 'Wolters Kluwer', 'src' => 'assets/parteners/Wolters_Kluwer_Logo.png'],
+],
     ],
 
 ];

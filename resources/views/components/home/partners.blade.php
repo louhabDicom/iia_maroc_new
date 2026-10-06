@@ -35,16 +35,48 @@
                     @lang('sponsoring.become_partner')
                 </a>
             </p>
-        @else
-            <div class="h-sponsors__wall h-sponsors__wall--single">
-                <img src="{{ asset((string) ($fallback['src'] ?? '')) }}"
-                     width="{{ $fallback['width'] ?? 349 }}"
-                     height="{{ $fallback['height'] ?? 800 }}"
-                     alt="{{ __('site.organiser') }}"
+@else
+    <ul class="h-sponsors__wall h-sponsors__wall--static">
+        @foreach ($fallback as $partner)
+            <li class="h-sponsors__item">
+                <img src="{{ asset($partner['src']) }}"
+                     alt="{{ $partner['name'] }}"
                      loading="lazy"
                      decoding="async">
-            </div>
-        @endif
+            </li>
+        @endforeach
+    </ul>
+@endif
 
     </div>
 </section>
+<style>
+    .h-sponsors__wall--static {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.h-sponsors__wall--static .h-sponsors__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 180px;
+    height: 100px;
+    padding: 12px 16px;
+    background: #fff;          /* white plate so dark logos stay visible */
+    border-radius: 8px;
+}
+
+.h-sponsors__wall--static img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+</style>

@@ -54,17 +54,16 @@
     // Previous partners — ONLINE logos. 'logo' (your own file/URL) wins, then the Simple Icons CDN
     // ('slug' + 'color'), then Google's favicon service as a last resort (also used if a logo fails to load).
     $favicon = fn (string $domain): string => 'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=https://' . $domain;
-    $allies = [
-        ['name' => 'BDO',       'domain' => 'bdo.com'],
-        ['name' => 'Deloitte',  'domain' => 'deloitte.com',  'slug' => 'deloitte', 'color' => '000000'],
-        ['name' => 'KPMG',      'domain' => 'kpmg.com',      'slug' => 'kpmg',     'color' => '00338D'],
-        ['name' => 'PwC',       'domain' => 'pwc.com',       'slug' => 'pwc',      'color' => 'D04A02'],
-        ['name' => 'EY',        'domain' => 'ey.com',        'slug' => 'ey',       'color' => '2E2E38'],
-        ['name' => 'Mazars',    'domain' => 'mazars.com'],
-        ['name' => 'Microsoft', 'domain' => 'microsoft.com', 'slug' => 'microsoft','color' => '5E5E5E'],
-        ['name' => 'SAS',       'domain' => 'sas.com',       'slug' => 'sas',      'color' => '0766D1'],
-        ['name' => 'Oracle',    'domain' => 'oracle.com',    'slug' => 'oracle',   'color' => 'F80000'],
-    ];
+// Previous partners: local files in public/assets/parteners/.
+// 'url' is optional; without it the logo is shown but not linked.
+$allies = [
+    ['name' => 'Al Omrane',         'logo' => 'assets/parteners/alomrane-logo.jpg',         'url' => 'https://www.alomrane.gov.ma'],
+    ['name' => 'Banque Populaire',  'logo' => 'assets/parteners/banque-populaire-logo.png', 'url' => 'https://www.groupebcp.com'],
+    ['name' => 'CaseWare',          'logo' => 'assets/parteners/CaseWare-logo.jpg',         'url' => 'https://www.caseware.com'],
+    ['name' => 'Marsa Maroc',       'logo' => 'assets/parteners/Marsa-Maroc-logo.png',      'url' => 'https://www.marsamaroc.co.ma'],
+    ['name' => 'Mazars',            'logo' => 'assets/parteners/mazars-logo.png',           'url' => 'https://www.mazars.ma'],
+    ['name' => 'Wolters Kluwer',    'logo' => 'assets/parteners/Wolters_Kluwer_Logo.png',   'url' => 'https://www.wolterskluwer.com'],
+];
     $allyLogo = static fn (array $a, callable $fav): string => $a['logo']
         ?? (isset($a['slug']) ? 'https://cdn.simpleicons.org/' . $a['slug'] . '/' . ($a['color'] ?? '000000') : $fav($a['domain']));
 
@@ -280,18 +279,24 @@
                 <h2 id="sponsoring-allies-title" class="sp-title">@lang('sponsoring.allies.title')</h2>
             </header>
 
-            <ul class="sp-allies__row">
-                @foreach ($allies as $ally)
-                    <li class="sp-ally">
-                        <a href="https://{{ $ally['domain'] }}" rel="noopener noreferrer sponsored" target="_blank" title="{{ $ally['name'] }}">
-                            <img src="{{ $allyLogo($ally, $favicon) }}"
-                                 onerror="this.onerror=null;this.src='{{ $favicon($ally['domain']) }}'"
-                                 alt="{{ $ally['name'] }}" height="44"
-                                 loading="lazy" decoding="async" referrerpolicy="no-referrer">
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
+           <ul class="sp-allies__row">
+    @foreach ($allies as $ally)
+        <li class="sp-ally">
+            @if (! empty($ally['url']))
+                <a href="{{ $ally['url'] }}" rel="noopener noreferrer sponsored" target="_blank" title="{{ $ally['name'] }}">
+                    <img src="{{ asset($ally['logo']) }}" alt="{{ $ally['name'] }}"
+                    height="100"
+                         loading="lazy" decoding="async">
+                </a>
+            @else
+                <img src="{{ asset($ally['logo']) }}" alt="{{ $ally['name'] }}"
+                     loading="lazy" decoding="async"
+                       height="100"
+                     >
+            @endif
+        </li>
+    @endforeach
+</ul>
         </div>
     </section>
 
@@ -722,7 +727,7 @@
     .sp-allies__row { align-items: center; display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: space-between; }
     .sp-ally { align-items: center; display: flex; flex: 1 1 5.5rem; height: 3.2rem; justify-content: center; }
     .sp-ally a { align-items: center; display: flex; height: 100%; justify-content: center; width: 100%; }
-    .sp-ally img { height: auto; max-height: 2.4rem; max-width: 6.5rem; object-fit: contain; transition: transform .2s; width: auto; }
+    .sp-ally img { height: auto; max-height: 6.4rem; max-width: 6.5rem; object-fit: contain; transition: transform .2s; width: auto; }
     .sp-ally a:hover img { transform: scale(1.06); }
 
     /* ---------- 6. Closing band ---------- */
