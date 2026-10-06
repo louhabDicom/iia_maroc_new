@@ -315,12 +315,138 @@
         </div>
     </section>
 
-    <x-cta-band
-        :title="__('pricing.register')"
-        :text="__('login.member_notice')"
-        :primary-label="__('pricing.register')"
-        :primary-url="auth()->check() ? route('checkout') : route('register')"
-        :secondary-label="__('nav.contact')"
-        :secondary-url="route('contact')" />
-
 @endsection
+
+<style>
+    /* ---------------------------------------------------------------------
+       Registration page — the "what's included" strip, the recruitment band
+       and the two account paths. Classes prefixed `pricing-` so nothing here
+       can reach another page.
+       --------------------------------------------------------------------- */
+    .pricing-includes {
+        padding: 34px clamp(20px, 4vw, 44px);
+        border-radius: 20px;
+        background: #f6f4ff;
+        border: 1px solid #e4dffb;
+        text-align: center;
+    }
+
+    .pricing-includes .d-head { align-items: center; }
+    .pricing-includes .d-head__lede { margin-inline: auto; }
+
+    .ux-checks--row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px 40px;
+        margin-block-start: 18px;
+        text-align: start;
+    }
+
+    .pricing-note {
+        max-width: 60ch;
+        margin-inline: auto;
+        text-align: center;
+        font-size: .85rem;
+        line-height: 1.6;
+        color: var(--ux-ink-soft, #5f6384);
+    }
+
+    /* ---------- Membership recruitment band ---------- */
+    .pricing-member-band {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-block-start: 44px;
+        padding: 28px 34px;
+        border-radius: 20px;
+        background: linear-gradient(120deg, #eaf2ff 0%, #e3ecff 100%);
+        border: 1px solid #cddcff;
+    }
+
+    .pricing-member-band__icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: #fff;
+        color: #2b1d9a;
+        font-size: 1.4rem;
+    }
+
+    .pricing-member-band__body { flex: 1 1 auto; }
+
+    .pricing-member-band__title {
+        margin: 0 0 6px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1b1464;
+    }
+
+    .pricing-member-band__text {
+        margin: 0;
+        max-width: 62ch;
+        font-size: .9rem;
+        line-height: 1.6;
+        color: #4a4d6b;
+    }
+
+    .pricing-member-band__cta {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    [dir="rtl"] .pricing-member-band__cta .fa-arrow-right { transform: scaleX(-1); }
+
+    /* ---------- The two account paths ---------- */
+    .pricing-paths {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+        margin-block-start: 40px;
+    }
+
+    .pricing-path {
+        display: flex;
+        flex-direction: column;
+        padding: 34px 32px;
+        border-radius: 20px;
+        background: #fff;
+        border: 1px solid #e4dffb;
+        box-shadow: 0 20px 44px -30px rgba(60, 40, 160, .4);
+    }
+
+    .pricing-path--create {
+        background: #f6f4ff;
+        justify-content: center;
+    }
+
+    .pricing-path__title {
+        margin: 0 0 10px;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1b1464;
+    }
+
+    .pricing-path__text {
+        margin: 0 0 22px;
+        font-size: .88rem;
+        line-height: 1.65;
+        color: #4a4d6b;
+    }
+
+    .pricing-path__form { margin: 0; }
+    .pricing-path__cta { margin-block-start: auto; }
+
+    @media (max-width: 991.98px) {
+        .pricing-paths { grid-template-columns: minmax(0, 1fr); }
+        .pricing-member-band {
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: start;
+        }
+        .pricing-member-band__cta { width: 100%; justify-content: center; }
+    }
+</style>
