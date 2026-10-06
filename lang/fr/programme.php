@@ -3,73 +3,80 @@
 declare(strict_types=1);
 
 return [
-    'view_full' => 'Voir le programme complet',
+    'page' => [
+        'intro_title' => 'Programme',
+        'intro_heading' => 'Deux journées au cœur des enjeux de l\'Audit Interne',
+        'intro_p1' => 'La Conférence annuelle ARABCIA :year propose deux journées de réflexion, d\'échanges et de partage d\'expériences autour du rôle de l\'Audit Interne face aux transformations et aux nouveaux risques auxquels les organisations sont confrontées.',
+        'intro_p2' => 'Le programme associe plénières, panels, ateliers pratiques et Innovation Labs, avec des interventions consacrées notamment à l\'intelligence artificielle, à la résilience, à la gouvernance, aux risques et à l\'évolution du métier d\'auditeur interne.',
 
-    'all_days' => 'Tous les jours',
-    'day' => 'Jour :day',
-    'format' => 'Format',
-    'hero_lede' => 'Deux jours de conférences, d\'ateliers et de sessions parallèles. Parcourez le programme jour par jour, et choisissez les sessions où vous voulez être.',
-    'no_sessions' => 'Le programme scientifique est en cours d\'élaboration.',
-    'notice' => 'Le programme est provisoire : les horaires, les salles et les intervenants peuvent encore changer. Considérez cette page comme un guide, pas comme un horaire définitif.',
-    'provisional_notice' => 'Le programme est provisoire et peut être modifié.',
-    'room' => 'Salle',
-    'schedule_lede' => 'Les sessions se déroulent en parallèle dans les salles de la conférence. Choisissez un jour, puis un horaire : chaque session indique sa salle et ses intervenants.',
-    'schedule_title' => 'Le programme des sessions',
-    'sheets_alt' => 'Programme publié, jour :day',
-    'sheets_lede' => 'Le programme tel que publié par les organisateurs. Ouvrez l\'une des deux feuilles en plein format pour la lire correctement.',
-    'sheets_open' => 'Appuyez pour ouvrir en pleine taille',
-    'sheets_title' => 'Le programme publié',
-    'speakers_of' => 'Intervenants',
-    'time' => 'Horaire',
-    'title' => 'Programme scientifique',
-    'track' => 'Axe',
+        'tracks_lede' => 'Les ateliers sont organisés autour de trois axes complémentaires :',
+        'track_ai' => 'Explorer l\'impact de l\'intelligence artificielle et des nouvelles technologies sur les organisations, la gouvernance et les pratiques d\'Audit Interne.',
+        'track_res' => 'Aborder les enjeux liés aux risques, à l\'incertitude et à la capacité des organisations à anticiper, s\'adapter et maintenir leur performance.',
+        'track_aud' => 'Réfléchir à l\'évolution du métier, aux nouvelles compétences et à la place de l\'auditeur interne dans un environnement en transformation.',
+        'lab_text' => 'Espace dédié à l\'exploration des nouvelles approches, technologies et pratiques qui transforment l\'audit interne. Une expérience interactive pour stimuler l\'innovation et ouvrir de nouvelles perspectives.',
 
-    'cta_title' => 'Soyez dans la salle',
-    'cta_text' => 'Les inscriptions sont ouvertes. Un billet couvre les deux jours et l\'ensemble des sessions.',
+        'day1_date' => 'Mercredi 16 décembre 2026',
+        'day2_date' => 'Jeudi 17 décembre 2026',
 
-    // --- Le thème de l'édition ------------------------------------------------
-    // Repris du document de présentation de l'édition : le thème est la phrase que
-    // l'organisateur a validée, elle est donc citée telle quelle plutôt que
-    // reformulée, pour que la page, le programme publié et le support imprimé
-    // portent le même titre.
+        'cta_title' => 'Rejoignez-nous pour deux jours d\'échanges, d\'inspiration et de collaboration.',
 
-    'theme_label' => 'Thème de l\'édition',
-    'theme' => 'L\'Audit Interne : partenaire de confiance dans la transformation et la résilience des organisations',
+        'title' => 'Programme scientifique',
+        'hero_lede' => 'Deux jours de conférences, d\'ateliers et de sessions parallèles. Parcourez le programme jour par jour et choisissez les sessions où vous voulez être.',
+        'provisional_notice' => 'Le programme est provisoire et peut être modifié.',
+        'tracks_title' => 'Trois axes d\'ateliers',
+        'track_ai_title' => 'IA et transformation',
+        'track_resilience_title' => 'Résilience',
+        'track_auditor_title' => 'L\'auditeur de demain',
+        'lab_title' => 'L\'Innovation Lab',
+        'day' => 'Jour :day',
+        'notice' => 'Le programme est provisoire : les horaires, les salles et les intervenants peuvent encore changer. Considérez cette page comme un guide, pas comme un horaire définitif.',
 
-    'why_title' => 'Pourquoi ce rendez-vous',
-    'why_lede' => 'L\'Audit Interne se transforme au rythme des organisations qu\'il accompagne. Deux jours de réflexion, d\'échange et de partage sont proposés autour de cette question.',
-    'why_body_1' => 'Les organisations traversent aujourd\'hui des mutations profondes : accélération de l\'intelligence artificielle, technologies émergentes, exigences de gouvernance renforcées et risques d\'un type nouveau. Le cadre de l\'audit interne doit suivre.',
-    'why_body_2' => 'Plénières, tables rondes, ateliers pratiques et Innovation Labs : un programme conçu pour croiser la réflexion de fond et les retours d\'expérience du terrain, et pour laisser à chacun des leviers applicables dès le lendemain.',
-
-    // --- Le format ------------------------------------------------------------
-
-    'format_title' => 'Le format',
-    'format_lede' => 'Quatre temps se relayent sur les deux jours.',
-    'format_plenaries' => 'Plénières',
-    'format_plenaries_text' => 'Des sessions en amphi pour cadrer les grands enjeux de la fonction et les nouveaux paysages de risque.',
-    'format_panels' => 'Tables rondes',
-    'format_panels_text' => 'Des échanges entre dirigeants et praticiens sur ce que le conseil attend réellement de l\'audit interne.',
-    'format_workshops' => 'Ateliers',
-    'format_workshops_text' => 'Trois axes de travail en parallèle, en petits groupes, sur des sujets opérationnels.',
-    'format_lab' => 'Innovation Labs',
-    'format_lab_text' => 'Une exploration interactive des approches et des technologies qui transforment le métier.',
-
-    // --- Les trois axes d'ateliers -------------------------------------------
-
-    'tracks_title' => 'Trois axes d\'ateliers',
-    'tracks_lede' => 'Les ateliers se déroulent en parallèle sur trois axes complémentaires. Choisissez celui qui correspond à votre priorité.',
-    'track_ai_title' => 'IA et transformation',
-    'track_ai_text' => 'L\'impact réel de l\'intelligence artificielle et des nouvelles technologies sur l\'organisation, sa gouvernance et son audit interne.',
-    'track_resilience_title' => 'Résilience',
-    'track_resilience_text' => 'Face à l\'incertitude : anticiper les risques, adapter la posture de l\'organisation et préserver la performance.',
-    'track_auditor_title' => 'L\'auditeur de demain',
-    'track_auditor_text' => 'L\'évolution du métier de l\'auditeur interne, ses compétences et sa place dans la transformation.',
-
-    // --- L'Innovation Lab -----------------------------------------------------
-
-    'lab_title' => 'L\'Innovation Lab',
-    'lab_lede' => 'Un laboratoire interactif pour explorer, de façon concrète, les nouvelles approches, technologies et pratiques qui transforment l\'audit interne. Une démonstration en petit groupe, suivie d\'un temps de discussion.',
-    'lab_day1' => 'Jour 1 — Monitoring continu, copilotes IA pour l\'audit interne, plateformes GRC.',
-    'lab_day2' => 'Jour 2 — Monitoring et SAP, process mining, détection de la fraude et analyse prédictive.',
-    'lab_note' => 'Ateliers et Innovation Labs sur inscription, places limitées.',
+        's' => [
+            'welcome1' => ['title' => 'Accueil, inscription et networking'],
+            'welcome2' => ['title' => 'Accueil et networking'],
+            'ceremony' => ['title' => 'Cérémonie', 'desc' => 'Ouverture officielle par l\'IIA Maroc, l\'ARABCIA et The IIA'],
+            'trophies' => ['title' => 'Remise des trophées de certification'],
+            'break' => ['title' => 'Pause café'],
+            'lunch' => ['title' => 'Déjeuner'],
+            'workshops' => ['title' => 'Ateliers — Trois parcours'],
+            'pl1' => [
+                'title' => 'Plénière 1',
+                'subtitle' => 'Empreinte : bâtir la confiance à l\'ère de l\'accélération de l\'IA',
+                'desc' => 'L\'Audit Interne et l\'anticipation des risques, le soutien de la gouvernance et le renforcement de la résilience.',
+            ],
+            'pl2' => [
+                'title' => 'Plénière 2',
+                'subtitle' => 'Diriger dans l\'incertitude d\'un monde fragmenté : nouveau paysage mondial et régional des risques',
+                'desc' => 'Positionnement de l\'Audit Interne par rapport aux cybermenaces, à l\'instabilité géopolitique, la criminalité financière, la transformation digitale et des chaînes d\'approvisionnement.',
+            ],
+            'pl3' => [
+                'title' => 'Plénière 3 — Panel',
+                'desc' => 'Ce que les conseils attendent de l\'Audit Interne en période de disruption continue. Moyens disponibles et pratiques qui permettent de construire la confiance.',
+            ],
+            'pl4' => [
+                'title' => 'Plénière 4',
+                'desc' => 'L\'avantage humain à l\'ère de l\'IA : l\'auditeur résilient et ce que la technologie ne remplacera jamais.',
+            ],
+            'pl5' => [
+                'title' => 'Plénière 5 — Panel',
+                'desc' => 'Les femmes à la tête de la transformation de l\'Audit Interne.',
+            ],
+            'pl6' => [
+                'title' => 'Plénière 6',
+                'desc' => 'De la coordination des Trois Lignes à l\'assurance intégrée : construire une cartographie d\'assurance au service de la résilience.',
+            ],
+            'pl7' => [
+                'title' => 'Plénière 7 — Panel',
+                'desc' => 'Au-delà de l\'assurance : comment l\'Audit Interne crée de la valeur stratégique dans un monde en transformation.',
+            ],
+            'lab1' => [
+                'title' => 'Innovation Lab',
+                'bullets' => ['Continuous Monitoring', 'AI Copilots pour l\'Audit Interne', 'Plateformes GRC'],
+            ],
+            'lab2' => [
+                'title' => 'Innovation Lab',
+                'bullets' => ['Monitoring / SAP', 'Process Mining', 'Détection de la fraude et analyse prédictive'],
+            ],
+        ],
+    ],
 ];

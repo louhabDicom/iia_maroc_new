@@ -1,372 +1,571 @@
 @extends('layouts.app')
 
-@section('title', __('programme.title'))
-@section('description', __('programme.provisional_notice'))
+@section('title', __('programme.page.title'))
+@section('description', __('programme.page.provisional_notice'))
 
 @section('content')
 
-<div class="d-page d-page--programme">
+@php
+    // Closing band photo: ONLINE placeholder, replace this URL by your own
+    // image (e.g. asset('assets/images/conference/audience.jpg')).
+    $ctaImage = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1800&q=70';
 
-    {{-- The shared front-office hero: the landing page's own band. See
-         components/front/hero.blade.php for why every public page uses one. --}}
+    $registerUrl = $edition->registration_open
+        ? (auth()->check() ? route('pricing') : route('register'))
+        : null;
+
+    // Row icon by type.
+    $icons = [
+        'welcome'   => 'fa-users',
+        'ceremony'  => 'fa-landmark',
+        'trophy'    => 'fa-trophy',
+        'plenary'   => 'fa-user',
+        'break'     => 'fa-coffee',
+        'lunch'     => 'fa-utensils',
+        'workshops' => 'fa-user',
+        'lab'       => 'fa-lightbulb',
+    ];
+
+    // [time, type, lang key under programme.page.s.*]
+    $schedule = [
+        1 => [
+            ['08:00 – 09:00', 'welcome',   'welcome1'],
+            ['09:30 – 10:00', 'ceremony',  'ceremony'],
+            ['10:00 – 10:30', 'trophy',    'trophies'],
+            ['10:30 – 11:15', 'plenary',   'pl1'],
+            ['11:15 – 11:45', 'break',     'break'],
+            ['11:45 – 12:30', 'plenary',   'pl2'],
+            ['12:30 – 13:30', 'plenary',   'pl3'],
+            ['13:30 – 14:30', 'lunch',     'lunch'],
+            ['14:30 – 16:20', 'workshops', 'workshops'],
+            ['16:20 – 16:50', 'break',     'break'],
+            ['16:50 – 17:35', 'lab',       'lab1'],
+        ],
+        2 => [
+            ['08:00 – 09:00', 'welcome',   'welcome2'],
+            ['09:00 – 10:00', 'plenary',   'pl4'],
+            ['10:00 – 11:00', 'plenary',   'pl5'],
+            ['11:00 – 11:30', 'break',     'break'],
+            ['11:30 – 12:30', 'plenary',   'pl6'],
+            ['12:30 – 13:30', 'plenary',   'pl7'],
+            ['13:30 – 14:30', 'lunch',     'lunch'],
+            ['14:30 – 16:20', 'workshops', 'workshops'],
+            ['16:20 – 16:50', 'break',     'break'],
+            ['16:50 – 17:35', 'lab',       'lab2'],
+        ],
+    ];
+
+    $tracks = [
+        ['tone' => 'ai',  'icon' => 'fa-brain',         'title' => 'programme.page.track_ai_title',         'text' => 'programme.page.track_ai'],
+        ['tone' => 'res', 'icon' => 'fa-shield-alt',    'title' => 'programme.page.track_resilience_title', 'text' => 'programme.page.track_res'],
+        ['tone' => 'aud', 'icon' => 'fa-user-graduate', 'title' => 'programme.page.track_auditor_title',    'text' => 'programme.page.track_aud'],
+    ];
+@endphp
+
+<div class="pg-page">
+
     <x-front.hero
-        :title="__('programme.title')"
+        :title="__('programme.page.title')"
         :eyebrow="$edition->identityLabel()"
-        :lede="__('programme.hero_lede')"
+        :lede="__('programme.page.hero_lede')"
         :crumbs="[__('nav.programme') => null]"
         :facts="[
             ['icon' => 'fa-calendar-alt', 'label' => $edition->dateLine($locale)],
-            ['icon' => 'fa-map-marker-alt',  'label' => $edition->venueLine($locale)],
+            ['icon' => 'fa-map-marker-alt', 'label' => $edition->venueLine($locale)],
         ]"
-        :cta-label="$edition->registration_open ? __('nav.registration') : null"
-        :cta-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
-   
-        image="assets/images/bg/hero_bg2.jpg" />
+        :cta-label="$registerUrl ? __('nav.registration') : null"
+        :cta-url="$registerUrl" />
 
-    {{-- The theme of the edition, quoted from the organisers' own presentation
-         document rather than paraphrased here.
-
-         It sits directly under the hero because it is the one line a delegate
-         quotes back to a colleague, and a programme page that buries its own
-         theme has thrown away the most useful thing on it. The "why" text and
-         the format grid share the band because they are all answers to the same
-         question — what is this event for, and what will actually happen in the
-         room — and splitting them would make the page three paragraphs long
-         before a single time is shown. --}}
-    <section class="d-theme" aria-labelledby="theme-heading">
+    {{-- ============ 1. Intro ============ --}}
+    <section class="pg-intro" aria-labelledby="pg-intro-title">
         <div class="container">
-            <div class="d-theme__inner">
-
-                <p class="d-theme__label">
-                    <span class="d-theme__rule" aria-hidden="true"></span>
-                    @lang('programme.theme_label')
-                </p>
-
-                <h2 id="theme-heading" class="d-theme__title">@lang('programme.theme')</h2>
-
-                <div class="d-theme__body">
-                    <div class="d-theme__intro">
-                        <h3 class="d-theme__subtitle">@lang('programme.why_title')</h3>
-                        <p class="d-theme__lede">@lang('programme.why_lede')</p>
-                    </div>
-
-                    <div class="d-theme__columns">
-                        <p>@lang('programme.why_body_1')</p>
-                        <p>@lang('programme.why_body_2')</p>
-                    </div>
-                </div>
-
-                <h3 class="d-format__heading">@lang('programme.format_title')</h3>
-                <p class="d-format__lede">@lang('programme.format_lede')</p>
-
-                <ul class="d-format__grid list-unstyled">
-                    @foreach ([
-                        ['fa-microphone-alt', 'programme.format_plenaries', 'programme.format_plenaries_text'],
-                        ['fa-comments', 'programme.format_panels', 'programme.format_panels_text'],
-                        ['fa-users', 'programme.format_workshops', 'programme.format_workshops_text'],
-                        ['fa-flask', 'programme.format_lab', 'programme.format_lab_text'],
-                    ] as $format)
-                        <li class="d-format__item">
-                            <span class="d-format__icon" aria-hidden="true">
-                                <i class="fas {{ $format[0] }}"></i>
-                            </span>
-                            <h4 class="d-format__title">{{ __($format[1]) }}</h4>
-                            <p class="d-format__text">{{ __($format[2]) }}</p>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
+            <h2 id="pg-intro-title" class="pg-h2">@lang('programme.page.intro_title')</h2>
+            <h3 class="pg-h3">@lang('programme.page.intro_heading')</h3>
+            <p class="pg-p">{{ __('programme.page.intro_p1', ['year' => $edition->year]) }}</p>
+            <p class="pg-p">@lang('programme.page.intro_p2')</p>
         </div>
     </section>
 
-    <section class="d-section d-section--alt" aria-labelledby="schedule-heading">
+    {{-- ============ 2. Tracks + Lab ============ --}}
+    <section class="pg-main" aria-labelledby="pg-tracks-title">
         <div class="container">
 
-            <x-design.section-head
-                id="schedule-heading"
-                :eyebrow="__('nav.programme')"
-                :title="__('programme.schedule_title')"
-                :lede="__('programme.schedule_lede')" />
+            <h2 id="pg-tracks-title" class="pg-h2 pg-h2--sm">@lang('programme.page.tracks_title')</h2>
+            <p class="pg-sub">@lang('programme.page.tracks_lede')</p>
 
-            {{-- The brief states the scientific programme is provisional, so the
-                 page says so rather than implying it is final. It sits above the
-                 day tabs because it is a caveat about every day, not about one. --}}
-            <p class="d-note">
-                <i class="fas fa-info-circle" aria-hidden="true"></i>
-                <span>@lang('programme.notice')</span>
-            </p>
-
-            {{-- The programme PDF, next to the caveat it belongs to: a delegate
-                 who is told the schedule is provisional is exactly the delegate
-                 who wants a copy to keep. The same three-rung resolution as the
-                 landing page button, so a published document still wins over the
-                 file committed in `public/`. --}}
-            @php
-                $programmeFile = public_path('programme.pdf');
-                $programmeDownload = $programmeDocument?->downloadUrl()
-                    ?? (is_file($programmeFile) ? asset('programme.pdf') : null)
-                    ?? route('programme', array_filter(['locale' => request()->route('locale')]));
-            @endphp
-
-            <p class="mt-3">
-                <a href="{{ $programmeDownload }}" class="d-btn d-btn--outline d-btn--sm">
-                    <i class="fas fa-file-pdf" aria-hidden="true"></i>
-                    @lang('home.landing.programme.download')
-                </a>
-            </p>
-
-            {{-- Day switcher. Real links rather than tabs, because the selected day
-                 is in the query string: a day is then a bookmarkable URL, it can be
-                 shared, and the back button behaves. A JS tab would put the state
-                 in a variable, so two different days would be one URL and the page
-                 would be unlinkable. --}}
-            @if (count($days) > 1)
-                <nav class="mt-5" aria-label="{{ __('programme.all_days') }}">
-                    <ul class="d-tabs">
-                        @foreach ($days as $day)
-                            <li>
-                                <a href="{{ route('programme', array_filter([
-                                        'locale' => request()->route('locale'),
-                                        'day' => $day->toDateString(),
-                                    ])) }}"
-                                   class="d-tabs__btn"
-                                   @if ($selectedDay?->isSameDay($day)) aria-current="true" @endif>
-                                    {{ $day->translatedFormat('l d F') }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </nav>
-            @endif
-
-            @if ($slots === [])
-                <div class="d-empty">
-                    <i class="fas fa-calendar-times d-empty__icon" aria-hidden="true"></i>
-                    <p>@lang('programme.no_sessions')</p>
-                </div>
-            @else
-                {{-- One row per time slot, with parallel sessions side by side. A
-                     single flattened list was the 2024 behaviour and it made a
-                     double-booked room impossible to spot. --}}
-                <ol class="d-timeline list-unstyled">
-                    @foreach ($slots as $date => $times)
-                        @foreach ($times as $start => $slotSessions)
-                            {{-- The slot's end is the latest end in the slot rather than
-                                 the end of the first session: parallel sessions are not
-                                 required to be the same length, and printing the earlier
-                                 one would understate how long the slot runs. --}}
-                            @php
-                                $slotEnd = collect($slotSessions)
-                                    ->max(fn ($session) => $session->endsAtDateTime()->getTimestamp());
-                            @endphp
-                            <li>
-                                <article class="d-timeline__row ux-reveal">
-                                    <p class="d-timeline__time" dir="ltr">
-                                        {{ $start }}<br>
-                                        <span>&ndash; {{ \Illuminate\Support\Carbon::createFromTimestamp($slotEnd)->format('H:i') }}</span>
-                                    </p>
-
-                                    <div class="d-timeline__body">
-                                        <div class="d-timeline__body-inner d-timeline__sessions">
-                                            @foreach ($slotSessions as $session)
-                                                <article class="d-card d-card--hover d-session">
-                                                    <p class="d-timeline__meta">
-                                                        <span>
-                                                            <i class="fas fa-tag" aria-hidden="true"></i>
-                                                            {{ $session->format->label($locale->value) }}
-                                                        </span>
-
-                                                        @if ($session->room)
-                                                            <span>
-                                                                <i class="fas fa-door-open" aria-hidden="true"></i>
-                                                                {{ $session->room->name }}
-                                                            </span>
-                                                        @endif
-                                                    </p>
-
-                                                    <h3 class="d-session__title">{{ $session->title }}</h3>
-
-                                                    @if ($session->track)
-                                                        <p class="d-session__track">{{ $session->track->name }}</p>
-                                                    @endif
-
-                                                    @if ($session->summary)
-                                                        <p class="d-session__summary">{{ $session->summary }}</p>
-                                                    @endif
-
-                                                    @if ($session->speakers->isNotEmpty())
-                                                        <p class="d-session__speakers">
-                                                            {{ $session->speakers->map(fn ($speaker) => $speaker->fullName())->join('، ') }}
-                                                        </p>
-                                                    @endif
-
-                                                    {{-- durationMinutes() reads the stored times
-                                                         rather than assuming a slot length,
-                                                         so a session that over-runs is
-                                                         visible here. --}}
-                                                    <p class="d-session__foot d-timeline__meta" dir="ltr">
-                                                        <span>
-                                                            {{ $session->startsAtString() }} &ndash; {{ $session->endsAtString() }}
-                                                            ({{ $session->durationMinutes() }}&prime;)
-                                                        </span>
-                                                    </p>
-                                                </article>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </article>
-                            </li>
-                        @endforeach
-                    @endforeach
-                </ol>
-            @endif
-        </div>
-    </section>
-
-    {{-- The three workshop tracks, after the schedule rather than inside it.
-
-         A track is a choice made before the day starts, not a session, so it is
-         listed as its own section: a delegate picking "Résilience" needs to see
-         what that means before they read a timetable, not halfway down it. --}}
-    <section class="d-section" aria-labelledby="tracks-heading">
-        <div class="container">
-
-            <x-design.section-head
-                id="tracks-heading"
-                :eyebrow="__('programme.format_workshops')"
-                :title="__('programme.tracks_title')"
-                :lede="__('programme.tracks_lede')" />
-
-            <ul class="d-tracks list-unstyled" data-ux-stagger="90">
-                @foreach ([
-                    ['fa-microchip', 'programme.track_ai_title', 'programme.track_ai_text'],
-                    ['fa-shield-alt', 'programme.track_resilience_title', 'programme.track_resilience_text'],
-                    ['fa-user-graduate', 'programme.track_auditor_title', 'programme.track_auditor_text'],
-                ] as $index => $track)
-                    <li class="d-track ux-reveal">
-                        {{-- dir="ltr": the ordinal is a number, and a number is not
-                             reordered by the bidi algorithm even in an RTL page —
-                             but keeping it in its own LTR run stops the label from
-                             drifting away from it. --}}
-                        <p class="d-track__num" dir="ltr">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</p>
-
-                        <div class="d-track__body">
-                            <h3 class="d-track__title">
-                                <i class="fas {{ $track[0] }}" aria-hidden="true"></i>
-                                {{ __($track[1]) }}
-                            </h3>
-                            <p class="d-track__text">{{ __($track[2]) }}</p>
+            <ul class="pg-tracks" data-ux-stagger="90">
+                @foreach ($tracks as $track)
+                    <li class="pg-track ux-reveal">
+                        <span class="pg-track__icon" aria-hidden="true"><i class="fas {{ $track['icon'] }}"></i></span>
+                        <div>
+                            <h3 class="pg-track__title">{{ __($track['title']) }}</h3>
+                            <p class="pg-track__text">{{ __($track['text']) }}</p>
                         </div>
                     </li>
                 @endforeach
             </ul>
+
+            <div class="pg-lab ux-reveal">
+                <span class="pg-track__icon" aria-hidden="true"><i class="far fa-lightbulb"></i></span>
+                <div>
+                    <h3 class="pg-lab__title">@lang('programme.page.lab_title')</h3>
+                    <p class="pg-lab__text">@lang('programme.page.lab_text')</p>
+                </div>
+            </div>
         </div>
     </section>
 
-    {{-- The Innovation Lab.
-
-         Drawn as one panel rather than three cards because it is a single
-         two-session format, and a three-card treatment would imply three
-         separate things to choose between. --}}
-    <section class="d-section d-section--alt" aria-labelledby="lab-heading">
+    {{-- ============ 3. Two days, side by side ============ --}}
+    <section class="pg-schedule" aria-label="@lang('programme.page.title')">
         <div class="container">
-            <div class="d-lab">
-                <div class="d-lab__main">
-                    <p class="d-lab__badge">
-                        <i class="fas fa-flask" aria-hidden="true"></i>
-                        @lang('programme.format_lab')
-                    </p>
 
-                    <h2 id="lab-heading" class="d-lab__title">@lang('programme.lab_title')</h2>
+            <div class="pg-days">
+                @foreach ($schedule as $n => $rows)
+                    <article class="pg-day">
+                        <header class="pg-day__head">
+                            <span class="pg-day__icon" aria-hidden="true"><i class="fas fa-calendar-check"></i></span>
+                            <div>
+                                <p class="pg-day__name">@lang('programme.page.day', ['day' => $n])</p>
+                                <p class="pg-day__date">{{ __('programme.page.day'.$n.'_date') }}</p>
+                            </div>
+                        </header>
 
-                    <p class="d-lab__lede">@lang('programme.lab_lede')</p>
-                </div>
+                        <ol class="pg-list">
+                            @foreach ($rows as [$time, $type, $key])
+                                @php $t = __('programme.page.s.'.$key); @endphp
+                                <li class="pg-row pg-row--{{ $type }}">
+                                    <p class="pg-time" dir="ltr">{{ $time }}</p>
+                                    <span class="pg-ico" aria-hidden="true"><i class="fas {{ $icons[$type] }}"></i></span>
 
-                <ul class="d-lab__days list-unstyled">
-                    <li class="d-lab__day">
-                        <i class="fas fa-check-circle" aria-hidden="true"></i>
-                        <span>@lang('programme.lab_day1')</span>
-                    </li>
-                    <li class="d-lab__day">
-                        <i class="fas fa-check-circle" aria-hidden="true"></i>
-                        <span>@lang('programme.lab_day2')</span>
-                    </li>
-                </ul>
+                                    <div class="pg-body">
+                                        <h4 class="pg-body__title">{{ $t['title'] }}</h4>
 
-                <p class="d-lab__note">
-                    <i class="fas fa-info-circle" aria-hidden="true"></i>
-                    <span>@lang('programme.lab_note')</span>
-                </p>
+                                        @isset($t['subtitle'])
+                                            <p class="pg-body__subtitle">{{ $t['subtitle'] }}</p>
+                                        @endisset
+
+                                        @isset($t['desc'])
+                                            <p class="pg-body__desc">{{ $t['desc'] }}</p>
+                                        @endisset
+
+                                        @if (! empty($t['bullets']))
+                                            <ul class="pg-bullets">
+                                                @foreach ($t['bullets'] as $bullet)
+                                                    <li>{{ $bullet }}</li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
+
+                                        @if ($type === 'workshops')
+                                            <ul class="pg-chips">
+                                                @foreach ($tracks as $track)
+                                                    <li class="pg-chip pg-chip--{{ $track['tone'] }}">
+                                                        <i class="fas {{ $track['icon'] }}" aria-hidden="true"></i>
+                                                        <span>{{ __($track['title']) }}</span>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ol>
+                    </article>
+                @endforeach
             </div>
+
+            <p class="pg-note">
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                <span>@lang('programme.page.notice')</span>
+            </p>
         </div>
     </section>
 
-    {{-- The programme as the organisers published it.
+    {{-- ============ 4. Closing band ============ --}}
+    <section class="pg-cta" aria-labelledby="pg-cta-title">
+        <img class="pg-cta__bg" src="{{ $ctaImage }}" alt="" aria-hidden="true"
+             loading="lazy" decoding="async" referrerpolicy="no-referrer">
 
-         The two day sheets are the client's own artwork, drawn to a schedule that
-         is still provisional. Showing them is a promise the database has to keep
-         up with, so they are presented as the published programme with the
-         provisional note repeated rather than as the authoritative one — and they
-         open full-size, because a 2571px-wide sheet scaled into a phone column
-         is unreadable and is the single most useful thing on the page to have. --}}
-    @php
-        $daySheets = array_values(array_filter([
-            [
-                'file'  => 'assets/images/conference/programme-day-1.png',
-                'label' => $days[0]?->translatedFormat('l j F') ?? __('programme.day', ['day' => 1]),
-            ],
-            [
-                'file'  => 'assets/images/conference/programme-day-2.png',
-                'label' => $days[1]?->translatedFormat('l j F') ?? __('programme.day', ['day' => 2]),
-            ],
-        ], static fn (array $sheet): bool => file_exists(public_path($sheet['file']))));
-    @endphp
+        <div class="container pg-cta__inner">
+            <h2 id="pg-cta-title" class="pg-cta__title">@lang('programme.page.cta_title')</h2>
 
-    @if ($daySheets !== [])
-        <section class="d-section" aria-labelledby="sheets-heading">
-            <div class="container">
+            <ul class="pg-cta__facts">
+                <li><i class="far fa-calendar-alt" aria-hidden="true"></i><span>{{ $edition->dateLine($locale) }}</span></li>
+                <li><i class="fas fa-map-marker-alt" aria-hidden="true"></i><span>{{ $edition->venueLine($locale) }}</span></li>
+            </ul>
 
-                <x-design.section-head
-                    id="sheets-heading"
-                    :eyebrow="__('programme.title')"
-                    :title="__('programme.sheets_title')"
-                    :lede="__('programme.sheets_lede')"
-                    align="center" />
-
-                <div class="d-cards" data-ux-stagger="90">
-                    @foreach ($daySheets as $index => $sheet)
-                        <figure class="d-sheet ux-reveal">
-                            <a href="{{ asset($sheet['file']) }}"
-                               class="d-sheet__media"
-                               data-lightbox="programme"
-                               data-caption="{{ $sheet['label'] }}">
-                                <img src="{{ asset($sheet['file']) }}"
-                                     alt="{{ __('programme.sheets_alt', ['day' => $index + 1]) }}"
-                                     loading="lazy"
-                                     decoding="async">
-                                <span class="d-sheet__zoom" aria-hidden="true">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </span>
-                            </a>
-                            <figcaption class="d-sheet__caption">
-                                <span class="d-tag">{{ $sheet['label'] }}</span>
-                                <span class="d-sheet__hint">@lang('programme.sheets_open')</span>
-                            </figcaption>
-                        </figure>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
-
-    <x-design.cta-band
-        :title="__('programme.cta_title')"
-        :text="__('programme.cta_text')"
-        :primary-label="$edition->registration_open ? __('pricing.register') : null"
-        :primary-url="$edition->registration_open ? (auth()->check() ? route('pricing') : route('register')) : null"
-        :secondary-label="__('nav.contact')"
-        :secondary-url="route('contact')" />
-
+            @if ($registerUrl)
+                <a href="{{ $registerUrl }}" class="pg-cta__btn">@lang('nav.registration')</a>
+            @endif
+        </div>
+    </section>
 </div>
+
+{{-- Styles stay inside the section (anything after @endsection prints before <!DOCTYPE>). --}}
+<style>
+    .pg-page {
+        --pg-ink: #1b1464;
+        --pg-deep: #2b1d9a;
+        --pg-brand: #3a27b3;
+        --pg-muted: #5f6384;
+        --pg-line: #e4e1f4;
+        --pg-tint: #f1effd;
+        --pg-surface: #f6f5fd;
+        color: var(--pg-ink);
+    }
+
+    .pg-page section { position: relative; overflow: hidden; }
+
+    .pg-page h2, .pg-page h3, .pg-page h4,
+    .pg-page p, .pg-page ul, .pg-page ol { margin: 0; }
+
+    .pg-page ul, .pg-page ol { list-style: none; padding: 0; }
+
+    /* ---------- 1. Intro ---------- */
+    .pg-intro { padding-block: 64px 56px; background: #fff; }
+
+    .pg-h2 {
+        margin-block-end: 36px;
+        font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+        font-weight: 700;
+        color: var(--pg-deep);
+    }
+
+    .pg-h3 {
+        margin-block-end: 22px;
+        font-size: clamp(1.15rem, 1.8vw, 1.4rem);
+        font-weight: 700;
+        color: var(--pg-deep);
+    }
+
+    .pg-p {
+        max-width: 78rem;
+        margin-block-end: 20px;
+        font-size: 1rem;
+        line-height: 1.75;
+        color: var(--pg-ink);
+    }
+
+    /* ---------- 2. Tracks + Lab ---------- */
+    .pg-main {
+        padding-block: 56px 64px;
+        background:
+            radial-gradient(900px 340px at 100% 0, rgba(61, 40, 170, .08), transparent 70%),
+            var(--pg-surface);
+    }
+
+    .pg-h2--sm { margin-block-end: 8px; font-size: 1.35rem; }
+
+    .pg-sub { margin-block-end: 22px; font-size: .9rem; color: var(--pg-muted); }
+
+    .pg-tracks {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+        margin-block-end: 20px;
+    }
+
+    .pg-track,
+    .pg-lab {
+        display: flex;
+        gap: 18px;
+        align-items: flex-start;
+        padding: 22px;
+        border: 1px solid var(--pg-line);
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .pg-track { background: linear-gradient(180deg, #f4f2fd, #fff 70%); }
+
+    .pg-track__icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(150deg, #2b1d9a, #3a27b3);
+        color: #fff;
+        font-size: 1.3rem;
+        box-shadow: 0 12px 22px -12px rgba(43, 29, 154, .8);
+    }
+
+    .pg-track__title,
+    .pg-lab__title {
+        margin-block-end: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--pg-ink);
+    }
+
+    .pg-track__text,
+    .pg-lab__text {
+        font-size: .84rem;
+        line-height: 1.65;
+        color: var(--pg-muted);
+    }
+
+    .pg-lab {
+        align-items: center;
+        background: linear-gradient(100deg, #ece9fb, #f6f5fd);
+    }
+
+    /* ---------- 3. Schedule: two day columns ---------- */
+    .pg-schedule { padding-block: 56px 72px; background: #fff; }
+
+    .pg-days {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 28px;
+        align-items: start;
+    }
+
+    .pg-day {
+        overflow: hidden;
+        border: 1px solid var(--pg-line);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 24px 50px -36px rgba(43, 29, 154, .45);
+    }
+
+    .pg-day__head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 22px;
+        background: linear-gradient(120deg, #2b1d9a 0%, #3a27b3 75%, #2d1f9e 100%);
+        color: #fff;
+    }
+
+    .pg-day__icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .16);
+        font-size: 1.1rem;
+    }
+
+    .pg-day__name { font-size: 1.05rem; font-weight: 700; line-height: 1.2; }
+    .pg-day__date { font-size: .82rem; opacity: .88; }
+
+    .pg-list { padding: 6px 22px 14px; }
+
+    .pg-row {
+        display: grid;
+        grid-template-columns: 96px 30px minmax(0, 1fr);
+        column-gap: 14px;
+        align-items: start;
+        padding-block: 14px;
+        border-block-end: 1px solid var(--pg-line);
+    }
+
+    .pg-row:last-child { border-block-end: 0; }
+
+    .pg-time {
+        justify-self: start;
+        min-width: 100%;
+        padding: 5px 8px;
+        border-radius: 6px;
+        background: #eef0fb;
+        font-size: .74rem;
+        font-weight: 600;
+        text-align: center;
+        white-space: nowrap;
+        color: var(--pg-deep);
+    }
+
+    .pg-ico {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 26px;
+        color: var(--pg-deep);
+        font-size: 1rem;
+    }
+
+    .pg-body__title {
+        font-size: .9rem;
+        font-weight: 700;
+        line-height: 1.4;
+        color: var(--pg-ink);
+    }
+
+    .pg-body__subtitle {
+        margin-block-start: 2px;
+        font-size: .85rem;
+        font-weight: 600;
+        line-height: 1.5;
+        color: var(--pg-ink);
+    }
+
+    .pg-body__desc {
+        margin-block-start: 3px;
+        font-size: .8rem;
+        line-height: 1.6;
+        color: var(--pg-muted);
+    }
+
+    .pg-bullets { margin-block-start: 6px; display: grid; gap: 3px; }
+
+    .pg-bullets li {
+        position: relative;
+        padding-inline-start: 16px;
+        font-size: .8rem;
+        color: var(--pg-muted);
+    }
+
+    .pg-bullets li::before {
+        content: "";
+        position: absolute;
+        inset-inline-start: 4px;
+        inset-block-start: .6em;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--pg-brand);
+    }
+
+    /* breaks and meals read lighter than sessions */
+    .pg-row--break .pg-body__title,
+    .pg-row--lunch .pg-body__title { font-weight: 600; }
+
+    /* ---------- Workshop chips ---------- */
+    .pg-chips {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-block-start: 12px;
+    }
+
+    .pg-chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 8px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        font-size: .74rem;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .pg-chip i { font-size: 1.15rem; }
+
+    .pg-chip--ai  { background: #efeaff; border-color: #ddd3fb; color: #5a3fd0; }
+    .pg-chip--res { background: #e2f6f4; border-color: #c4ebe7; color: #12857f; }
+    .pg-chip--aud { background: #e6f6ea; border-color: #cbebd3; color: #2a8a4b; }
+
+    .pg-note {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        margin-block-start: 26px;
+        font-size: .8rem;
+        line-height: 1.6;
+        color: var(--pg-muted);
+    }
+
+    .pg-note i { margin-block-start: .25em; color: var(--pg-brand); }
+
+    /* ---------- 4. Closing band ---------- */
+    .pg-cta {
+        display: flex;
+        align-items: center;
+        min-height: 300px;
+        padding-block: 70px;
+        color: #fff;
+        isolation: isolate;
+    }
+
+    .pg-cta__bg {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 40%;
+    }
+
+    .pg-cta::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: linear-gradient(90deg,
+            rgba(29, 15, 125, .94) 0%,
+            rgba(39, 24, 157, .82) 50%,
+            rgba(25, 17, 112, .45) 100%);
+    }
+
+    [dir="rtl"] .pg-cta::after { transform: scaleX(-1); }
+
+    .pg-cta__title {
+        max-width: 18em;
+        margin-block-end: 26px;
+        font-size: clamp(1.4rem, 2.6vw, 2rem);
+        font-weight: 500;
+        line-height: 1.3;
+        color: #fff;
+    }
+
+    .pg-cta__facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px 36px;
+        margin-block-end: 30px;
+    }
+
+    .pg-cta__facts li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: .9rem;
+        color: #fff;
+    }
+
+    .pg-cta__facts i { font-size: 1.2rem; opacity: .9; }
+
+    .pg-cta__btn {
+        display: inline-flex;
+        padding: 14px 40px;
+        border-radius: 999px;
+        background: #fff;
+        font-size: .8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+        color: var(--pg-ink);
+        text-decoration: none;
+        transition: transform .2s, box-shadow .2s;
+    }
+
+    .pg-cta__btn:hover,
+    .pg-cta__btn:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 26px -14px rgba(0, 0, 0, .6);
+        color: var(--pg-ink);
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 991.98px) {
+        .pg-tracks { grid-template-columns: minmax(0, 1fr); }
+        .pg-days { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    @media (max-width: 575.98px) {
+        .pg-list { padding-inline: 16px; }
+
+        .pg-row { grid-template-columns: 30px minmax(0, 1fr); row-gap: 4px; }
+        .pg-time { grid-column: 1 / -1; min-width: 0; justify-self: start; padding-inline: 12px; }
+
+        .pg-chips { grid-template-columns: minmax(0, 1fr); }
+    }
+</style>
 
 @endsection
