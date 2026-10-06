@@ -64,13 +64,13 @@
          delegate looks for last year's programme. --}}
     @unless ($isBar)
         @if (Route::has('archive'))
-            <li>
+            <!-- <li>
                 <a href="{{ route('archive') }}"
                 style="color:wheat"
                    @if (request()->routeIs('archive*')) aria-current="page" @endif>
                     {{ __('nav.archive') }}
                 </a>
-            </li>
+            </li> -->
         @endif
     @endunless
 </ul>

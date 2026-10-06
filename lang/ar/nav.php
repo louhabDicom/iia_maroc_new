@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'archive' => 'نسخة 2024',
+    // 'archive' => 'نسخة 2024',
     // Accessible name for the breadcrumb trail's landmark, read aloud when a
     // screen-reader user lists the landmarks on the page.
     'breadcrumb' => 'مسار التنقل',

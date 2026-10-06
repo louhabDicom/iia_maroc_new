@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'archive' => '2024 edition',
+    // 'archive' => '2024 edition',
     // Accessible name for the breadcrumb trail's landmark. Spelled out rather
     // than an icon: it is what a screen reader announces when the user lists
     // the landmarks on the page.

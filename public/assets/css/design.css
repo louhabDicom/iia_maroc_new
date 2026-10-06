@@ -866,7 +866,7 @@ background: linear-gradient(2deg, #4a3dac  0%, #2c1181 600%);
    large as a nav item deserves to be. */
 
 .d-drawer {
-    background: var(--d-surface);
+    background: #4a3dac;
     display: flex;
     flex-direction: column;
     gap: var(--sp-6);
