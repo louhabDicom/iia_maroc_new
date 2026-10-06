@@ -108,7 +108,7 @@
                  page they are on; here it is the last thing in the band, which
                  is where it is useful — the way back. --}}
             @if ($crumbs !== [])
-                <nav class="f-hero__crumbs" aria-label="{{ __('nav.breadcrumb') }}">
+                <!-- <nav class="f-hero__crumbs" aria-label="{{ __('nav.breadcrumb') }}">
                     <ol>
                         @foreach ($crumbs as $label => $url)
                             <li>
@@ -120,7 +120,7 @@
                             </li>
                         @endforeach
                     </ol>
-                </nav>
+                </nav> -->
             @endif
 
             @if ($facts !== [])

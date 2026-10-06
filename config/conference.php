@@ -60,4 +60,20 @@ return [
 
     'presentation_uploads_open' => (bool) env('PRESENTATION_UPLOADS_OPEN', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Payment rehearsal
+    |--------------------------------------------------------------------------
+    |
+    | One account may raise a real gateway order for a token amount so the CMI
+    | round trip can be exercised end to end. Restricted to a single email so a
+    | live-price order can never be created for 1 MAD by anyone else; the amount
+    | is in minor units (100 = 1,00 MAD).
+    |
+    */
+
+    'payment_test_user' => env('PAYMENT_TEST_USER', 'admin@arabcia.test'),
+
+    'payment_test_amount' => (int) env('PAYMENT_TEST_AMOUNT', 100),
+
 ];

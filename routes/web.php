@@ -312,6 +312,12 @@ Route::post('/{locale?}/inscription', [CheckoutController::class, 'store'])->nam
 Route::get('/inscription/payer/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay.ar');
 Route::get('/{locale?}/inscription/payer/{order}', [CheckoutController::class, 'pay'])->name('checkout.pay');
 
+// Admin-only rehearsal: raise a real 1 MAD gateway order. POST, because it
+// writes an order and clears nothing else; the tester account is enforced in
+// the controller, so this is safe to leave on the public router.
+Route::post('/inscription/test', [CheckoutController::class, 'testPayment'])->name('checkout.test.ar');
+Route::post('/{locale?}/inscription/test', [CheckoutController::class, 'testPayment'])->name('checkout.test');
+
 // Add or remove a place on a basket line, from the checkout page.
 //
 // Its own route rather than a field on `checkout.store`, because the two

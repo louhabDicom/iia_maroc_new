@@ -257,6 +257,21 @@
                             <i class="fas fa-arrow-right d-btn__arrow" aria-hidden="true"></i>
                         </a>
 
+                        {{-- Payment rehearsal, visible only to the one account named in
+                             config('conference.payment_test_user'). It raises a real 1 MAD
+                             order and jumps straight to the gateway, so the CMI round trip
+                             can be tested without a delegate ever seeing the button. --}}
+                        @if (auth()->check() && auth()->user()->email
+                            && strcasecmp(auth()->user()->email, (string) config('conference.payment_test_user', 'admin@arabcia.test')) === 0)
+                            <form method="POST" action="{{ route('checkout.test') }}" class="mt-3">
+                                @csrf
+                                <button type="submit" class="d-btn d-btn--quiet d-btn--block">
+                                    <i class="fas fa-vial" aria-hidden="true"></i>
+                                    <span>Test paiement 1 DH</span>
+                                </button>
+                            </form>
+                        @endif
+
                         @guest
                             <p class="d-cart-summary__hint">
                                 <i class="fas fa-lock" aria-hidden="true"></i>

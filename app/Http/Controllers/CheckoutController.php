@@ -9,7 +9,9 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Concerns\ResolvesOwnedOrder;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Edition;
 use App\Models\Order;
+use App\Models\TicketType;
 use App\Models\User;
 use App\Services\Payment\PaymentGateway;
 use App\Services\Registration\CheckoutService;
@@ -319,6 +321,79 @@ class CheckoutController extends Controller
     }
 
     /**
+     * Admin-only rehearsal: place a 1 MAD order and hand it to the gateway.
+     *
+     * Exists so the CMI round trip — redirect, callback, settlement, invoice —
+     * can be exercised against a real order without charging a real tariff. The
+     * buyer is fixed by config (`conference.payment_test_user`) and every other
+     * account gets a 403, so the cheap amount cannot leak to a real delegate.
+     *
+     * Independent of the basket on purpose: it builds its own single-line quote
+     * from the first active tariff and a throwaway (unsaved) cart, so running
+     * the test never empties the tester's real basket. The line still points at
+     * a real ticket type because `order_items.ticket_type_id` is a foreign key.
+     */
+    public function testPayment(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        abort_unless($user !== null && $this->isPaymentTester($user), 403);
+
+        $ticket = TicketType::query()
+            ->where('edition_id', Edition::current()?->getKey())
+            ->active()
+            ->orderBy('sort_order')
+            ->first()
+            ?? TicketType::query()->orderBy('id')->first();
+
+        abort_if($ticket === null, 422, 'No ticket type is available to build a test order from.');
+
+        $amount = max(1, (int) config('conference.payment_test_amount', 100));
+
+        $quote = new Quote(
+            lines: [[
+                'ticket_type_id' => (int) $ticket->getKey(),
+                'label' => $ticket->getRawOriginal('name'),
+                'unit_price_member' => $amount,
+                'unit_price_standard' => $amount,
+                'member_quantity' => 0,
+                'standard_quantity' => 1,
+                'line_total' => $amount,
+            ]],
+            subtotal: $amount,
+            total: $amount,
+            currency: 'MAD',
+            memberCount: 0,
+            standardCount: 1,
+            participantCount: 1,
+            ticketType: $ticket,
+        );
+
+        try {
+            $order = $this->checkout->place(
+                cart: new Cart,
+                user: $user,
+                quote: $quote,
+                participants: [[
+                    'full_name' => $user->name ?: 'Test Admin',
+                    'email' => $user->email,
+                ]],
+                billing: [
+                    'first_name' => $user->first_name ?? 'Test',
+                    'last_name' => $user->last_name ?? 'Admin',
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                ],
+                ip: $request->ip(),
+            );
+        } catch (RuntimeException $e) {
+            return redirect()->route('pricing')->with('status', $e->getMessage());
+        }
+
+        return redirect()->route('checkout.pay', ['order' => $order->getKey()]);
+    }
+
+    /**
      * Hand the order to the configured gateway.
      *
      * A GET that produces a redirect to a payment page, not a state change:
@@ -365,6 +440,19 @@ class CheckoutController extends Controller
             $request->session()->getId(),
             $request->user(),
         );
+    }
+
+    /**
+     * Whether this account is the one configured to rehearse a payment.
+     *
+     * Case-insensitive because an email is, and compared against config rather
+     * than a hardcoded address so the tester can be changed without a deploy.
+     */
+    private function isPaymentTester(User $user): bool
+    {
+        $email = (string) config('conference.payment_test_user', 'admin@arabcia.test');
+
+        return $email !== '' && strcasecmp((string) $user->email, $email) === 0;
     }
 
     /**
