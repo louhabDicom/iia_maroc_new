@@ -219,7 +219,7 @@
     .pg-page h2, .pg-page h3, .pg-page h4,
     .pg-page p, .pg-page ul, .pg-page ol { margin: 0; }
 
-    .pg-page ul, .pg-page ol { list-style: none; padding: 0; }
+    .pg-page ul, .pg-page ol { list-style: none; padding: 30px; }
 
     /* ---------- 1. Intro ---------- */
     .pg-intro { padding-block: 64px 56px; background: #fff; }
