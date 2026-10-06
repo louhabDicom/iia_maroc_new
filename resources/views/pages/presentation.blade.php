@@ -51,8 +51,8 @@
 
         // Static fallback when no organisation rows are published.
         $fallbackOrgs = [
-            ['name' => 'ARABCIA', 'role' => __('presentation.organisations.organiser_role'), 'text' => __('presentation.organisations.organiser_desc')],
-            ['name' => 'IIA Maroc', 'role' => __('presentation.organisations.host_role'), 'text' => __('presentation.organisations.host_desc')],
+            ['code' => 'ARABCIA', 'name' => 'ARABCIA', 'role' => __('presentation.organisations.organiser_role'), 'text' => __('presentation.organisations.organiser_desc')],
+            ['code' => 'IIA_MAROC', 'name' => 'IIA Maroc', 'role' => __('presentation.organisations.host_role'), 'text' => __('presentation.organisations.host_desc')],
         ];
     @endphp
 
@@ -90,6 +90,15 @@
 
                         <p class="p-intro__lede">@lang('presentation.intro.lede')</p>
 
+                        {{-- The theme, stated in full: three paragraphs read as the
+                             page's argument before the reader reaches the cards. --}}
+                        <div class="p-theme">
+                            <h3 class="p-theme__title">@lang('presentation.intro.theme_title')</h3>
+                            @foreach (__('presentation.intro.paragraphs') as $paragraph)
+                                <p class="p-theme__text">{{ $paragraph }}</p>
+                            @endforeach
+                        </div>
+
                         <ul class="p-highlights" data-ux-stagger="90">
                             @foreach ($highlightCards as $card)
                                 <li class="p-highlight">
@@ -115,6 +124,29 @@
             </div>
         </section>
 
+        {{-- Band 1.5 — the journey: three steps, one verb each. The arc reads
+             left to right on desktop and top to bottom on a phone. --}}
+        <section class="p-journey" id="presentation-journey" aria-labelledby="presentation-journey-title">
+            <div class="container">
+                <div class="p-head p-head--center">
+                    <p class="p-eyebrow p-eyebrow--center">@lang('presentation.journey.eyebrow')</p>
+                    <h2 id="presentation-journey-title" class="p-title">@lang('presentation.journey.title')</h2>
+                    <p class="p-lede">@lang('presentation.journey.lede')</p>
+                </div>
+
+                <ol class="p-steps" data-ux-stagger="100">
+                    @foreach (__('presentation.journey.steps') as $step)
+                        <li class="p-step">
+                            <span class="p-step__num" aria-hidden="true">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                            <span class="p-step__icon" aria-hidden="true"><i class="fas {{ $step['icon'] }}"></i></span>
+                            <h3 class="p-step__title">{{ $step['title'] }}</h3>
+                            <p class="p-step__text">{{ $step['text'] }}</p>
+                        </li>
+                    @endforeach
+                </ol>
+            </div>
+        </section>
+
         {{-- Band 2 — organisations: heading on one side, two white cards on the other. --}}
         <section class="p-organisations" id="presentation-organisations" aria-labelledby="presentation-organisations-title">
             <div class="container">
@@ -130,10 +162,14 @@
 
                     <ul class="p-orgs" data-ux-stagger="90">
                         @forelse ($organisations as $organisation)
-                            @php($logo = $orgLogos[$loop->index] ?? $orgLogos[0])
+                            @php
+                                $logo = $orgLogos[$loop->index] ?? $orgLogos[0];
+                                $profile = __('presentation.organisations.profiles.'.$organisation->code);
+                                $profile = is_array($profile) ? $profile : null;
+                            @endphp
                             <li class="p-org">
                                 <span class="p-org__mark">
-                                    <img src="{{ asset($organisation->logo ?? $logo['src']) }}"
+                                    <img src="{{ asset($organisation->logo_path ?? $logo['src']) }}"
                                          width="{{ $logo['width'] }}" height="{{ $logo['height'] }}"
                                          alt="{{ $organisation->name }}"
                                          loading="lazy" decoding="async">
@@ -145,9 +181,30 @@
                                         <p class="p-org__role">{{ $organisation->role }}</p>
                                     @endif
                                     <p class="p-org__lede">{{ $organisation->description }}</p>
+
+                                    @if ($profile)
+                                        <dl class="p-org__stats">
+                                            @foreach ($profile['stats'] as $stat)
+                                                <div class="p-org__stat">
+                                                    <dt>{{ $stat['label'] }}</dt>
+                                                    <dd>{{ $stat['value'] }}</dd>
+                                                </div>
+                                            @endforeach
+                                        </dl>
+
+                                        @isset($profile['note'])
+                                            <p class="p-org__note">{{ $profile['note'] }}</p>
+                                        @endisset
+                                    @endif
                                 </div>
 
-                                @if ($organisation->website_url)
+                                @if ($profile)
+                                    <a class="p-org__cta" href="{{ $organisation->website_url ?: route('contact') }}"
+                                       @if ($organisation->website_url) rel="noopener noreferrer" target="_blank" @endif>
+                                        <span>{{ $profile['cta'] }}</span>
+                                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                    </a>
+                                @elseif ($organisation->website_url)
                                     <a class="p-org__link" href="{{ $organisation->website_url }}"
                                        rel="noopener noreferrer" target="_blank">
                                         <span class="visually-hidden">{{ $organisation->name }}</span>
@@ -157,7 +214,11 @@
                             </li>
                         @empty
                             @foreach ($fallbackOrgs as $fallback)
-                                @php($logo = $orgLogos[$loop->index])
+                                @php
+                                    $logo = $orgLogos[$loop->index];
+                                    $profile = __('presentation.organisations.profiles.'.$fallback['code']);
+                                    $profile = is_array($profile) ? $profile : null;
+                                @endphp
                                 <li class="p-org">
                                     <span class="p-org__mark">
                                         <img src="{{ asset($logo['src']) }}"
@@ -169,10 +230,28 @@
                                         <h3 class="p-org__name">{{ $fallback['name'] }}</h3>
                                         <p class="p-org__role">{{ $fallback['role'] }}</p>
                                         <p class="p-org__lede">{{ $fallback['text'] }}</p>
+
+                                        @if ($profile)
+                                            <dl class="p-org__stats">
+                                                @foreach ($profile['stats'] as $stat)
+                                                    <div class="p-org__stat">
+                                                        <dt>{{ $stat['label'] }}</dt>
+                                                        <dd>{{ $stat['value'] }}</dd>
+                                                    </div>
+                                                @endforeach
+                                            </dl>
+
+                                            @isset($profile['note'])
+                                                <p class="p-org__note">{{ $profile['note'] }}</p>
+                                            @endisset
+                                        @endif
                                     </div>
-                                    <span class="p-org__link" aria-hidden="true">
-                                        <i class="fas fa-arrow-right"></i>
-                                    </span>
+                                    @if ($profile)
+                                        <a class="p-org__cta" href="{{ route('contact') }}">
+                                            <span>{{ $profile['cta'] }}</span>
+                                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                        </a>
+                                    @endif
                                 </li>
                             @endforeach
                         @endforelse
@@ -416,6 +495,82 @@
     color: var(--p-muted);
 }
 
+/* ---------- Centered heads ---------- */
+.p-head--center { text-align: center; }
+.p-eyebrow--center { justify-content: center; }
+.p-head--center .p-lede { margin-inline: auto; }
+
+/* ---------- Theme, inside Band 1 ---------- */
+.p-theme { margin-block-start: 34px; }
+.p-theme__title {
+    margin-block-end: 12px;
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--p-brand);
+}
+[dir="rtl"] .p-theme__title { letter-spacing: 0; }
+.p-theme__text {
+    max-width: 60ch;
+    margin-block-end: 12px;
+    font-size: .9rem;
+    line-height: 1.8;
+    color: #4a4d6b;
+}
+.p-theme__text:last-child { margin-block-end: 0; }
+
+/* ---------- Band 1.5 — journey ---------- */
+.p-journey {
+    padding-block: 72px;
+    background: linear-gradient(180deg, #f6f4ff 0%, #fff 100%);
+}
+.p-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+    counter-reset: p-step;
+}
+.p-step {
+    position: relative;
+    padding: 32px 26px 28px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid var(--p-line);
+    box-shadow: 0 20px 44px -30px rgba(60, 40, 160, .45);
+}
+.p-step__num {
+    position: absolute;
+    inset-block-start: 22px;
+    inset-inline-end: 24px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--p-tint);
+}
+.p-step__icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-block-end: 18px;
+    border-radius: 15px;
+    background: var(--p-tint);
+    color: var(--p-brand);
+    font-size: 1.2rem;
+}
+.p-step__title {
+    margin-block-end: 8px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #2a1f9d;
+}
+.p-step__text {
+    font-size: .84rem;
+    line-height: 1.65;
+    color: var(--p-muted);
+}
+
 /* ---------- Band 2 — organisations ---------- */
 .p-organisations {
     padding-block: 72px;
@@ -469,6 +624,47 @@
     transition: background-color .2s, color .2s;
 }
 a.p-org__link:hover, a.p-org__link:focus-visible { background: var(--p-brand); color: #fff; }
+
+.p-org__stats {
+    display: grid;
+    gap: 6px;
+    margin-block-start: 16px;
+    padding-block-start: 14px;
+    border-block-start: 1px solid var(--p-line);
+}
+.p-org__stat {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: .78rem;
+}
+.p-org__stat dt { color: #8a8ca6; }
+.p-org__stat dd { margin: 0; font-weight: 700; color: var(--p-ink); }
+.p-org__note {
+    margin-block-start: 12px;
+    font-size: .74rem;
+    line-height: 1.5;
+    color: var(--p-brand);
+}
+.p-org__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-block-start: auto;
+    padding: 12px 20px;
+    border-radius: 999px;
+    background: var(--p-tint);
+    font-size: .76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    color: var(--p-brand);
+    text-decoration: none;
+    transition: background-color .2s, color .2s;
+}
+.p-org__cta:hover, .p-org__cta:focus-visible { background: var(--p-brand); color: #fff; }
 
 /* ---------- Band 3 — network ---------- */
 .p-network {
@@ -611,7 +807,8 @@ a.p-org__link:hover, a.p-org__link:focus-visible { background: var(--p-brand); c
     .p-intro__grid,
     .p-split,
     .p-network__grid,
-    .p-sheet__grid { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+    .p-sheet__grid,
+    .p-steps { grid-template-columns: minmax(0, 1fr); gap: 36px; }
     .p-intro__media { aspect-ratio: 16 / 10; }
 }
 @media (max-width: 640px) {
