@@ -34,7 +34,8 @@
 
     {{-- ================= 0. BANNER ================= --}}
     <section class="reg-banner" aria-labelledby="reg-banner-title">
-        <div class="reg-banner__photo" style="background-image:url('{{ $imgBanner }}')" aria-hidden="true"></div>
+
+        <div class="reg-banner__photo" style="background-image: url('/assets/images/sponsors_ban.png'); background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
 
         <div class="container reg-banner__inner">
             <p class="reg-banner__eyebrow">{{ __('pricing.banner.eyebrow') }}</p>
@@ -47,14 +48,14 @@
             <p class="reg-banner__lede">{{ __('pricing.banner.lede') }}</p>
 
             <ul class="reg-banner__facts">
-                <li>
+                <!-- <li>
                     <span class="reg-banner__icon" aria-hidden="true"><i class="fas fa-calendar-days"></i></span>
                     <strong>{{ $edition->dateLine($locale) }}</strong>
                 </li>
                 <li>
                     <span class="reg-banner__icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
                     <strong>{{ $edition->venueLine($locale) }}</strong>
-                </li>
+                </li> -->
             </ul>
         </div>
     </section>

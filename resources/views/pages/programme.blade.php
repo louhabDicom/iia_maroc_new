@@ -183,7 +183,7 @@
 
     {{-- ============ 4. Closing band ============ --}}
     <section class="pg-cta" aria-labelledby="pg-cta-title">
-        <img class="pg-cta__bg" src="{{ $ctaImage }}" alt="" aria-hidden="true"
+        <img class="pg-cta__bg"  src="{{ asset('assets/images/devenezsponsor.png') }}"  alt="" aria-hidden="true"
              loading="lazy" decoding="async" referrerpolicy="no-referrer">
 
         <div class="container pg-cta__inner">

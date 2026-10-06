@@ -141,7 +141,7 @@ return [
         // screen lit. It carries the ARABCIA caption strip, which is why it is
         // shot wide enough for the text to sit inside it.
         'about_inset' => [
-            'src' => 'assets/images/about_img2.png',
+            'src' => 'assets/images/about_img2.jpg',
             'width' => 360,
             'height' => 270,
         ],

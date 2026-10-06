@@ -88,7 +88,7 @@
 
     {{-- ================= 1. BANNER ================= --}}
     <section class="sp-intro" aria-labelledby="sponsoring-intro-title">
-        <div class="sp-intro__photo" style="background-image:url('{{ $imgBanner }}')" aria-hidden="true"></div>
+        <div class="sp-intro__photo" style="background-image: url('/assets/images/Bannière-sponsoring.png'); background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
 
         <div class="container">
             <div class="sp-intro__body">
@@ -298,7 +298,7 @@
 
     {{-- ================= 6. CLOSING BAND ================= --}}
     <section class="sp-closing" aria-labelledby="sponsoring-closing-title">
-        <div class="sp-closing__photo" style="background-image:url('{{ $imgClosing }}')" aria-hidden="true"></div>
+        <div class="sp-closing__photo" style="background-image: url('/assets/images/ban_presentation.webp'); background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
 
         <div class="container">
             <div class="sp-closing__body">

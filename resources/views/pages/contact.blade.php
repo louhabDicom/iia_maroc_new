@@ -54,7 +54,7 @@
 
     {{-- ================= 0. CONTACT BANNER (Hassan Tower) ================= --}}
     <section class="c-banner" aria-labelledby="banner-heading">
-        <div class="c-banner__photo" style="background-image:url('{{ $bannerImage }}')" aria-hidden="true"></div>
+        <div class="c-banner__photo"  style="background-image: url('/assets/images/devenezsponsor.png'); background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
 
         <div class="container c-banner__inner">
             <p class="c-banner__eyebrow">{{ __('nav.contact') }}</p>
@@ -68,14 +68,14 @@
 
             @if ($edition)
                 <ul class="c-banner__facts">
-                    <li>
+                    <!-- <li>
                         <span class="c-banner__fact-icon" aria-hidden="true"><i class="fas fa-calendar-days"></i></span>
                         <strong>{{ $edition->dateLine($locale) }}</strong>
                     </li>
                     <li>
                         <span class="c-banner__fact-icon" aria-hidden="true"><i class="fas fa-location-dot"></i></span>
                         <strong>{{ $edition->venueLine($locale) }}</strong>
-                    </li>
+                    </li> -->
                 </ul>
             @endif
         </div>
@@ -262,7 +262,7 @@
                 </div>
 
                 {{-- ---- Practical information ---- --}}
-                <aside class="c-info" aria-labelledby="info-heading">
+                <aside class="c-info" aria-labelledby="info-heading"   style="height:64% ; background-image: url('/assets/images/background.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
                     <div class="c-info__inner">
                         <h2 class="c-info__title" id="info-heading">{{ __('contact.info_title') }}</h2>
 
@@ -289,9 +289,9 @@
                         </ul>
                     </div>
 
-                    <figure class="c-info__photo">
-                        <img src="{{ $venueImage }}" alt="" loading="lazy" decoding="async">
-                    </figure>
+                    <!-- <figure class="c-info__photo">
+                        <img src="{{ asset('assets/images/background.png') }}" alt="" loading="lazy" decoding="async">
+                    </figure> -->
                 </aside>
             </div>
         </div>

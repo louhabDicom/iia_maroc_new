@@ -10,7 +10,7 @@
 
     /* ---- Images. Banner = online placeholder (swap for a Rabat / Oudayas photo, e.g. asset('assets/images/presentation/banner.jpg')).
           Each section keeps a solid CSS fallback, so a dead link never breaks the layout. ---- */
-    $imgBanner = 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1800&q=80';
+    $imgBanner = 'assets/images/presentation/logoarabiia.png';
     $imgAbout  = ['src' => 'assets/images/presentation/popup.png', 'width' => 660, 'height' => 430];
     $imgSoft   = 'https://images.unsplash.com/photo-1613327986042-63d4425a1a5d?auto=format&fit=crop&w=1800&q=60';
 
@@ -74,7 +74,7 @@
 
     {{-- ================= 1. BANNER ================= --}}
     <section class="pr-intro" aria-labelledby="presentation-banner-title">
-        <div class="pr-intro__photo" style="background-image:url('{{ $imgBanner }}')" aria-hidden="true"></div>
+        <div class="pr-intro__photo" style="background-image: url('/assets/images/ban_presentation.webp'); background-size: cover; background-position: center; background-repeat: no-repeat;" aria-hidden="true"></div>
 
         <div class="container">
             <div class="pr-intro__body">
@@ -208,6 +208,7 @@
 {{-- Styles live INSIDE the section on purpose: anything after @endsection in a
      child view is printed before <!DOCTYPE>, which forces quirks mode. --}}
 <style>
+    
     .pr-page {
         --pr-ink: #14106a;
         --pr-brand: #2f27b8;
