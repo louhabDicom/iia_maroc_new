@@ -25,7 +25,7 @@
     <section class="section-padding-04 pt-0" aria-labelledby="pricing-what-title">
         <div class="container">
             <div class="pricing-includes ux-reveal">
-                <h2 id="pricing-what-title" class="ux-section-title">@lang('pricing.what.title')</h2>
+                <x-design.section-head id="pricing-what-title" :title="__('pricing.what.title')" />
 
                 <ul class="ux-checks ux-checks--row text-start">
                     @foreach (__('pricing.what.items') as $item)
@@ -228,14 +228,90 @@
                 </div>
             @endif
 
-            {{-- The membership notice from the 2024 page, kept above the cards.
-                 It is the single most useful line here for most visitors: most
-                 of them are already members and are buying at the member rate. --}}
-            <div class="ux-notice ux-notice--success ux-reveal mt-5" role="note">
-                <i class="fas fa-id-badge ux-notice__icon" aria-hidden="true"></i>
-                <span>@lang('login.member_notice')</span>
-            </div>
+            <p class="pricing-note ux-reveal mt-4">@lang('pricing.note')</p>
 
+            {{-- Recruitment band, between the tariffs and the two account paths.
+                 A light-blue horizontal strip: the visitor who is not yet a
+                 member is the one for whom the member rate is out of reach, so
+                 this is the one place on the page that sells membership. --}}
+            <aside class="pricing-member-band ux-reveal" role="note">
+                <span class="pricing-member-band__icon" aria-hidden="true">
+                    <i class="fas fa-id-badge"></i>
+                </span>
+
+                <div class="pricing-member-band__body">
+                    <h2 class="pricing-member-band__title">@lang('pricing.membership.title')</h2>
+                    <p class="pricing-member-band__text">@lang('pricing.membership.text')</p>
+                </div>
+
+                <a href="{{ route('contact') }}" class="ux-btn ux-btn--primary pricing-member-band__cta">
+                    <span>@lang('pricing.membership.cta')</span>
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </a>
+            </aside>
+
+        </div>
+    </section>
+
+    {{-- The fork: sign in, or create an account. Two equal columns so neither
+         reads as the default, because neither is. --}}
+    <section class="section-padding-03 ux-section--defer" aria-labelledby="pricing-paths-title">
+        <div class="container">
+            <x-design.section-head
+                id="pricing-paths-title"
+                :title="__('pricing.paths.title')"
+                :lede="__('pricing.paths.lede')"
+                align="center" />
+
+            <div class="pricing-paths">
+
+                <article class="pricing-path ux-reveal">
+                    <h3 class="pricing-path__title">@lang('pricing.paths.existing_title')</h3>
+                    <p class="pricing-path__text">@lang('pricing.paths.existing_text')</p>
+
+                    <form method="POST" action="{{ route('login.store') }}" class="pricing-path__form">
+                        @csrf
+
+                        <x-form.field name="identifier" :label="__('login.identifier')" required>
+                            <input type="text" name="identifier" id="pricing-identifier" required
+                                   autocomplete="username"
+                                   dir="ltr"
+                                   value="{{ old('identifier') }}"
+                                   @class(['input', 'input-error' => $errors->has('identifier')])
+                                   @if ($errors->has('identifier')) aria-invalid="true" aria-describedby="identifier-error" @endif>
+                        </x-form.field>
+
+                        <x-form.field name="password" :label="__('register.password')" required>
+                            <input type="password" name="password" id="pricing-password" required
+                                   autocomplete="current-password"
+                                   dir="ltr"
+                                   @class(['input', 'input-error' => $errors->has('password')])
+                                   @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
+                        </x-form.field>
+
+                        <div class="app-check mb-3">
+                            <input type="checkbox" name="remember" id="pricing-remember" value="1" @checked(old('remember'))>
+                            <label for="pricing-remember">@lang('login.remember')</label>
+                        </div>
+
+                        <button type="submit" class="ux-btn ux-btn--primary w-100" data-ux-magnetic="0.14">
+                            <span>@lang('pricing.paths.existing_submit')</span>
+                        </button>
+                    </form>
+                </article>
+
+                <article class="pricing-path pricing-path--create ux-reveal">
+                    <h3 class="pricing-path__title">@lang('pricing.paths.create_title')</h3>
+                    <p class="pricing-path__text">@lang('pricing.paths.create_text')</p>
+
+                    <a href="{{ route('register') }}"
+                       class="ux-btn ux-btn--primary w-100 pricing-path__cta"
+                       data-ux-magnetic="0.14">
+                        <span>@lang('pricing.paths.create_cta')</span>
+                    </a>
+                </article>
+
+            </div>
         </div>
     </section>
 

@@ -483,7 +483,7 @@ $allyRows = [array_slice($allies, 0, 4), array_slice($allies, 4)];
     /* ---------- Band 1 ---------- */
     .sp-intro {
         padding-block: 76px 64px;
-        background: url('assets/images/sponsoring/ban.png') center / cover no-repeat;
+        background: url('/assets/images/sponsoring/ban.png') center / cover no-repeat;
        
     }
 
@@ -514,7 +514,7 @@ $allyRows = [array_slice($allies, 0, 4), array_slice($allies, 4)];
     /* ---------- Band 2 ---------- */
     .sp-why {
         padding-block: 72px;
-        background: url('assets/images/sponsoring/ban1.png') center / cover no-repeat;
+        background: url('/assets/images/sponsoring/ban1.png') center / cover no-repeat;
     }
 
     .sp-why__grid {
