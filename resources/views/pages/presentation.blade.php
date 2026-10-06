@@ -31,7 +31,7 @@
     $stepStyle = [
         ['icon' => 'fa-brain',        'tone' => 'violet'],
         ['icon' => 'fa-bullseye',     'tone' => 'violet'],
-        ['icon' => 'fa-chart-simple', 'tone' => 'blue'],
+        ['icon' => 'fa-brain', 'tone' => 'violet'],
     ];
     $steps = (array) __('presentation.journey.steps');
 
