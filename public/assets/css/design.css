@@ -2814,9 +2814,23 @@ body.drawer-open {
     background-size: cover;
 
     color: #fff;
+    /* One band at one height across the site. The home hero is the tallest at
+       every width, so its height is the target and every shorter inner-page
+       hero grows to meet it rather than the home hero shrinking to match a
+       page with a one-line heading. The values below are the home hero's
+       measured height per breakpoint. */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 675px;
     overflow: hidden;
     padding-block: calc(var(--header-h) + var(--sp-8)) var(--sp-9);
     position: relative;
+}
+
+/* Home hero's measured height per breakpoint, so an inner page matches it. */
+@media (max-width: 1199.98px) {
+    .h-hero { min-height: 661px; }
 }
 
 /* Arabic */
@@ -3049,6 +3063,7 @@ html[dir="rtl"] .h-hero {
     }
 
     .h-hero {
+        min-height: 627px;
         padding-block: calc(var(--header-h) + var(--sp-7)) var(--sp-8);
     }
 
@@ -3057,7 +3072,17 @@ html[dir="rtl"] .h-hero {
     }
 }
 
+@media (max-width: 767.98px) {
+    .h-hero {
+        min-height: 628px;
+    }
+}
+
 @media (max-width: 575.98px) {
+    .h-hero {
+        min-height: 862px;
+    }
+
     .h-hero__actions .h-btn {
         flex: 1 1 100%;
     }

@@ -3,10 +3,7 @@
 @section('title', __('order.title'))
 
 @section('content')
-    <x-front.hero
-        :title="__('order.title')"
-        :crumbs="[__('order.title') => null]"
-        image="assets/images/bg/price_bg.jpg" />
+
 
     {{-- Checkout.
 

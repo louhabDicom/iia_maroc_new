@@ -106,6 +106,28 @@ class OrderInvoiceAccessTest extends TestCase
     }
 
     /**
+     * The page is the invoice sheet, not a table that merely resembles one.
+     *
+     * The sheet markup and styles live in resources/views/invoices/partials/
+     * and are shared with the standalone print pages, so this asserts the
+     * order page still includes them rather than drifting into a second,
+     * divergent design.
+     */
+    public function test_the_order_page_renders_the_shared_invoice_sheet(): void
+    {
+        $ticket = $this->conference();
+        $owner = $this->delegate();
+        $order = $this->orderFor($owner, $ticket);
+
+        $this->actingAs($owner)
+            ->get(route('orders.show', ['order' => $order->getKey()]))
+            ->assertOk()
+            ->assertSee('invoice-doc--embedded', false)
+            ->assertSee('class="sheet"', false)
+            ->assertSee(__('order.invoice.proforma_title', [], 'fr'));
+    }
+
+    /**
      * The regression itself: the id has to travel in the path. When it was
      * generated as `?order=21` the route resolved to `/commande` with no order
      * bound, and the owner was refused their own invoice.

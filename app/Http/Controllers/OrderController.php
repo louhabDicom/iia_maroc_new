@@ -68,8 +68,23 @@ class OrderController extends Controller
     {
         $order = $this->findOrder($request);
 
+        // The sheet on the page is the same document the PDF renders, built
+        // from the same payload, so a total on screen can never disagree with
+        // the total on the downloadable invoice. A settled order carries a
+        // numbered facture; anything else is still provisional, and the page
+        // says so in the document itself rather than only in a badge.
+        $payload = $this->invoices->orderPayload($order);
+        $locale = $payload['invoiceLocale'];
+        $hasInvoice = filled((string) $order->invoice_number);
+
         return view('pages.orders.show', [
             'order' => $order,
+            'payload' => $payload,
+            'heading' => $hasInvoice
+                ? __('order.invoice.title', ['number' => $order->invoice_number], $locale)
+                : __('order.invoice.proforma_title', [], $locale),
+            'badge' => $order->status->label($locale),
+            'isProforma' => ! $hasInvoice,
             'locale' => Locale::parse(app()->getLocale()),
             'currentRoute' => 'orders',
         ]);

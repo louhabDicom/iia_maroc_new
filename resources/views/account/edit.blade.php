@@ -21,24 +21,7 @@
 
 <div class="d-page d-page--account">
 
-    <x-front.hero
-        :title="__('account.edit_title')"
-        :eyebrow="__('account.title')"
-        :lede="__('account.edit_lede')"
-        :crumbs="[
-            __('account.title') => route('account'),
-            __('account.profile') => null,
-        ]"
-        :facts="[
-            ['icon' => 'fa-shield-alt', 'label' => $user->hasConfirmedTotp()
-                ? __('account.totp_enrolled')
-                : __('account.totp_not_enrolled')],
-        ]"
-        :cta-label="__('account.title')"
-        :cta-url="route('account')"
-        :secondary-label="__('nav.pricing')"
-        :secondary-url="route('pricing')"
-        image="assets/images/bg/about_page_bg.jpg" />
+
 
     <section class="d-section" aria-labelledby="details-heading">
         <div class="container">

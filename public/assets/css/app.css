@@ -122,13 +122,12 @@ body.rtl h1, body.rtl h2, body.rtl h3, body.rtl h4, body.rtl h5, body.rtl h6 {
    'Permanent Marker' face is left as it is: swapping the typeface is a
    typography decision, and this pass was scoped to colour. */
 .btn-join {
-    background: linear-gradient(240deg, #7384ff 0%, #2c308b 100%);
+    background: #2c308b;
     border: none;
     border-radius: 30px;
     color: #fff;
     display: inline-block;
     font-size: 17px;
-    font-family: 'Permanent Marker', cursive;
     font-weight: 700;
     letter-spacing: .5px;
     padding: 12px 34px;

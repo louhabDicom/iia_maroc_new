@@ -39,24 +39,7 @@
 
 <div class="d-page d-page--cart">
 
-    <x-front.hero
-        :title="__('order.cart.title')"
-        :eyebrow="$currentEdition?->identityLabel()"
-        :lede="__('order.cart.subtitle')"
-        :crumbs="[__('order.cart.title') => null]"
-        :facts="[
-            {{-- A singular/plural key pair rather than `trans_choice`, because
-                 Arabic has three forms and `trans_choice` on this project's
-                 locale range cannot express them. --}}
-            ['icon' => 'fa-ticket-alt', 'label' => $places === 1
-                ? __('order.cart.places', ['count' => 1])
-                : __('order.cart.places_plural', ['count' => $places])],
-        ]"
-        :cta-label="$registrationOpen ? __('order.cart.checkout') : null"
-        :cta-url="$registrationOpen ? (auth()->check() ? route('pricing') : route('register')) : null"
-        :secondary-label="__('order.cart.continue')"
-        :secondary-url="route('pricing')"
-        image="assets/images/bg/price_bg.jpg" />
+
 
     {{-- ---------------------------------------------------------------------
         Success and error notices, above everything rather than inside the

@@ -33,27 +33,12 @@
 <div class="d-page d-page--account">
 
     @php
-        $accountLocale = in_array($user->locale, ['fr', 'en', 'ar'], true)
-            ? $user->locale
-            : app()->getLocale();
+    $accountLocale = in_array($user->locale, ['fr', 'en', 'ar'], true)
+    ? $user->locale
+    : app()->getLocale();
     @endphp
 
-    <x-front.hero
-        :title="__('account.title')"
-        :eyebrow="__('account.profile')"
-        :lede="__('account.lede')"
-        :crumbs="[__('account.title') => null]"
-        :facts="[
-            ['icon' => 'fa-envelope', 'label' => $user->email],
-            ['icon' => 'fa-shield-alt', 'label' => $user->hasConfirmedTotp()
-                ? __('account.totp_enrolled')
-                : __('account.totp_not_enrolled')],
-        ]"
-        :cta-label="__('account.edit_title')"
-        :cta-url="route('account.edit')"
-        :secondary-label="__('nav.programme')"
-        :secondary-url="route('programme')"
-        image="assets/images/bg/about_page_bg.jpg" />
+
 
 
     <section class="d-section d-section--alt" aria-labelledby="checklist-heading">
@@ -72,106 +57,106 @@
                         <p class="d-form-panel__lede">@lang('account.checklist_lede')</p>
 
                         @if ($canOrder)
-                            {{-- Reached state gets a positive statement rather
+                        {{-- Reached state gets a positive statement rather
                                  than a greyed-out list: three struck-through rows
                                  read as a to-do list somebody abandoned. --}}
-                            <p class="d-notice d-notice--success mb-0">
-                                <i class="fas fa-check-circle" aria-hidden="true"></i>
-                                <span>@lang('account.checklist_done')</span>
-                            </p>
+                        <p class="d-notice d-notice--success mb-0">
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <span>@lang('account.checklist_done')</span>
+                        </p>
                         @else
-                            <ol class="d-steps">
-                                {{-- Step 1: the address. There is no link here —
+                        <ol class="d-steps">
+                            {{-- Step 1: the address. There is no link here —
                                      the only way to confirm is the email already
                                      in their inbox, and a link to "resend" would
                                      be a feature, not a fix. The row says so. --}}
-                                <li class="d-steps__row{{ $user->hasVerifiedEmail() ? ' is-done' : ' is-todo' }}">
-                                    <span class="d-steps__marker" aria-hidden="true">
-                                        <i class="fas {{ $user->hasVerifiedEmail() ? 'fa-check' : 'fa-envelope' }}"></i>
-                                    </span>
+                            <li class="d-steps__row{{ $user->hasVerifiedEmail() ? ' is-done' : ' is-todo' }}">
+                                <span class="d-steps__marker" aria-hidden="true">
+                                    <i class="fas {{ $user->hasVerifiedEmail() ? 'fa-check' : 'fa-envelope' }}"></i>
+                                </span>
 
-                                    <div class="d-steps__body">
-                                        <p class="d-steps__title">@lang('account.step_email_title')</p>
-                                        <p class="d-steps__text">@lang('account.step_email_text')</p>
-                                    </div>
+                                <div class="d-steps__body">
+                                    <p class="d-steps__title">@lang('account.step_email_title')</p>
+                                    <p class="d-steps__text">@lang('account.step_email_text')</p>
+                                </div>
 
-                                    <span class="d-tag d-tag--{{ $user->hasVerifiedEmail() ? 'success' : 'todo' }}">
-                                        @if ($user->hasVerifiedEmail())
-                                            @lang('account.step_done')
-                                        @else
-                                            @lang('account.step_pending')
-                                        @endif
-                                    </span>
-                                </li>
+                                <span class="d-tag d-tag--{{ $user->hasVerifiedEmail() ? 'success' : 'todo' }}">
+                                    @if ($user->hasVerifiedEmail())
+                                    @lang('account.step_done')
+                                    @else
+                                    @lang('account.step_pending')
+                                    @endif
+                                </span>
+                            </li>
 
-                                {{-- Step 2: the authenticator. The one row with a
+                            {{-- Step 2: the authenticator. The one row with a
                                      button: `totp.setup` is a real screen with a
                                      QR code, so the delegate can finish it here
                                      without losing this page. --}}
-                                <li class="d-steps__row{{ $user->hasConfirmedTotp() ? ' is-done' : ' is-todo' }}">
-                                    <span class="d-steps__marker" aria-hidden="true">
-                                        <i class="fas {{ $user->hasConfirmedTotp() ? 'fa-check' : 'fa-shield-alt' }}"></i>
-                                    </span>
+                            <li class="d-steps__row{{ $user->hasConfirmedTotp() ? ' is-done' : ' is-todo' }}">
+                                <span class="d-steps__marker" aria-hidden="true">
+                                    <i class="fas {{ $user->hasConfirmedTotp() ? 'fa-check' : 'fa-shield-alt' }}"></i>
+                                </span>
 
-                                    <div class="d-steps__body">
-                                        <p class="d-steps__title">@lang('account.step_totp_title')</p>
-                                        <p class="d-steps__text">@lang('account.step_totp_text')</p>
-                                    </div>
+                                <div class="d-steps__body">
+                                    <p class="d-steps__title">@lang('account.step_totp_title')</p>
+                                    <p class="d-steps__text">@lang('account.step_totp_text')</p>
+                                </div>
 
-                                    @if ($user->hasConfirmedTotp())
-                                        <span class="d-tag d-tag--success">@lang('account.step_done')</span>
-                                    @else
-                                        <a href="{{ route('totp.setup') }}" class="d-btn d-btn--primary d-btn--sm">
-                                            <span>@lang('account.step_action')</span>
-                                        </a>
-                                    @endif
-                                </li>
+                                @if ($user->hasConfirmedTotp())
+                                <span class="d-tag d-tag--success">@lang('account.step_done')</span>
+                                @else
+                                <a href="{{ route('totp.setup') }}" class="d-btn d-btn--primary d-btn--sm">
+                                    <span>@lang('account.step_action')</span>
+                                </a>
+                                @endif
+                            </li>
 
-                                {{-- Step 3: the terms. A checkbox and a submit, not
+                            {{-- Step 3: the terms. A checkbox and a submit, not
                                      a link: acceptance is an act with a timestamp,
                                      and a link that silently recorded consent on
                                      the way to the document would record it for
                                      everyone who went to look. --}}
-                                <li class="d-steps__row{{ $termsAccepted ? ' is-done' : ' is-todo' }}">
-                                    <span class="d-steps__marker" aria-hidden="true">
-                                        <i class="fas {{ $termsAccepted ? 'fa-check' : 'fa-file-signature' }}"></i>
-                                    </span>
+                            <li class="d-steps__row{{ $termsAccepted ? ' is-done' : ' is-todo' }}">
+                                <span class="d-steps__marker" aria-hidden="true">
+                                    <i class="fas {{ $termsAccepted ? 'fa-check' : 'fa-file-signature' }}"></i>
+                                </span>
 
-                                    <div class="d-steps__body">
-                                        <p class="d-steps__title">@lang('account.step_terms_title')</p>
-                                        <p class="d-steps__text">@lang('account.step_terms_text')</p>
-
-                                        @if ($termsAccepted)
-                                            <p class="d-steps__stamp">
-                                                <i class="fas fa-clock" aria-hidden="true"></i>
-                                                <span>@lang('account.terms_accepted_on', [
-                                                    'date' => $user->terms_accepted_at->translatedFormat('d M Y'),
-                                                ])</span>
-                                            </p>
-                                        @else
-                                            <form method="POST" action="{{ route('account.terms') }}"
-                                                  class="d-steps__form">
-                                                @csrf
-                                                <input type="hidden" name="accept" value="1">
-
-                                                <label class="d-check">
-                                                    <input type="checkbox" name="confirm" value="1" required
-                                                           class="form-check-input">
-                                                    <span>@lang('account.terms_label')</span>
-                                                </label>
-
-                                                <button type="submit" class="d-btn d-btn--primary d-btn--sm">
-                                                    <span>@lang('account.step_action')</span>
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
+                                <div class="d-steps__body">
+                                    <p class="d-steps__title">@lang('account.step_terms_title')</p>
+                                    <p class="d-steps__text">@lang('account.step_terms_text')</p>
 
                                     @if ($termsAccepted)
-                                        <span class="d-tag d-tag--success">@lang('account.step_done')</span>
+                                    <p class="d-steps__stamp">
+                                        <i class="fas fa-clock" aria-hidden="true"></i>
+                                        <span>@lang('account.terms_accepted_on', [
+                                            'date' => $user->terms_accepted_at->translatedFormat('d M Y'),
+                                            ])</span>
+                                    </p>
+                                    @else
+                                    <form method="POST" action="{{ route('account.terms') }}"
+                                        class="d-steps__form">
+                                        @csrf
+                                        <input type="hidden" name="accept" value="1">
+
+                                        <label class="d-check">
+                                            <input type="checkbox" name="confirm" value="1" required
+                                                class="form-check-input">
+                                            <span>@lang('account.terms_label')</span>
+                                        </label>
+
+                                        <button type="submit" class="d-btn d-btn--primary d-btn--sm">
+                                            <span>@lang('account.step_action')</span>
+                                        </button>
+                                    </form>
                                     @endif
-                                </li>
-                            </ol>
+                                </div>
+
+                                @if ($termsAccepted)
+                                <span class="d-tag d-tag--success">@lang('account.step_done')</span>
+                                @endif
+                            </li>
+                        </ol>
                         @endif
                     </div>
                 </div>
@@ -212,11 +197,11 @@
                                     <span class="d-panel__key">@lang('account.totp_label')</span>
 
                                     @if ($user->hasConfirmedTotp())
-                                        <span class="d-tag d-tag--success">@lang('account.totp_enrolled')</span>
+                                    <span class="d-tag d-tag--success">@lang('account.totp_enrolled')</span>
                                     @else
-                                        <a href="{{ route('totp.setup') }}" class="d-panel__link">
-                                            @lang('account.totp_not_enrolled')
-                                        </a>
+                                    <a href="{{ route('totp.setup') }}" class="d-panel__link">
+                                        @lang('account.totp_not_enrolled')
+                                    </a>
                                     @endif
                                 </li>
                             </ul>
@@ -274,8 +259,7 @@
                              rather than a fourth shortcut row: it is destructive
                              to the session, and a link among three harmless ones
                              reads as equally harmless. --}}
-                        <form method="POST" action="{{ route('logout') }}"
-                           >
+                        <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="d-btn d-btn--danger-ghost d-btn--block">
                                 <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
@@ -309,83 +293,83 @@
             </div>
 
             @if ($orders->isEmpty())
-                {{-- `order.no_orders` rather than the generic `state.empty`:
+            {{-- `order.no_orders` rather than the generic `state.empty`:
                      "no information is available yet" is a fallback for a whole
                      page, not for a section that is legitimately empty on an
                      account that registered an hour ago. --}}
-                <div class="d-empty">
-                    <span class="d-empty__icon" aria-hidden="true">
-                        <i class="fas fa-ticket-alt"></i>
-                    </span>
-                    <p class="d-empty__text">@lang('order.no_orders')</p>
-                    <a href="{{ route('pricing') }}" class="d-btn d-btn--primary">
-                        <span>@lang('pricing.register')</span>
-                        <i class="fas fa-arrow-right d-btn__arrow" aria-hidden="true"></i>
-                    </a>
-                </div>
+            <div class="d-empty">
+                <span class="d-empty__icon" aria-hidden="true">
+                    <i class="fas fa-ticket-alt"></i>
+                </span>
+                <p class="d-empty__text">@lang('order.no_orders')</p>
+                <a href="{{ route('pricing') }}" class="d-btn d-btn--primary">
+                    <span>@lang('pricing.register')</span>
+                    <i class="fas fa-arrow-right d-btn__arrow" aria-hidden="true"></i>
+                </a>
+            </div>
             @else
-                <ul class="d-orders">
-                    @foreach ($orders as $order)
-                        @php
-                            /* An `order_items` row has no single `quantity`
-                               column — a seat is either a member seat or a
-                               standard one, and both can be on the same line —
-                               so the count is the model's own method rather than
-                               a `sum()` over a column that does not exist.
-                               Eager loaded in the controller, so this is not a
-                               query per row. */
-                            $places = $order->items->sum(
-                                fn ($item): int => $item->member_quantity + $item->standard_quantity
-                            );
-                        @endphp
+            <ul class="d-orders">
+                @foreach ($orders as $order)
+                @php
+                /* An `order_items` row has no single `quantity`
+                column — a seat is either a member seat or a
+                standard one, and both can be on the same line —
+                so the count is the model's own method rather than
+                a `sum()` over a column that does not exist.
+                Eager loaded in the controller, so this is not a
+                query per row. */
+                $places = $order->items->sum(
+                fn ($item): int => $item->member_quantity + $item->standard_quantity
+                );
+                @endphp
 
-                        {{-- `total` is the snapshot column written once at
+                {{-- `total` is the snapshot column written once at
                              checkout, and `reference` is the code quoted in the
                              email and printed on the invoice — neither is read
                              from a relation, so the row cannot drift from what
                              was actually charged. --}}
-                        <li class="d-order ux-reveal">
-                            <div class="d-order__id">
-                                <p dir="ltr" class="d-order__ref">
-                                    {{ $order->reference ?? ('#'.$order->getKey()) }}
-                                </p>
-                                <p class="d-order__meta">
-                                    {{ $order->created_at->translatedFormat('d M Y') }}
-                                    <span class="d-order__dot" aria-hidden="true">·</span>
-                                    <span>
-                                        {{ $places > 0
+                <li class="d-order ux-reveal">
+                    <div class="d-order__id">
+                        <p dir="ltr" class="d-order__ref">
+                            {{ $order->reference ?? ('#'.$order->getKey()) }}
+                        </p>
+                        <p class="d-order__meta">
+                            {{ $order->created_at->translatedFormat('d M Y') }}
+                            <span class="d-order__dot" aria-hidden="true">·</span>
+                            <span>
+                                {{ $places > 0
                                             ? trans_choice('account.order_places', $places, ['count' => $places])
                                             : __('account.order_no_places') }}
-                                    </span>
-                                </p>
-                            </div>
+                            </span>
+                        </p>
+                    </div>
 
-                            <div class="d-order__side">
-                                <span class="d-tag d-tag--{{ $order->status->colour() }}">
-                                    {{ $order->status->label($currentLocale->value) }}
-                                </span>
+                    <div class="d-order__side">
+                        <span class="d-tag d-tag--{{ $order->status->colour() }}">
+                            {{ $order->status->label($currentLocale->value) }}
+                        </span>
 
-                                {{-- dir="ltr": an amount beside a currency code
+                        {{-- dir="ltr": an amount beside a currency code
                                      must not be bidi-reordered. --}}
-                                <p dir="ltr" class="d-order__amount">
-                                    {{ \App\Support\Money::format($order->total, $order->currency, $currentLocale->value) }}
-                                </p>
+                        <p dir="ltr" class="d-order__amount">
+                            {{ \App\Support\Money::format($order->total, $order->currency, $currentLocale->value) }}
+                        </p>
 
-                                <a href="{{ route('orders.show', ['order' => $order->id]) }}"
-                                   class="d-btn d-btn--quiet d-btn--sm">
-                                    <span>@lang('action.view')</span>
-                                </a>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
+                        <a href="{{ route('orders.show', ['order' => $order->id]) }}"
+                            class="d-btn d-btn--quiet d-btn--sm">
+                            <span>@lang('action.view')</span>
+                        </a>
+                    </div>
+                </li>
+                @endforeach
+            </ul>
 
-                <p class="d-orders__foot">
-                    <a href="{{ route('orders.index') }}" class="d-btn d-btn--ghost">
-                        <span>@lang('account.orders')</span>
-                        <i class="fas fa-arrow-right d-btn__arrow" aria-hidden="true"></i>
-                    </a>
-                </p>
+            <p class="d-orders__foot">
+                <a href="{{ route('orders.index') }}" class="d-btn d-btn--ghost">
+                    <span>@lang('account.orders')</span>
+                    <i class="fas fa-arrow-right d-btn__arrow" aria-hidden="true"></i>
+                </a>
+            </p>
             @endif
         </div>
     </section>
