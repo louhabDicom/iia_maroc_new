@@ -317,7 +317,33 @@
         --hp-line: #e4e1f4;
         --hp-tint: #eeebfb;
         --hp-surface: #fff;
+
+        /* chosen day tab: change these two to restyle it */
+        --hp-day-active-bg: #fff;
+        --hp-day-active-ink: #2b1d9a;
     }
+
+    /* ---------- Day tabs: the chosen one ----------
+       Keyed on aria-selected, which the tab script keeps correct, instead of
+       relying only on .h-day--current (which is set on page load and was
+       never moved when switching day). */
+    .h-programme .h-day {
+        transition: background-color .25s, color .25s, box-shadow .25s, transform .25s, border-color .25s;
+    }
+
+.h-programme .h-day[aria-selected="true"] {
+    background: var(--hp-day-active-ink);
+    border-color: var(--hp-day-active-bg);
+    color: wheat !important;
+    box-shadow: 0 18px 30px -16px rgba(0, 0, 0, .55);
+}
+
+.h-programme .h-day[aria-selected="true"] .h-day__label,
+.h-programme .h-day[aria-selected="true"] .h-day__num,
+.h-programme .h-day[aria-selected="true"] .h-day__month {
+    color: wheat !important;
+    opacity: 1;
+}
 
     /* ---------- Scroll area ---------- */
     .h-slots-wrap { position: relative; }
@@ -509,10 +535,10 @@
         align-items: center;
         gap: 8px;
         padding: 12px 6px 11px;
-        border: 1px solid var(--tone-line);
+        border: 1px solid var(--hp-line);
         border-radius: 10px;
-        background: var(--tone-bg);
-        color: var(--tone);
+        background: #fff;
+        color: var(--hp-muted);
         font: inherit;
         font-size: .72rem;
         font-weight: 700;
@@ -523,7 +549,12 @@
         transition: transform .2s, box-shadow .2s, background-color .2s, color .2s, border-color .2s;
     }
 
-    .h-ws__tab:hover { transform: translateY(-2px); }
+    .h-ws__tab:hover {
+        transform: translateY(-2px);
+        border-color: var(--tone);
+        background: var(--tone-bg);
+        color: var(--tone);
+    }
     .h-ws__tab:focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
 
     .h-ws__ico {
@@ -532,19 +563,27 @@
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, .75);
+        background: var(--tone-bg);
+        color: var(--tone);
         font-size: .95rem;
-        transition: background-color .2s, transform .25s;
+        transition: background-color .2s, color .2s, transform .25s;
     }
 
-    .h-ws__tab[aria-selected="true"] {
-        border-color: transparent;
+    /* chosen tab: solid colour fill + soft ring, clearly different from the white ones */
+    .h-ws__tab[aria-selected="true"],
+    .h-ws__tab[aria-selected="true"]:hover {
+        border-color: var(--tone);
         background: var(--tone-grad);
         color: #fff;
-        box-shadow: 0 14px 22px -14px var(--tone);
+        box-shadow: 0 0 0 3px var(--tone-bg), 0 14px 22px -12px var(--tone);
+        transform: none;
     }
 
-    .h-ws__tab[aria-selected="true"] .h-ws__ico { background: rgba(255, 255, 255, .2); transform: scale(1.08); }
+    .h-ws__tab[aria-selected="true"] .h-ws__ico {
+        background: rgba(255, 255, 255, .22);
+        color: #fff;
+        transform: scale(1.08);
+    }
 
     .h-ws__tab[aria-selected="true"]::after {
         content: "";
@@ -652,6 +691,15 @@
 
 <script>
     (function () {
+        /* ----- Day tabs: keep .h-day--current in sync with aria-selected ----- */
+        document.querySelectorAll('[data-day-tabs] [role="tab"]').forEach(function (tab) {
+            function sync() {
+                tab.classList.toggle('h-day--current', tab.getAttribute('aria-selected') === 'true');
+            }
+            sync();
+            new MutationObserver(sync).observe(tab, { attributes: true, attributeFilter: ['aria-selected'] });
+        });
+
         /* ----- Scroll state: edge fades + hint ----- */
         document.querySelectorAll('[data-slots-wrap]').forEach(function (wrap) {
             var box = wrap.querySelector('[data-slots-scroll]');
