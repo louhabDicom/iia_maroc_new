@@ -59,7 +59,7 @@
     .invoice-doc .brand__name span { color: var(--invoice-violet-2); }
     .invoice-doc .brand__sub { color: var(--invoice-deep); font-size: 9px; letter-spacing: 5px; margin-top: 4px; text-transform: uppercase; }
 
-    .invoice-doc .top { align-items: stretch; display: flex; gap: 14px; justify-content: space-between; margin-top: 22px; }
+    .invoice-doc .top { align-items: stretch; display: flex; gap: 14px; justify-content: space-between; margin-top: 137px; }
     .invoice-doc .top__title h1 {
         color: var(--invoice-deep); font-size: 40px; font-weight: 900; letter-spacing: -1px;
         line-height: 1; margin: 0; text-transform: uppercase;
