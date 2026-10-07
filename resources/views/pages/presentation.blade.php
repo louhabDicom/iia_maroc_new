@@ -63,7 +63,7 @@ $orgWebsites = [ 'ARABCIA' => 'https://arabciia.org/ar/', 'IIA_MAROC' => 'https:
     />
 </div>
 
-<div class="pr-page">
+<div class="pr-page" style="margin-top: -2%;">
 
     {{-- ================= 1. BANNER ================= --}}
     <section class="pr-intro" aria-labelledby="presentation-banner-title">
