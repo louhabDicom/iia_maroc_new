@@ -85,10 +85,10 @@
     <section class="c-section c-help" aria-labelledby="help-heading">
         <div class="container">
             <header class="c-head">
-                <p class="c-eyebrow">{{ __('contact.help_eyebrow') }}</p>
+                <!-- <p class="c-eyebrow"></p> -->
                 <h2 class="c-title" id="help-heading">
-                    {{ __('contact.help_title_a') }}
-                    <span class="c-title__accent">{{ __('contact.help_title_b') }}</span>
+                    {{ __('contact.help_eyebrow') }}
+                    <!-- <span class="c-title__accent">{{ __('contact.help_title_b') }}</span> -->
                 </h2>
             </header>
 

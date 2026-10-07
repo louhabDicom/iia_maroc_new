@@ -197,7 +197,13 @@ class Edition extends Model
         // Same month: "16 & 17 décembre 2026" reads better than repeating the
         // month, and matches how the brief writes the dates.
         if ($this->starts_on->month === $this->ends_on->month) {
-            return $this->starts_on->format('j').' & '.$end;
+            $conjunction = match ($locale) {
+    Locale::English => 'And',
+    Locale::Arabic => 'و',
+    default => 'et',
+};
+
+return $this->starts_on->format('j').' '.$conjunction.' '.$end;
         }
 
         return "{$start} & {$end}";
