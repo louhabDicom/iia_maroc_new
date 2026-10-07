@@ -57,6 +57,7 @@
 // Previous partners: local files in public/assets/parteners/.
 // 'url' is optional; without it the logo is shown but not linked.
 $allies = [
+  ['name' => 'CIH Bank',       'logo' => 'assets/images/logo/cih-logo.png' , 'url' => 'https://cihbank.ma/' ],
     ['name' => 'Al Omrane',         'logo' => 'assets/parteners/alomrane-logo.jpg',         'url' => 'https://www.alomrane.gov.ma'],
     ['name' => 'Banque Populaire',  'logo' => 'assets/parteners/banque-populaire-logo.png', 'url' => 'https://www.groupebcp.com'],
     ['name' => 'CaseWare',          'logo' => 'assets/parteners/CaseWare-logo.jpg',         'url' => 'https://www.caseware.com'],
