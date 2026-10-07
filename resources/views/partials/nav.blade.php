@@ -26,8 +26,9 @@
     $items = array_values(array_filter([
         ['route' => 'home', 'label' => __('nav.home')],
         ['route' => 'presentation', 'label' => __('nav.presentation')],
-                ['route' => 'sponsors', 'label' => __('nav.sponsors')],
-        ['route' => 'programme', 'label' => __('nav.programme')],
+              ['route' => 'programme', 'label' => __('nav.programme')],
+        ['route' => 'sponsors', 'label' => __('nav.sponsors')],
+  
 
         ['route' => 'pricing', 'label' => __('nav.pricing')],
       
