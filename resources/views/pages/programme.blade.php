@@ -14,6 +14,8 @@
         ? (auth()->check() ? route('pricing') : route('register'))
         : null;
 
+    $programmePdfUrl = $edition->programmePdfUrl($locale);
+
     // Row icon by type.
     $icons = [
         'welcome'   => 'fa-users',
@@ -231,9 +233,18 @@
                 <li><i class="fas fa-map-marker-alt" aria-hidden="true"></i><span>{{ $edition->venueLine($locale) }}</span></li>
             </ul>
 
-            @if ($registerUrl)
-                <a href="{{ $registerUrl }}" class="pg-cta__btn">@lang('nav.registration')</a>
-            @endif
+            <div class="pg-cta__actions">
+                @if ($registerUrl)
+                    <a href="{{ $registerUrl }}" class="pg-cta__btn">@lang('nav.registration')</a>
+                @endif
+
+                @if ($programmePdfUrl)
+                    <a href="{{ $programmePdfUrl }}" class="pg-cta__btn pg-cta__btn--download" download>
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        @lang('home.landing.programme.download')
+                    </a>
+                @endif
+            </div>
         </div>
     </section>
 </div>
@@ -730,6 +741,22 @@
         box-shadow: 0 14px 26px -14px rgba(0, 0, 0, .6);
         color: var(--pg-ink);
     }
+
+    .pg-cta__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .pg-cta__btn--download {
+        gap: 10px;
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, .85);
+        color: #fff;
+    }
+
+    .pg-cta__btn--download:hover,
+    .pg-cta__btn--download:focus-visible { color: #fff; }
 
     /* ---------- Responsive ---------- */
     @media (max-width: 991.98px) {
