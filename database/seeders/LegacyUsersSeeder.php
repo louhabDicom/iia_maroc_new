@@ -26,11 +26,11 @@ use RuntimeException;
  * What it changes:
  *  - emails are lower-cased (the new `email` column is unique and the sign-in
  *    lookup is case-insensitive);
- *  - `$wp$2y$...` hashes lose the `$wp$` prefix, leaving a plain bcrypt hash
- *    that `Hash::check()` verifies as-is;
- *  - `$P$...` phpass hashes are stored verbatim. They only verify once a legacy
- *    phpass verifier is installed alongside bcrypt; without one those accounts
- *    can sign in only after a password reset.
+ *  - `$wp$2y$...` hashes lose the `$wp` wrapper, leaving a plain `$2y$...`
+ *    bcrypt hash that `Hash::check()` verifies as-is;
+ *  - `$P$...` phpass hashes are stored verbatim. They verify through the
+ *    `App\Hashing\LegacyBcryptHasher` phpass support and are rehashed to
+ *    bcrypt on the account's first sign-in.
  *
  * Rows with no email are skipped: the sign-in form matches accounts on `email`
  * or `phone` only, so an account with neither could never sign in.
@@ -116,8 +116,8 @@ class LegacyUsersSeeder extends Seeder
         ));
 
         if ($phpass > 0) {
-            $this->command?->warn(sprintf(
-                '%d account(s) keep a legacy phpass hash and cannot sign in until a phpass verifier is added alongside bcrypt.',
+            $this->command?->info(sprintf(
+                '%d account(s) keep a legacy phpass hash; they sign in through the phpass verifier in App\Hashing and are upgraded to bcrypt on first login.',
                 $phpass,
             ));
         }

@@ -34,13 +34,21 @@
     'selectedDay',
     'locale',
     'programmeDocument' => null,
+    // The language-specific file shipped in `public/`, resolved by
+    // Edition::programmePdfUrl(). It is the middle rung of the download
+    // fallback below: a published document still wins over a committed file.
+    'pdfUrl' => null,
+    // Overrides the band heading. The landing page wants "Conference
+    // programme"; the programme page, whose hero already carries the title,
+    // can pass something quieter.
+    'title' => null,
     // Which route the day tabs link back to. `programme` on the programme page,
     // `home` on the landing page: the tabs have to return to the page they are
     // on, not to whichever page this component was copied from.
     'routeName' => 'programme',
 ])
 
-@if ($days->isNotEmpty() && $slots->isNotEmpty())
+@if (count($days) > 0 && count($slots) > 0)
     @php
         $byDay = [];
 
@@ -58,15 +66,13 @@
 
         // Three rungs, in order of freshness: a published document wins, so
         // publishing a revision updates the button instead of leaving the file
-        // committed here on the page; then the programme PDF shipped in
-        // `public/`, which is what the button serves today because the
-        // documents table is empty and a bare link to the programme page is not
-        // a download; then the programme page itself. Never a link to a file
-        // that is not there.
-        $staticProgramme = public_path('programme.pdf');
-
+        // committed here on the page; then the language-specific programme PDF
+        // shipped in `public/` (French for AR/FR, English for EN, each falling
+        // back to `programme.pdf`); then the programme page itself, because a
+        // bare link to the programme page is still not a download. Never a
+        // link to a file that is not there.
         $downloadUrl = $programmeDocument?->downloadUrl()
-            ?? (is_file($staticProgramme) ? asset('programme.pdf') : null)
+            ?? $pdfUrl
             ?? route('programme', array_filter(['locale' => request()->route('locale')]));
     @endphp
 
@@ -79,7 +85,7 @@
         <div class="container">
 
             <h2 id="programme-title" class="h-programme__title">
-                @lang('home.landing.programme.title')
+                {{ $title ?? __('home.landing.programme.title') }}
             </h2>
 
             <div class="h-programme__grid">
@@ -251,20 +257,28 @@
 
             </div>
 
-            {{-- Two ways onward, side by side. The download is the document the
-                 delegate already has; "See more" is the full programme, because
-                 what is in this band is a *sample* — a handful of sessions per
-                 day — and the button is what tells the truth about that. Leaving
-                 only the download offered implied the band was the programme. --}}
+            {{-- Two ways onward, side by side, on the landing page. The download
+                 is the document the delegate already has; "See more" is the full
+                 programme, because what is in that band is a *sample* — a handful
+                 of sessions per day — and the button is what tells the truth
+                 about that. On the programme page the band is the full
+                 programme, so "See more" is dropped and only the download
+                 remains. --}}
             <div class="h-programme__actions">
-                <a href="{{ route('programme', array_filter(['locale' => request()->route('locale')])) }}" class="h-btn h-btn--fill-light">
-                    <span>@lang('home.landing.programme.more')</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M5 12h13M13 6.5 18.5 12 13 17.5"></path>
-                    </svg>
-                </a>
+                {{-- On the programme page the band *is* the programme, so a
+                     "See more" that returns here would be a control with no
+                     destination. The download then stands alone as the primary
+                     act instead of the secondary one. --}}
+                @if ($routeName !== 'programme')
+                    <a href="{{ route('programme', array_filter(['locale' => request()->route('locale')])) }}" class="h-btn h-btn--fill-light">
+                        <span>@lang('home.landing.programme.more')</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M5 12h13M13 6.5 18.5 12 13 17.5"></path>
+                        </svg>
+                    </a>
+                @endif
 
-                <a href="{{ $downloadUrl }}" class="h-btn h-btn--outline-light">
+                <a href="{{ $downloadUrl }}" class="h-btn {{ $routeName === 'programme' ? 'h-btn--fill-light' : 'h-btn--outline-light' }}">
                     <span>@lang('home.landing.programme.download')</span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5M4.5 19.5h15"></path>

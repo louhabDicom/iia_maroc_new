@@ -55,7 +55,7 @@ INSERT INTO `iia_users` (`ID`, `user_login`, `user_pass`, `user_nicename`, `user
 (113, 'karim', '$P$BP09cklsAGdKBgnIptEXvYq41dAto40', 'karim', 's.amraoui@directinvest.ma', '', '2021-12-20 15:19:13', '', 0, 'karim'),
 (132, '12_22_2021103549laila@hgu.com', '$P$BNotaCqgBydl.ZswJgze3An8rs2A/7/', 'lailahgu-com', '12_22_2021103549laila@hgu.com', '', '2021-12-22 10:35:49', '', 0, 'gter'),
 (133, '01_31_2022044207said00@gmail.com', '$P$Betj3dhbzCNVlpLUzmQa39tSMv28Cf.', 'said00gmail-com', '01_31_2022044207said00@gmail.com', '', '2022-01-31 16:42:07', '', 0, 'said'),
-(134, 'saad', '$wp$2y$10$doHoTxuSnShhGKZk/F.xQu9NJxttgsH8dq1xu/L4ryweJkrP35dla', 'saad', 'y.haimour@directinvest.ma', '', '2022-02-03 13:37:26', '', 0, 'Admin'),
+(134, 'saad', '$wp$2y$10$RUMhedxeWMj8F96Jl8XF/eQgOmV43V./xeFpDO05.1OVh5Mw1IyTq', 'saad', 'y.haimour@directinvest.ma', '', '2022-02-03 13:37:26', '', 0, 'Admin'),
 (498, 'Farihi bouchra', '$P$BSh.lumvZNhJ1GXkY9ZEl0bJtQblxD.', 'farihi-bouchra', 'fbouchra25@gmail.com', '', '2023-09-23 15:04:34', '1695481475:$P$BxB59LWtJNWIGI95oBGfYr2RlYfg.p/', 0, 'Farihi bouchra'),
 (135, 'Dimitri_Assoumou', '$P$BNNobUWRrKPkW9LQpn6nzLr6n/7USP0', 'dimitri_assoumou', 'assoumoudimitri96@gmail.com', '', '2022-02-05 11:22:44', '', 0, 'Dimitri_Assoumou'),
 (136, 'Jessicaftz', '$P$BuapC7k3sKLw.2Jfd5cJh6ZDqd9mSa1', 'jessicaftz', 'dadu_98@bk.ru', '', '2022-02-05 13:45:36', '1644068737:$P$BenTa0G2Oz9mE1Ds3kFLzTJZ4oSp9Z.', 0, 'Jessicaftz'),

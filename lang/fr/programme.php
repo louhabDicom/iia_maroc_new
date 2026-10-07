@@ -24,7 +24,7 @@ return [
         'hero_lede' => 'Deux jours de conférences, d\'ateliers et de sessions parallèles. Parcourez le programme jour par jour et choisissez les sessions où vous voulez être.',
         'provisional_notice' => 'Le programme est provisoire et peut être modifié.',
         'tracks_title' => 'Trois axes d\'ateliers',
-        'track_ai_title' => 'IA et transformation',
+        'track_ai_title' => 'Audit Interne et transformation',
         'track_resilience_title' => 'Résilience',
         'track_auditor_title' => 'L\'auditeur de demain',
         'lab_title' => 'L\'Innovation Lab',
@@ -33,25 +33,27 @@ return [
 
         's' => [
             'welcome1' => ['title' => 'Accueil, inscription et networking'],
-            'welcome2' => ['title' => 'Accueil et networking'],
-            'ceremony' => ['title' => 'Cérémonie', 'desc' => 'Ouverture officielle par l\'IIA Maroc, l\'ARABCIA et The IIA'],
+            'welcome2' => ['title' => 'Accueil des participants'],
+            'ceremony' => ['title' => 'Cérémonie d\'ouverture', 'desc' => 'Ouverture officielle par l\'IIA Maroc, l\'ARABCIA et The IIA'],
             'trophies' => ['title' => 'Remise des trophées de certification'],
-            'break' => ['title' => 'Pause café'],
+            'break' => ['title' => 'Pause-café'],
             'lunch' => ['title' => 'Déjeuner'],
             'workshops' => ['title' => 'Ateliers — Trois parcours'],
+
             'pl1' => [
                 'title' => 'Plénière 1',
                 'subtitle' => 'Empreinte : bâtir la confiance à l\'ère de l\'accélération de l\'IA',
-                'desc' => 'L\'Audit Interne et l\'anticipation des risques, le soutien de la gouvernance et le renforcement de la résilience.',
+                'desc' => 'Montrer comment l\'Audit Interne anticipe les risques, soutient la gouvernance et renforce la résilience.',
             ],
             'pl2' => [
                 'title' => 'Plénière 2',
                 'subtitle' => 'Diriger dans l\'incertitude d\'un monde fragmenté : nouveau paysage mondial et régional des risques',
-                'desc' => 'Positionnement de l\'Audit Interne par rapport aux cybermenaces, à l\'instabilité géopolitique, la criminalité financière, la transformation digitale et des chaînes d\'approvisionnement.',
+                'desc' => 'Relier IA, cybermenaces, instabilité géopolitique, criminalité financière, transformation digitale et chaînes d\'approvisionnement.',
             ],
             'pl3' => [
                 'title' => 'Plénière 3 — Panel',
-                'desc' => 'Ce que les conseils attendent de l\'Audit Interne en période de disruption continue. Moyens disponibles et pratiques qui permettent de construire la confiance.',
+                'subtitle' => 'Ce que les conseils attendent de l\'Audit Interne en période de disruption continue',
+                'desc' => 'Moyens disponibles et pratiques qui permettent de construire la confiance.',
             ],
             'pl4' => [
                 'title' => 'Plénière 4',
@@ -69,13 +71,52 @@ return [
                 'title' => 'Plénière 7 — Panel',
                 'desc' => 'Au-delà de l\'assurance : comment l\'Audit Interne crée de la valeur stratégique dans un monde en transformation.',
             ],
+
             'lab1' => [
                 'title' => 'Innovation Lab',
                 'bullets' => ['Continuous Monitoring', 'AI Copilots pour l\'Audit Interne', 'Plateformes GRC'],
             ],
             'lab2' => [
                 'title' => 'Innovation Lab',
-                'bullets' => ['Monitoring / SAP', 'Process Mining', 'Détection de la fraude et analyse prédictive'],
+                'bullets' => ['Monitoring SAP', 'Process Mining', 'Détection de la fraude et analyse prédictive'],
+            ],
+        ],
+
+        // Workshop sessions: 3 time slots per day, one session per track.
+        'ws' => [
+            'd1' => [
+                [
+                    'ai'  => 'IA générative appliquée à l\'Audit Interne : opportunités et limites',
+                    'res' => 'Cyber-résilience : au-delà de la cybersécurité',
+                    'aud' => 'Les compétences essentielles de l\'auditeur interne de demain',
+                ],
+                [
+                    'ai'  => 'Gouvernance de l\'IA et audit des cadres d\'IA responsable',
+                    'res' => 'Résilience opérationnelle et processus critiques',
+                    'aud' => 'Leadership et influence dans un environnement de disruption continue',
+                ],
+                [
+                    'ai'  => 'Audit des algorithmes et modèles d\'intelligence artificielle',
+                    'res' => 'Culture organisationnelle et résilience : que doit évaluer l\'Audit Interne ?',
+                    'aud' => 'Pensée stratégique et compréhension des enjeux métiers',
+                ],
+            ],
+            'd2' => [
+                [
+                    'ai'  => 'Audit des programmes de transformation digitale',
+                    'res' => 'Risques géopolitiques : quel rôle pour l\'Audit Interne ?',
+                    'aud' => 'Attirer, fidéliser et développer les talents de l\'Audit Interne',
+                ],
+                [
+                    'ai'  => 'Gouvernance des données et qualité des données',
+                    'res' => 'Résilience du secteur public',
+                    'aud' => 'Storytelling et visualisation des données au service de l\'impact de l\'Audit Interne',
+                ],
+                [
+                    'ai'  => 'Audit des technologies émergentes : cloud, blockchain, automatisation et IA agentique',
+                    'res' => 'Confiance numérique et résilience des écosystèmes digitaux',
+                    'aud' => 'Agilité et adaptabilité dans un environnement en évolution continue',
+                ],
             ],
         ],
     ],

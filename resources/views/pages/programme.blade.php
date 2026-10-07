@@ -55,6 +55,9 @@
         ],
     ];
 
+    // Workshop time slots (same on both days).
+    $slotTimes = ['14:30 – 15:00', '15:10 – 15:40', '15:50 – 16:20'];
+
     $tracks = [
         ['tone' => 'ai',  'icon' => 'fa-brain',         'title' => 'programme.page.track_ai_title',         'text' => 'programme.page.track_ai'],
         ['tone' => 'res', 'icon' => 'fa-shield-alt',    'title' => 'programme.page.track_resilience_title', 'text' => 'programme.page.track_res'],
@@ -157,14 +160,48 @@
                                         @endif
 
                                         @if ($type === 'workshops')
-                                            <ul class="pg-chips">
+                                            @php
+                                                $slots = __('programme.page.ws.d'.$n);
+                                                $wid   = 'ws-'.$n;
+                                            @endphp
+                                            <div class="pg-wt" data-pg-tabs>
+                                                <div class="pg-wt__list" role="tablist" aria-label="{{ $t['title'] }}">
+                                                    @foreach ($tracks as $track)
+                                                        <button type="button"
+                                                                role="tab"
+                                                                id="{{ $wid }}-tab-{{ $track['tone'] }}"
+                                                                aria-controls="{{ $wid }}-panel-{{ $track['tone'] }}"
+                                                                aria-selected="{{ $loop->first ? 'true' : 'false' }}"
+                                                                tabindex="{{ $loop->first ? '0' : '-1' }}"
+                                                                class="pg-wt__tab pg-wt__tab--{{ $track['tone'] }}">
+                                                            <span class="pg-wt__ico" aria-hidden="true"><i class="fas {{ $track['icon'] }}"></i></span>
+                                                            <span class="pg-wt__label">{{ __($track['title']) }}</span>
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+
                                                 @foreach ($tracks as $track)
-                                                    <li class="pg-chip pg-chip--{{ $track['tone'] }}">
-                                                        <i class="fas {{ $track['icon'] }}" aria-hidden="true"></i>
-                                                        <span>{{ __($track['title']) }}</span>
-                                                    </li>
+                                                    <div role="tabpanel"
+                                                         id="{{ $wid }}-panel-{{ $track['tone'] }}"
+                                                         aria-labelledby="{{ $wid }}-tab-{{ $track['tone'] }}"
+                                                         tabindex="0"
+                                                         class="pg-wt__panel pg-wt__panel--{{ $track['tone'] }}"
+                                                         @unless ($loop->first) hidden @endunless>
+                                                        <p class="pg-wt__lead">{{ __($track['text']) }}</p>
+
+                                                        <ol class="pg-wt__timeline">
+                                                            @foreach ($slots as $i => $slot)
+                                                                <li class="pg-wt__item">
+                                                                    <span class="pg-wt__time" dir="ltr">
+                                                                        <i class="far fa-clock" aria-hidden="true"></i>{{ $slotTimes[$i] }}
+                                                                    </span>
+                                                                    <p class="pg-wt__title">{{ $slot[$track['tone']] }}</p>
+                                                                </li>
+                                                            @endforeach
+                                                        </ol>
+                                                    </div>
                                                 @endforeach
-                                            </ul>
+                                            </div>
                                         @endif
                                     </div>
                                 </li>
@@ -433,32 +470,174 @@
     .pg-row--break .pg-body__title,
     .pg-row--lunch .pg-body__title { font-weight: 600; }
 
-    /* ---------- Workshop chips ---------- */
-    .pg-chips {
+    /* ---------- Workshop tabs (one tab per track) ---------- */
+    .pg-wt { margin-block-start: 14px; }
+
+    .pg-wt__tab--ai,  .pg-wt__panel--ai  { --tone: #5a3fd0; --tone-bg: #efeaff; --tone-line: #ddd3fb; --tone-grad: linear-gradient(140deg, #6b4fe3, #4a31c4); }
+    .pg-wt__tab--res, .pg-wt__panel--res { --tone: #12857f; --tone-bg: #e2f6f4; --tone-line: #c4ebe7; --tone-grad: linear-gradient(140deg, #1aa59d, #0e6f6a); }
+    .pg-wt__tab--aud, .pg-wt__panel--aud { --tone: #2a8a4b; --tone-bg: #e6f6ea; --tone-line: #cbebd3; --tone-grad: linear-gradient(140deg, #38a85f, #1f7340); }
+
+    .pg-wt__list {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
-        margin-block-start: 12px;
+        gap: 8px;
     }
 
-    .pg-chip {
+    .pg-wt__tab {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
-        padding: 12px 8px;
-        border: 1px solid transparent;
-        border-radius: 8px;
-        font-size: .74rem;
-        font-weight: 600;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 12px 6px 11px;
+        border: 1px solid var(--tone-line);
+        border-radius: 10px;
+        background: var(--tone-bg);
+        color: var(--tone);
+        font: inherit;
+        font-size: .72rem;
+        font-weight: 700;
+        line-height: 1.3;
         text-align: center;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform .2s, box-shadow .2s, background-color .2s, color .2s, border-color .2s;
     }
 
-    .pg-chip i { font-size: 1.15rem; }
+    .pg-wt__tab:hover { transform: translateY(-2px); }
 
-    .pg-chip--ai  { background: #efeaff; border-color: #ddd3fb; color: #5a3fd0; }
-    .pg-chip--res { background: #e2f6f4; border-color: #c4ebe7; color: #12857f; }
-    .pg-chip--aud { background: #e6f6ea; border-color: #cbebd3; color: #2a8a4b; }
+    .pg-wt__tab:focus-visible {
+        outline: 2px solid var(--tone);
+        outline-offset: 2px;
+    }
+
+    .pg-wt__ico {
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .75);
+        font-size: .95rem;
+        transition: background-color .2s, transform .25s;
+    }
+
+    .pg-wt__tab[aria-selected="true"] {
+        border-color: transparent;
+        background: var(--tone-grad);
+        color: #fff;
+        box-shadow: 0 14px 22px -14px var(--tone);
+    }
+
+    .pg-wt__tab[aria-selected="true"] .pg-wt__ico {
+        background: rgba(255, 255, 255, .2);
+        transform: scale(1.08);
+    }
+
+    /* little pointer joining the active tab to its panel */
+    .pg-wt__tab[aria-selected="true"]::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: -7px;
+        width: 12px;
+        height: 12px;
+        background: var(--tone);
+        transform: translateX(-50%) rotate(45deg);
+        border-radius: 2px;
+    }
+
+    .pg-wt__panel {
+        margin-block-start: 14px;
+        padding: 16px 16px 4px;
+        border: 1px solid var(--tone-line);
+        border-block-start: 3px solid var(--tone);
+        border-radius: 12px;
+        background: linear-gradient(180deg, var(--tone-bg), #fff 90px);
+    }
+
+    .pg-wt__panel[hidden] { display: none; }
+
+    .pg-wt__panel:not([hidden]) { animation: pgWtIn .3s ease both; }
+
+    .pg-wt__panel:focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
+
+    @keyframes pgWtIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: none; }
+    }
+
+    .pg-wt__lead {
+        margin-block-end: 16px;
+        font-size: .78rem;
+        line-height: 1.6;
+        color: var(--pg-muted);
+    }
+
+    .pg-page .pg-wt__timeline { padding: 0; }
+
+    .pg-wt__item {
+        position: relative;
+        padding-inline-start: 28px;
+        padding-block-end: 18px;
+    }
+
+    /* timeline dot */
+    .pg-wt__item::before {
+        content: "";
+        position: absolute;
+        inset-inline-start: 0;
+        inset-block-start: 3px;
+        width: 14px;
+        height: 14px;
+        border: 3px solid var(--tone);
+        border-radius: 50%;
+        background: #fff;
+        box-sizing: border-box;
+    }
+
+    /* timeline line */
+    .pg-wt__item::after {
+        content: "";
+        position: absolute;
+        inset-inline-start: 6px;
+        inset-block-start: 20px;
+        inset-block-end: 2px;
+        width: 2px;
+        background: var(--tone-line);
+    }
+
+    .pg-wt__item:last-child::after { display: none; }
+
+    .pg-wt__time {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: var(--tone-bg);
+        border: 1px solid var(--tone-line);
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--tone);
+    }
+
+    .pg-wt__time i { font-size: .7rem; }
+
+    .pg-wt__title {
+        margin-block-start: 7px;
+        font-size: .88rem;
+        font-weight: 600;
+        line-height: 1.5;
+        color: var(--pg-ink);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .pg-wt__tab, .pg-wt__ico { transition: none; }
+        .pg-wt__tab:hover { transform: none; }
+        .pg-wt__panel:not([hidden]) { animation: none; }
+    }
 
     .pg-note {
         display: flex;
@@ -564,8 +743,47 @@
         .pg-row { grid-template-columns: 30px minmax(0, 1fr); row-gap: 4px; }
         .pg-time { grid-column: 1 / -1; min-width: 0; justify-self: start; padding-inline: 12px; }
 
-        .pg-chips { grid-template-columns: minmax(0, 1fr); }
+        .pg-wt__list { gap: 6px; }
+        .pg-wt__tab { padding-inline: 4px; font-size: .66rem; }
+        .pg-wt__panel { padding-inline: 12px; }
     }
 </style>
+
+<script>
+    (function () {
+        document.querySelectorAll('[data-pg-tabs]').forEach(function (root) {
+            var tabs = Array.prototype.slice.call(root.querySelectorAll('[role="tab"]'));
+            var rtl = getComputedStyle(root).direction === 'rtl';
+
+            function activate(tab, focus) {
+                tabs.forEach(function (t) {
+                    var on = t === tab;
+                    t.setAttribute('aria-selected', on ? 'true' : 'false');
+                    t.tabIndex = on ? 0 : -1;
+                    var panel = document.getElementById(t.getAttribute('aria-controls'));
+                    if (panel) { panel.hidden = !on; }
+                });
+                if (focus) { tab.focus(); }
+            }
+
+            tabs.forEach(function (tab, i) {
+                tab.addEventListener('click', function () { activate(tab, false); });
+
+                tab.addEventListener('keydown', function (e) {
+                    var next = null;
+                    var fwd = rtl ? 'ArrowLeft' : 'ArrowRight';
+                    var back = rtl ? 'ArrowRight' : 'ArrowLeft';
+
+                    if (e.key === fwd)       { next = tabs[(i + 1) % tabs.length]; }
+                    else if (e.key === back) { next = tabs[(i - 1 + tabs.length) % tabs.length]; }
+                    else if (e.key === 'Home') { next = tabs[0]; }
+                    else if (e.key === 'End')  { next = tabs[tabs.length - 1]; }
+
+                    if (next) { e.preventDefault(); activate(next, true); }
+                });
+            });
+        });
+    })();
+</script>
 
 @endsection

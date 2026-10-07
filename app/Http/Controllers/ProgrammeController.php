@@ -35,9 +35,13 @@ class ProgrammeController extends Controller
 
         $day = $this->resolveDay($request, $edition);
 
+        // Every day is fetched, not just the selected one: the day tabs carry
+        // each day's grid in the document and the `?day=` in the address bar
+        // only decides which panel is open, so switching a day is instant
+        // instead of a reload. Without a script the tabs are real links and the
+        // server renders the same page with the chosen day open.
         $sessions = $edition->sessions()
             ->published()
-            ->when($day !== null, fn ($query) => $query->onDay($day))
             // room() and track() are rendered for every row, so both are loaded
             // up front: without this the page runs one query per session.
             ->with(['room', 'track', 'speakers'])

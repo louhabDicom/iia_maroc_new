@@ -58,6 +58,7 @@
         :selected-day="$selectedDay"
         :locale="$locale"
         :programme-document="$programmeDocument"
+        :pdf-url="$edition->programmePdfUrl($locale)"
         route-name="home" />
 
     <!-- <x-home.speakers :speakers="$speakers" /> -->

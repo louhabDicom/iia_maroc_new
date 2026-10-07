@@ -255,6 +255,35 @@ class Edition extends Model
         ]);
     }
 
+    /**
+     * The downloadable programme PDF for a language.
+     *
+     * Each language ships its own file, so a delegate downloads the programme in
+     * the language they are reading. A language whose translated file is not in
+     * `public/` yet falls back to the French edition rather than to a link that
+     * 404s; only when no programme file exists at all does this return null, so
+     * the caller can fall back to the programme page itself rather than offer a
+     * dead download.
+     */
+    public function programmePdfUrl(Locale|string|null $locale = null): ?string
+    {
+        $locale = $locale instanceof Locale ? $locale : Locale::parse($locale);
+
+        $files = match ($locale) {
+            Locale::Arabic => ['programme_arabic.pdf', 'programme.pdf'],
+            Locale::English => ['programme_english.pdf', 'programme.pdf'],
+            default => ['programme.pdf'],
+        };
+
+        foreach ($files as $file) {
+            if (is_file(public_path($file))) {
+                return asset($file);
+            }
+        }
+
+        return null;
+    }
+
     // --- Lookups ---------------------------------------------------------
 
     /**
