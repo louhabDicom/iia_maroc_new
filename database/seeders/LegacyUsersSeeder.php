@@ -195,14 +195,16 @@ class LegacyUsersSeeder extends Seeder
     }
 
     /**
-     * Strip the WordPress `$wp$` prefix from a bcrypt hash so Laravel's own
-     * bcrypt verifier accepts it. phpass `$P$` hashes are returned untouched.
+     * Recover a hash Laravel can verify. WordPress writes bcrypt hashes as
+     * `$wp` + the bcrypt string, i.e. `$wp$2y$10$...`; dropping the `$wp`
+     * wrapper (three characters) leaves the original `$2y$...`. phpass `$P$`
+     * hashes are returned untouched.
      */
     private function normalizeHash(string $hash): string
     {
         $hash = trim($hash);
 
-        return str_starts_with($hash, '$wp$') ? substr($hash, 4) : $hash;
+        return str_starts_with($hash, '$wp$') ? substr($hash, 3) : $hash;
     }
 
     private function toDate(string $value): ?Carbon

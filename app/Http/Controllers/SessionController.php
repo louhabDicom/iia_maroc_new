@@ -74,7 +74,7 @@ class SessionController extends Controller
             ]);
         }
 
-        $user->forceFill(['last_login_at' => now()])->save();
+        $user->forceFill($this->loginAttributes($user, $credentials['password']))->save();
 
         Auth::login($user, remember: (bool) $request->boolean('remember'));
 
@@ -100,6 +100,27 @@ class SessionController extends Controller
         app()->setLocale($locale);
 
         return redirect()->back()->with('status', __('auth.logged_out'));
+    }
+
+    /**
+     * Attributes written on a successful sign-in.
+     *
+     * A legacy phpass hash is replaced with a bcrypt one the first time the
+     * account signs in, so imported rows converge without a forced reset. The
+     * plain-text password is handed to the `hashed` cast, which performs the
+     * bcrypt hashing. An up-to-date hash only gets the timestamp.
+     *
+     * @return array<string, mixed>
+     */
+    private function loginAttributes(User $user, string $password): array
+    {
+        $attributes = ['last_login_at' => now()];
+
+        if (Hash::needsRehash($user->password)) {
+            $attributes['password'] = $password;
+        }
+
+        return $attributes;
     }
 
     private function findUser(string $identifier): ?User

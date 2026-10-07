@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\OtpChannel;
 use App\Enums\OtpDriver;
+use App\Hashing\LegacyBcryptHasher;
 use App\Models\Edition;
 use App\Services\Otp\LogOtpChannel;
 use App\Services\Otp\SmsOtpChannel;
@@ -15,6 +16,7 @@ use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -92,6 +94,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureUrlGeneration();
         $this->configurePasswordRules();
+        $this->registerHashing();
         $this->registerValidationRules();
         $this->shareConferenceContext();
         $this->preventLazyModelBugs();
@@ -152,6 +155,20 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.force_https')) {
             URL::forceScheme('https');
         }
+    }
+
+    /**
+     * `legacy` is the default hash driver (config/hashing.php). It is a bcrypt
+     * hasher that additionally verifies the phpass `$P$` hashes carried over
+     * from the 2024 WordPress import, which `password_verify()` cannot read.
+     * Registered under its own name so the built-in bcrypt driver stays
+     * untouched and can still be selected explicitly via HASH_DRIVER.
+     */
+    private function registerHashing(): void
+    {
+        Hash::extend('legacy', fn (): LegacyBcryptHasher => new LegacyBcryptHasher(
+            (array) config('hashing.bcrypt'),
+        ));
     }
 
     /**
