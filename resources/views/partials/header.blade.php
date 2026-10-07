@@ -291,7 +291,7 @@
             var el = document.getElementById('loginModal');
             if (!el) return;
             var modal = bootstrap.Modal.getOrCreateInstance(el);
-            modal.show();
+          //  modal.show();
         });
     </script>
 @endif
