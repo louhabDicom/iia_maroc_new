@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'newsletter_note' => 'One click. We never share your address.',
+    // 'newsletter_note' => 'One click. We never share your address.',
 
     'subscribe' => 'Subscribe',
 
@@ -34,4 +34,14 @@ return [
     'privacy' => 'Privacy',
     'rights' => 'All rights reserved.',
     'stay_informed' => 'Stay informed',
+       'read_more'                => 'Read more',
+    'close'                    => 'Close',
+    'about_full'               => 'Full introduction text',
+    'newsletter_note'          => 'We will email you a link to confirm your subscription. We never share your address.',
+    'newsletter_success'       => 'Almost done! Check your inbox to confirm your subscription.',
+    'newsletter_confirmed'     => 'Thank you! Your newsletter subscription is confirmed.',
+    'newsletter_already'       => 'This address is already subscribed to our newsletter.',
+    'newsletter_err_required'  => 'Please enter your email address.',
+    'newsletter_err_invalid'   => 'Please enter a valid email address.',
+    'newsletter_err_generic'   => 'Something went wrong, please try again.'
 ];

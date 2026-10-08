@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'newsletter_note' => 'Un clic. Nous ne partageons jamais votre adresse.',
+    // 'newsletter_note' => 'Un clic. Nous ne partageons jamais votre adresse.',
 
     'subscribe' => 'S’inscrire',
 
@@ -34,4 +34,14 @@ return [
     'privacy' => 'Confidentialité',
     'rights' => 'Tous droits réservés.',
     'stay_informed' => 'Restez informé',
+      'read_more'                => 'Lire la suite',
+    'close'                    => 'Fermer',
+    'about_full'               => 'Texte complet de présentation',
+    'newsletter_note'          => 'Vous recevrez un e-mail pour confirmer votre inscription. Nous ne partageons jamais votre adresse.',
+    'newsletter_success'       => 'Presque terminé ! Consultez votre boîte mail pour confirmer votre inscription.',
+    'newsletter_confirmed'     => 'Merci ! Votre inscription à la newsletter est confirmée.',
+    'newsletter_already'       => 'Cette adresse est déjà inscrite à notre newsletter.',
+    'newsletter_err_required'  => 'Veuillez saisir votre adresse e-mail.',
+    'newsletter_err_invalid'   => 'Veuillez saisir une adresse e-mail valide.',
+    'newsletter_err_generic'   => 'Une erreur est survenue, veuillez réessayer.',
 ];

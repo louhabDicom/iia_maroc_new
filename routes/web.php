@@ -412,3 +412,16 @@ Route::get('/{locale?}/presentations/{file}/download', [DocumentController::clas
 // page's prefix for no gain.
 
 Route::post('/locale', LocaleController::class)->name('locale.switch');
+
+
+
+use App\Http\Controllers\NewsletterController;
+ 
+Route::post('/newsletter', [NewsletterController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('newsletter.store');
+ 
+// Signed link sent by e-mail. {subscriber} resolves to NewsletterSubscriber by id.
+Route::get('/newsletter/confirm/{subscriber}', [NewsletterController::class, 'confirm'])
+    ->middleware(['signed', 'throttle:20,1'])
+    ->name('newsletter.confirm');
