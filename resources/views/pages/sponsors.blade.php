@@ -63,7 +63,6 @@ $allies = [
     ['name' => 'CaseWare',          'logo' => 'assets/parteners/CaseWare-logo.jpg',         'url' => 'https://www.caseware.com'],
     ['name' => 'Marsa Maroc',       'logo' => 'assets/parteners/Marsa-Maroc-logo.png',      'url' => 'https://www.marsamaroc.co.ma'],
     ['name' => 'Mazars',            'logo' => 'assets/parteners/mazars-logo.png',           'url' => 'https://www.mazars.ma'],
-    ['name' => 'Wolters Kluwer',    'logo' => 'assets/parteners/Wolters_Kluwer_Logo.png',   'url' => 'https://www.wolterskluwer.com'],
 ];
     $allyLogo = static fn (array $a, callable $fav): string => $a['logo']
         ?? (isset($a['slug']) ? 'https://cdn.simpleicons.org/' . $a['slug'] . '/' . ($a['color'] ?? '000000') : $fav($a['domain']));

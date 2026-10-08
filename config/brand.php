@@ -156,7 +156,7 @@ return [
     ['name' => 'CaseWare',       'src' => 'assets/parteners/CaseWare-logo.jpg'],
     ['name' => 'Marsa Maroc',    'src' => 'assets/parteners/Marsa-Maroc-logo.png'],
     ['name' => 'Mazars',         'src' => 'assets/parteners/mazars-logo.png'],
-    ['name' => 'Wolters Kluwer', 'src' => 'assets/parteners/Wolters_Kluwer_Logo.png'],
+  
 ],
     ],
 
