@@ -48,8 +48,8 @@
         :cta-label="$edition?->mapUrl() ? __('contact.open_map') : null"
         :cta-url="$edition?->mapUrl()"
         :cta-url-external="(bool) $edition?->mapUrl()"
-        :secondary-label="__('programme.title')"
-        :secondary-url="route('programme')"
+
+
         image="assets/images/bg/form_bg.jpg" />
 
     {{-- ================= 0. CONTACT BANNER (Hassan Tower) ================= --}}
