@@ -42,7 +42,7 @@ return [
     'send_request' => 'Envoyer ma demande',
 'hero_lede' => 'Une question sur le programme, le sponsoring ou la billetterie ? Contactez le secrétariat directement, ou envoyez un message : il sera transmis à la bonne équipe.',
 'open_map'  => 'Ouvrir la carte',
-'title' => 'Programme',   // en: 'Programme'  | ar: 'البرنامج'
+'title' => 'Contact',   // en: 'Programme'  | ar: 'البرنامج'
     'info_title' => 'Informations pratiques',
     'general_contact' => 'Contact général',
     'cta_kicker' => 'Rendez-vous à Rabat',

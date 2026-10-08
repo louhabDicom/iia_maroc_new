@@ -42,7 +42,7 @@ return [
     'send_request' => 'Send my request',
 'hero_lede' => 'A question about the programme, sponsoring or tickets? Reach the secretariat directly, or send a message and it goes to the right team.',
 'open_map'  => 'Open the map',
-'title' => 'Programme',   // en: 'Programme'  | ar: 'البرنامج'
+'title' => 'Contact',   // en: 'Programme'  | ar: 'البرنامج'
     'info_title' => 'Practical information',
     'general_contact' => 'General contact',
     'cta_kicker' => 'See you in Rabat',
