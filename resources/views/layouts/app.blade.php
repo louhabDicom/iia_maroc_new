@@ -231,7 +231,7 @@
          screen reader user nothing about what pressing it does. --}}
     <button type="button" class="progress-wrap" data-back-to-top>
         <svg class="progress-circle" width="22" height="22" viewBox="0 0 100 100" aria-hidden="true">
-            <path d="M50,10 a40,40 0 1,1 -0.01,0" transform="rotate(-90 50 50)"/>
+            <path d="M50,10 a40,40 0 1,1 -0.01,0" transform="rotate(-90 150 150)"/>
         </svg>
         <span class="visually-hidden">@lang('action.back_to_top')</span>
     </button>
