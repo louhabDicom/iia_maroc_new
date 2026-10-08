@@ -190,7 +190,7 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
                 // edition's general contact, not an invented one. The six named
                 // officers are rows in `teamMembers()` below.
                 'contact_email' => 'info@iiamaroc.org',
-                'contact_phone' => '+212 0613323293',
+                'contact_phone' => '+212 613323293',
 
                 'organiser_contact_name' => 'ARABCIA — Arab Confederation of Internal Auditors',
                 'organiser_contact_email' => 'contact@arabcia.org',
@@ -329,7 +329,7 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
                 // "any further information", so it is also the edition's general
                 // contact number.
                 'email' => 'info@iiamaroc.org',
-                'phone' => '+212 0613323293',
+                'phone' => '+212 613323293',
             ],
             [
                 'name' => 'Khadija El Idrissi',
