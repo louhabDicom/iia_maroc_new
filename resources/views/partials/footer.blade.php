@@ -39,7 +39,7 @@
                             <i class="fab fa-facebook-f" aria-hidden="true"></i>
                         </a>
                     </li>
-                    <li>
+                    <!-- <li>
                         <a href="https://work.me/g/5QPnbFtJq/tNBpmrtU"
                            rel="noopener noreferrer" target="_blank" aria-label="Workplace">
                             <img src="{{ asset('assets/images/workplace-icon.png') }}"
@@ -47,7 +47,7 @@
                                  width="24" height="24"
                                  loading="lazy" decoding="async">
                         </a>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
 

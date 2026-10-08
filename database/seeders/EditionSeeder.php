@@ -189,13 +189,13 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
                 // further information about the conference" — so it is the
                 // edition's general contact, not an invented one. The six named
                 // officers are rows in `teamMembers()` below.
-                'contact_email' => 'info@iiamaroc.org',
-                'contact_phone' => '+212 613323293',
+                'contact_email' => 'hmelhaoui@iiamaroc.org',
+                'contact_phone' => '+212 678 401 113',
 
                 'organiser_contact_name' => 'ARABCIA — Arab Confederation of Internal Auditors',
                 'organiser_contact_email' => 'contact@arabcia.org',
                 'host_contact_name' => 'Hasnae MELHAOUI, Secrétaire Générale — IIA Maroc',
-                'host_contact_email' => 'info@iiamaroc.org',
+                'host_contact_email' => 'hmelhaoui@iiamaroc.org',
 
                 'hero_image_path' => null,
                 'logo_path' => null,
@@ -328,8 +328,8 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
                 // The secretariat is the address the dossiers themselves give for
                 // "any further information", so it is also the edition's general
                 // contact number.
-                'email' => 'info@iiamaroc.org',
-                'phone' => '+212 613323293',
+                'email' => 'hmelhaoui@iiamaroc.org',
+                'phone' => '+212 678 401 113',
             ],
             [
                 'name' => 'Khadija El Idrissi',
