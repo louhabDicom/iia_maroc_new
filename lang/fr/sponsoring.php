@@ -27,7 +27,7 @@ return [
     'title' => 'Sponsoring',
 
     'hero' => [
-        'eyebrow' => 'CONFÉRENCE ANNUELLE ARABCIA :year',
+        'eyebrow' => 'CONFÉRENCE ANNUELLE ARABCIA : 2026',
         'title_lead' => 'Devenez partenaire',
         'title_accent' => 'd’un rendez-vous régional et international de référence',
         'lede' => 'Associez votre marque à la Conférence annuelle ARABCIA :year et bénéficiez d’une visibilité privilégiée auprès de près de 300 décideurs et professionnels de l’audit interne, des risques, de la conformité et de la gouvernance.',

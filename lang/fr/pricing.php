@@ -17,7 +17,7 @@ return [
     'note' => 'Votre place est confirmée après paiement. Vous recevrez un e-mail de confirmation.',
 
     'hero' => [
-        'title' => 'Participez à la Conférence annuelle ARABCIA :year',
+        'title' => 'Participez à la Conférence annuelle ARABCIA ',
         'lede' => 'Deux journées pour comprendre, agir et démontrer la valeur de l’audit interne — 16 et 17 décembre 2026, Rabat.',
     ],
 

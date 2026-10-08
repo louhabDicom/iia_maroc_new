@@ -27,7 +27,7 @@ class Country extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'iso2', 'iso3', 'name_fr', 'name_en', 'name_ar', 'phone_code', 'is_active',
+        'iso2', 'iso3', 'name_fr', 'name_en', 'name_ar', 'phone_code', 'dial_code', 'is_active',
     ];
 
     protected function casts(): array

@@ -65,19 +65,32 @@
                        @if ($errors->has('email')) aria-invalid="true" aria-describedby="email-error" @endif>
             </x-form.field>
 
-            <x-form.field name="phone" :label="__('register.phone')" :help="__('register.phone_help')" required>
-                {{-- dir="ltr" and autocomplete="tel": see the note at the top of
-                     this file. The bidi reordering is the single most common
-                     Arabic-page defect in a phone form. --}}
-                <input type="tel" name="phone" id="phone" required
-                       inputmode="numeric"
-                       autocomplete="tel"
-                       dir="ltr"
-                       placeholder="{{ __('register.phone_placeholder') }}"
-                       value="{{ old('phone') }}"
-                       @class(['input', 'text-start', 'input-error' => $errors->has('phone')])
-                       @if ($errors->has('phone')) aria-invalid="true" aria-describedby="phone-error" @endif>
-            </x-form.field>
+<x-form.field name="phone" :label="__('register.phone')" :help="__('register.phone_help')" required>
+    {{-- Code + number sit in one LTR group, so the order stays "+212 | 6 12 34 56 78"
+         on Arabic pages too. --}}
+    <div class="d-flex gap-2" dir="ltr">
+        <select name="phone_code" id="phone_code"
+                class="input"
+                style="max-width: 9.5rem"
+                autocomplete="tel-country-code"
+                aria-label="{{ __('register.phone_code') }}">
+            @foreach ($countries as $country)
+                <option value="{{ $country->dial_code }}"
+                        @selected(old('phone_code', '+212') === $country->dial_code)>
+                    {{ $country->dial_code }} {{ $country->name() }}
+                </option>
+            @endforeach
+        </select>
+
+        <input type="tel" name="phone" id="phone" required
+               inputmode="numeric"
+               autocomplete="tel-national"
+               placeholder="{{ __('register.phone_placeholder') }}"
+               value="{{ old('phone') }}"
+               @class(['input', 'text-start', 'input-error' => $errors->has('phone') || $errors->has('phone_code')])
+               @if ($errors->has('phone')) aria-invalid="true" aria-describedby="phone-error" @endif>
+    </div>
+</x-form.field>
 
             <div class="grid gap-6 sm:grid-cols-2">
                 <x-form.field name="organisation" :label="__('register.organisation')">

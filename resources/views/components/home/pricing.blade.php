@@ -158,7 +158,7 @@
                                         <button type="button" class="reg-btn reg-btn--off" disabled><span>{{ __('pricing.closed') }}</span></button>
 
                                     @elseif (! auth()->check())
-                                        <a href="#acces" class="reg-btn {{ $memberCard ? 'reg-btn--solid' : 'reg-btn--outline' }}">
+                                        <a href="/tarifs" class="reg-btn {{ $memberCard ? 'reg-btn--solid' : 'reg-btn--outline' }}">
                                             <span>{{ __('pricing.tariffs.cta') }}</span><i class="fas fa-chevron-right" aria-hidden="true"></i>
                                         </a>
 

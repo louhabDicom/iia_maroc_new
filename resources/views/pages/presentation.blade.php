@@ -42,7 +42,7 @@
     ];
     $orgTones = ['ARABCIA' => 'gold', 'IIA_MAROC' => 'navy'];
 $orgWebsites = [ 'ARABCIA' => 'https://arabciia.org/ar/', 'IIA_MAROC' => 'https://www.iiamaroc.org/', ];
-   $orgCards = collect($organisations ?? [])->map(static function ($o) use ($orgWebsites): array { return [ 'code' => $o->code, 'name' => $o->name, 'text' => $o->description, 'logo' => $o->logo_path, 'url' => $orgWebsites[$o->code] ?? $o->website_url, ]; }); if ($orgCards->isEmpty()) { $orgCards = collect([ [ 'code' => 'ARABCIA', 'name' => 'ARABCIA', 'text' => __('presentation.organisations.organiser_desc'), 'logo' => null, 'url' => $orgWebsites['ARABCIA'], ], [ 'code' => 'IIA_MAROC', 'name' => 'IIA Maroc', 'text' => __('presentation.organisations.host_desc'), 'logo' => null, 'url' => $orgWebsites['IIA_MAROC'], ], ]); } @endphp
+   $orgCards = collect($organisations ?? [])->map(static function ($o) use ($orgWebsites): array { return [ 'code' => $o->code, 'name' => $o->name, 'text' => $o->description, 'logo' => $o->logo_path, 'url' => $orgWebsites[$o->code] ?? $o->website_url, ]; }); if ($orgCards->isEmpty()) { $orgCards = collect([ [ 'code' => 'ARABCIA', 'name' => 'ARABCIA', 'text' => __('presentation.organisations.organiser_desc'), 'logo' => null, 'url' => $orgWebsites['ARABCIA'], ], [ 'code' => 'IIA_MAROC', 'name' => 'IIA Maroc', 'text' => __('presentation.organisations.host_desc'), 'logo' => null, 'url' => $orgWebsites['IIA_MAROC'], ], ]); } 
 @endphp
 
 {{-- Shared front-office hero (unchanged). --}}

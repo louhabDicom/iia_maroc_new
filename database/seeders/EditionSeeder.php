@@ -89,6 +89,7 @@ class EditionSeeder extends Seeder
                 [
                     'iso3' => $iso3,
                     'phone_code' => $phone,
+                    'dial_code' => $phone,
                     'name_fr' => $fr,
                     'name_en' => $en,
                     'name_ar' => $ar,
@@ -136,13 +137,13 @@ Facing the rise of artificial intelligence, cyber threats and economic and socia
 
                 'city' => 'Rabat',
                 'country_iso2' => 'MA',
-                'venue_name' => 'Four Seasons Hotel Rabat at Kasr Al Bahr',
+                'venue_name' => 'Four Seasons Hotel  at Kasr Al Bahr',
                 // Only what the dossier states: the hotel sits at Kasr Al Bahr in
                 // Rabat. The street is left out rather than guessed, because a
                 // wrong address on a conference site sends a delegate — who has
                 // flown in — to the wrong building. The map link is derived from
                 // the coordinates below, so it is exact regardless.
-                'venue_address' => 'Kasr Al Bahr, Rabat, Royaume du Maroc',
+                'venue_address' => 'Kasr Al Bahr, Royaume du Maroc',
                 'venue_lat' => 33.9973,
                 'venue_lng' => -6.8498,
                 'venue_map_url' => null,
