@@ -213,7 +213,7 @@ return $this->starts_on->format('j').' '.$conjunction.' '.$end;
     {
         $locale = $locale instanceof Locale ? $locale : Locale::parse($locale);
 
-        return "{$this->venue_name}, {$this->city}";
+        return "{$this->venue_name}";
     }
 
     /**
