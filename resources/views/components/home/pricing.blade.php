@@ -757,7 +757,7 @@
 
     .reg-btn--outline:hover {
         background: var(--g-indigo);
-        color: #fff;
+        color: #9d6c20;
         transform: translateY(-2px);
     }
 
