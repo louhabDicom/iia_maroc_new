@@ -49,6 +49,7 @@ return [
         'standard' => 'Non-members',
         'or' => 'or',
         'cta' => 'Register',
+        'member_only' => 'Reserved for IIA Morocco members',
         'note' => 'Fees give access to both conference days, the sessions and the certificate of participation.',
     ],
 

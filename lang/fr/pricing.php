@@ -49,6 +49,7 @@ return [
         'standard' => 'Non-adhérents',
         'or' => 'ou',
         'cta' => 'Je m’inscris',
+        'member_only' => 'Réservé aux adhérents IIA Maroc',
         'note' => 'Les tarifs donnent accès aux deux journées de la conférence, aux interventions et au certificat de participation.',
     ],
 

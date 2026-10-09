@@ -12,10 +12,15 @@
     desktop with no phone camera to hand, and someone whose camera will not focus
     on a screen in a conference hall.
 
-    The example apps are shown as plain tiles, not as a store badge wall. The
-    visitor only has to recognise a name they may already have installed; any
-    TOTP app works, and the page says so. The tiles are drawn inline so no
-    third-party image is requested while the page holds a secret.
+    The page reads left to right on a desktop: step 1 is a strip across the top
+    (install an app), then scan, type the key, confirm sit side by side, so the
+    whole procedure fits on one screen without scrolling. Below 992px it stacks.
+
+    The example apps carry their logos from a public icon CDN. The requests carry
+    only the logo's name: the secret lives in the QR data URL and the key text,
+    never in a URL, and referrerpolicy="no-referrer" keeps this page's address
+    out of those requests. If a logo fails to load, the tile quietly falls back
+    to a neutral drawn icon, so the page never shows a broken image.
 --}}
 @extends('layouts.app')
 
@@ -24,18 +29,15 @@
 @section('content')
     @php
         // Example authenticator apps. Add, remove or reorder freely.
-        // 'glyph' picks a generic line icon from $glyphs, 'from'/'to' the tile gradient.
-        // These are neutral stand-ins, not the official logos: to use the real ones,
-        // replace the <svg> with <img src="{{ asset('img/2fa/google.svg') }}" alt="">.
-        // 'logo' is a path under public/. If the file exists it is shown instead of the
-        // generic glyph tile; if it does not, the glyph tile is the fallback.
+        // 'logo'  : full https URL (online) or a path under public/ (local); null = drawn icon only.
+        // 'glyph' : fallback line icon from $glyphs, 'from'/'to' : fallback tile gradient.
         $apps = [
-            ['name' => 'Google Authenticator',    'platforms' => 'iOS · Android', 'logo' => 'img/2fa/google-authenticator.svg',    'glyph' => 'shield', 'from' => '#4f8bf5', 'to' => '#2f5fd0'],
-            ['name' => 'Microsoft Authenticator', 'platforms' => 'iOS · Android', 'logo' => 'img/2fa/microsoft-authenticator.svg', 'glyph' => 'lock',   'from' => '#2aa3e0', 'to' => '#0b6bb3'],
-            ['name' => 'Authy',                   'platforms' => 'iOS · Android', 'logo' => 'img/2fa/authy.svg',                   'glyph' => 'ring',   'from' => '#ef5a5a', 'to' => '#c32f3f'],
-            ['name' => '2FAS',                    'platforms' => 'iOS · Android', 'logo' => 'img/2fa/2fas.svg',                    'glyph' => 'grid',   'from' => '#6d3bd6', 'to' => '#4f3cc9'],
-            ['name' => 'Aegis',                   'platforms' => 'Android',       'logo' => 'img/2fa/aegis.svg',                   'glyph' => 'key',    'from' => '#22b3a6', 'to' => '#0f857c'],
-            ['name' => 'FreeOTP',                 'platforms' => 'iOS · Android', 'logo' => 'img/2fa/freeotp.svg',                 'glyph' => 'clock',  'from' => '#f39a3d', 'to' => '#d36f12'],
+            ['name' => 'Google Authenticator',    'platforms' => 'iOS · Android', 'logo' => 'https://cdn.simpleicons.org/googleauthenticator',                  'glyph' => 'shield', 'from' => '#4f8bf5', 'to' => '#2f5fd0'],
+            ['name' => 'Microsoft Authenticator', 'platforms' => 'iOS · Android', 'logo' => 'https://cdn.simpleicons.org/microsoftauthenticator',                'glyph' => 'lock',   'from' => '#2aa3e0', 'to' => '#0b6bb3'],
+            ['name' => 'Authy',                   'platforms' => 'iOS · Android', 'logo' => 'https://cdn.simpleicons.org/authy',                                'glyph' => 'ring',   'from' => '#ef5a5a', 'to' => '#c32f3f'],
+            ['name' => '2FAS',                    'platforms' => 'iOS · Android', 'logo' => 'https://cdn.simpleicons.org/2fas',                                 'glyph' => 'grid',   'from' => '#6d3bd6', 'to' => '#4f3cc9'],
+            ['name' => 'Aegis',                   'platforms' => 'Android',       'logo' => 'https://www.google.com/s2/favicons?domain=getaegis.app&sz=128',   'glyph' => 'key',    'from' => '#22b3a6', 'to' => '#0f857c'],
+            ['name' => 'FreeOTP',                 'platforms' => 'iOS · Android', 'logo' => 'https://www.google.com/s2/favicons?domain=freeotp.github.io&sz=128', 'glyph' => 'clock',  'from' => '#f39a3d', 'to' => '#d36f12'],
         ];
 
         $glyphs = [
@@ -46,6 +48,10 @@
             'key'    => '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/>',
             'clock'  => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
         ];
+
+        // Optional online picture for the "confirm" step (https URL). Leave null to
+        // show the drawn phone illustration. It can also be passed from the controller.
+        $helpImage = $helpImage ?? null;
 
         // Base32 secret shown in groups of four: easier to read aloud and to type.
         // The copy button still copies the raw, ungrouped value.
@@ -63,72 +69,96 @@
             --accent: #6d3bd6;
             --shadow: 0 10px 30px rgba(47, 31, 156, .10);
         }
+        .totp-shell { max-width: 1120px; margin-inline: auto; }
 
-        /* ---------- Stepper ---------- */
+        /* ---------- Header: title left, state of the account right ---------- */
+        .totp-head {
+            display: grid;
+            gap: 1rem;
+            margin-block-end: 1.25rem;
+        }
+        .totp-head .app-title,
+        .totp-head .app-lede,
+        .totp-head .app-notice { margin-block: 0; }
+        .totp-head .app-lede { margin-block-start: .5rem; }
+
+        /* ---------- Card + steps ---------- */
+        .totp-card { padding: 0; overflow: hidden; }
         .totp-steps {
             list-style: none;
             margin: 0;
             padding: 0;
+            display: grid;
+            grid-template-columns: 1fr;
             counter-reset: totp-step;
         }
-        .totp-steps > li {
-            position: relative;
+        .totp-step {
             counter-increment: totp-step;
-            padding-inline-start: 3.25rem;
-            padding-block-end: 1.75rem;
+            min-width: 0;
+            padding: 1.25rem 1.4rem;
         }
-        .totp-steps > li:last-child { padding-block-end: 0; }
+        .totp-step + .totp-step { border-block-start: 1px solid var(--line); }
 
-        .totp-steps > li::before {
+        .totp-step__head {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            margin-block-end: .75rem;
+        }
+        .totp-step__head::before {
             content: counter(totp-step);
-            position: absolute;
-            inset-inline-start: 0;
-            inset-block-start: 0;
-            width: 2.25rem;
-            height: 2.25rem;
+            flex: 0 0 auto;
+            width: 2rem;
+            height: 2rem;
             border-radius: 50%;
             display: grid;
             place-items: center;
             font-weight: 700;
-            font-size: .9rem;
+            font-size: .85rem;
             color: #fff;
             background: linear-gradient(135deg, #2b1d9a, #3a27b3);
             box-shadow: 0 4px 12px rgba(47, 31, 156, .28);
         }
-        /* Continuous rail between the numbers. */
-        .totp-steps > li:not(:last-child)::after {
-            content: "";
-            position: absolute;
-            inset-inline-start: calc(1.125rem - 1px);
-            inset-block-start: 2.6rem;
-            inset-block-end: .35rem;
-            width: 2px;
-            background: var(--line);
-            border-radius: 2px;
+        .totp-step__title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--ink);
+            padding-block-start: .3rem;
+        }
+        .totp-step__lede {
+            margin: 0 0 .75rem;
+            font-size: .84rem;
+            line-height: 1.55;
+            color: var(--muted);
         }
 
-        /* ---------- Example apps ---------- */
-        .totp-apps-label {
-            margin: 1rem 0 .5rem;
-            font-size: .74rem;
-            font-weight: 700;
-            letter-spacing: .06em;
-            text-transform: uppercase;
-            color: var(--muted);
+        /* ---------- Example apps: one horizontal strip ---------- */
+        .totp-sr {
+            position: absolute;
+            width: 1px; height: 1px;
+            margin: -1px; padding: 0;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+            border: 0;
         }
         .totp-apps {
             list-style: none;
             margin: 0;
             padding: 0;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: .6rem;
         }
         .totp-app {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: .7rem;
-            padding: .55rem .75rem;
+            text-align: center;
+            gap: .15rem;
+            padding: .8rem .5rem;
             background: #fff;
             border: 1px solid var(--line);
             border-radius: 10px;
@@ -140,54 +170,60 @@
             transform: translateY(-1px);
         }
         .totp-app__icon {
-            flex: 0 0 auto;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            position: relative;
+            width: 48px;
+            height: 48px;
+            margin-block-end: .4rem;
+            border-radius: 12px;
             display: grid;
             place-items: center;
             color: #fff;
+            background: linear-gradient(135deg, var(--from), var(--to));
             box-shadow: 0 4px 10px rgba(27, 20, 100, .18);
         }
-        .totp-app__icon--logo {
-            background: transparent;
+        /* A loaded logo sits on a white tile; a failed one falls back to the gradient. */
+        .totp-app__icon--logo:not(.is-fallback) {
+            background: #fff;
+            border: 1px solid var(--line);
             box-shadow: none;
-            overflow: hidden;
         }
-        .totp-app__icon--logo img {
+        .totp-app__icon img {
             display: block;
-            width: 100%;
-            height: 100%;
+            width: 30px;
+            height: 30px;
             object-fit: contain;
         }
+        .totp-app__icon--logo:not(.is-fallback) svg { display: none; }
+        .totp-app__icon.is-fallback img { display: none; }
         .totp-app__icon svg {
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
             fill: none;
             stroke: currentColor;
             stroke-width: 2;
             stroke-linecap: round;
             stroke-linejoin: round;
         }
-        .totp-app__text { min-width: 0; line-height: 1.25; }
         .totp-app__name {
-            display: block;
-            font-size: .84rem;
+            font-size: .8rem;
             font-weight: 700;
+            line-height: 1.2;
             color: var(--ink);
-            overflow-wrap: anywhere;
         }
         .totp-app__meta {
-            display: block;
-            font-size: .72rem;
+            font-size: .7rem;
+            color: var(--muted);
+        }
+        .totp-apps-note {
+            margin: .75rem 0 0;
+            font-size: .78rem;
             color: var(--muted);
         }
 
         /* ---------- QR ---------- */
         .totp-qr {
             display: inline-block;
-            margin-block-start: .9rem;
-            padding: .75rem;
+            padding: .65rem;
             /* Always white, even on a dark theme: a scanner needs the quiet zone. */
             background: #fff;
             border: 1px solid var(--line);
@@ -199,30 +235,30 @@
         /* ---------- Manual key ---------- */
         .totp-keybox {
             display: flex;
-            align-items: stretch;
-            flex-wrap: wrap;
-            gap: .5rem;
-            margin-block-start: .75rem;
+            flex-direction: column;
+            gap: .6rem;
         }
         .totp-key {
-            flex: 1 1 14rem;
             margin: 0;
-            padding: .7rem .9rem;
+            padding: .75rem .9rem;
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-            font-size: 1.05rem;
+            font-size: .98rem;
             font-weight: 600;
-            letter-spacing: .12em;
+            letter-spacing: .1em;
+            line-height: 1.6;
             color: var(--deep);
             background: var(--surface);
             border: 1px dashed #cfc9f0;
             border-radius: 8px;
-            word-break: break-all;
+            overflow-wrap: anywhere;
             user-select: all;
         }
         .totp-copy {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: .45rem;
+            width: 100%;
             padding: .55rem 1rem;
             font-size: .8rem;
             font-weight: 600;
@@ -245,20 +281,44 @@
         }
         .totp-copy.is-done { color: #0f7b4a; background: #e3f6ec; }
         .totp-copy-status {
-            flex-basis: 100%;
             min-height: 1.1rem;
             margin: 0;
             font-size: .78rem;
             color: var(--muted);
         }
 
-        /* ---------- Code field ---------- */
+        /* ---------- Confirm + help picture ---------- */
         .totp-confirm .app-code {
             text-align: center;
             font-size: 1.5rem;
             letter-spacing: .4em;
             font-variant-numeric: tabular-nums;
         }
+        .totp-help {
+            margin: 1rem 0 0;
+            padding: .9rem;
+            display: flex;
+            align-items: center;
+            gap: .9rem;
+            background: var(--surface);
+            border-radius: 10px;
+        }
+        .totp-help svg,
+        .totp-help img {
+            flex: 0 0 auto;
+            width: 84px;
+            height: auto;
+            max-height: 120px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .totp-help figcaption {
+            font-size: .78rem;
+            line-height: 1.5;
+            color: var(--muted);
+        }
+
+        .totp-tradeoff { margin-block-start: 1rem; text-align: center; }
 
         /* ---------- Focus (visible, AA) ---------- */
         .totp-page a:focus-visible,
@@ -268,11 +328,24 @@
             outline-offset: 2px;
         }
 
+        /* ---------- Responsive ---------- */
+        @media (min-width: 576px) {
+            .totp-apps { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 992px) {
+            .totp-head { grid-template-columns: 1.15fr 1fr; align-items: center; gap: 2rem; }
+            .totp-apps { grid-template-columns: repeat(6, 1fr); }
+
+            .totp-steps { grid-template-columns: repeat(3, 1fr); }
+            /* Step 1 is the strip across the top; steps 2-4 sit side by side below it. */
+            .totp-step:first-child { grid-column: 1 / -1; }
+            .totp-step:nth-child(n+3) {
+                border-inline-start: 1px solid var(--line);
+            }
+        }
         @media (max-width: 575.98px) {
-            .totp-steps > li { padding-inline-start: 2.9rem; }
-            .totp-apps { grid-template-columns: 1fr; }
-            .totp-key { font-size: .95rem; letter-spacing: .08em; }
-            .totp-copy { width: 100%; justify-content: center; }
+            .totp-step { padding: 1rem; }
+            .totp-key { font-size: .9rem; letter-spacing: .06em; }
         }
         @media (prefers-reduced-motion: reduce) {
             .totp-app { transition: none; }
@@ -282,55 +355,77 @@
 
     <div class="section-padding-04 totp-page">
         <div class="container">
-            <div class="app-shell app-shell--narrow">
+            <div class="app-shell totp-shell">
 
-                <h1 class="app-title">@lang('totp.heading')</h1>
+                <div class="totp-head">
+                    <div>
+                        <h1 class="app-title">@lang('totp.heading')</h1>
+                        <p class="app-lede">@lang('totp.lede')</p>
+                    </div>
 
-                <p class="app-lede">@lang('totp.lede')</p>
-
-                {{-- The state of the account, stated before the instructions
-                     rather than discovered at the end. --}}
-                <div class="app-notice mb-4" role="status">
-                    @lang('totp.pending_notice')
+                    {{-- The state of the account, stated before the instructions
+                         rather than discovered at the end. --}}
+                    <div class="app-notice" role="status">
+                        @lang('totp.pending_notice')
+                    </div>
                 </div>
 
-                <div class="app-card">
+                <div class="app-card totp-card">
                     <ol class="totp-steps">
 
                         {{-- 1. Install --}}
-                        <li>
-                            <p class="app-note--strong">@lang('totp.step_install')</p>
-                            <p class="app-note">@lang('totp.step_install_lede')</p>
+                        <li class="totp-step">
+                            <div class="totp-step__head">
+                                <h2 class="totp-step__title">@lang('totp.step_install')</h2>
+                            </div>
+                            <p class="totp-step__lede">@lang('totp.step_install_lede')</p>
 
-                            <p class="totp-apps-label" id="totp-apps-label">@lang('totp.apps_label')</p>
+                            <p class="totp-sr" id="totp-apps-label">@lang('totp.apps_label')</p>
                             <ul class="totp-apps" aria-labelledby="totp-apps-label">
                                 @foreach ($apps as $app)
+                                    @php
+                                        $logoUrl = ! empty($app['logo'])
+                                            ? (str_starts_with($app['logo'], 'http') ? $app['logo'] : asset($app['logo']))
+                                            : null;
+                                    @endphp
                                     <li class="totp-app">
-                                        @if (! empty($app['logo']) && file_exists(public_path($app['logo'])))
-                                            <span class="totp-app__icon totp-app__icon--logo" aria-hidden="true">
-                                                <img src="{{ asset($app['logo']) }}" alt="" width="40" height="40" loading="lazy" decoding="async">
-                                            </span>
-                                        @else
-                                            <span class="totp-app__icon"
-                                                  aria-hidden="true"
-                                                  style="background: linear-gradient(135deg, {{ $app['from'] }}, {{ $app['to'] }});">
-                                                <svg viewBox="0 0 24 24" focusable="false">{!! $glyphs[$app['glyph']] !!}</svg>
-                                            </span>
-                                        @endif
-                                        <span class="totp-app__text">
-                                            <span class="totp-app__name">{{ $app['name'] }}</span>
-                                            <span class="totp-app__meta">{{ $app['platforms'] }}</span>
+                                        <span class="totp-app__icon {{ $logoUrl ? 'totp-app__icon--logo' : 'is-fallback' }}"
+                                              aria-hidden="true"
+                                              style="--from: {{ $app['from'] }}; --to: {{ $app['to'] }};">
+                                            @if ($logoUrl)
+                                                <img src="{{ $logoUrl }}"
+                                                     alt=""
+                                                     width="30"
+                                                     height="30"
+                                                     loading="lazy"
+                                                     decoding="async"
+                                                     referrerpolicy="no-referrer"
+                                                     data-totp-logo>
+                                            @endif
+                                            <svg viewBox="0 0 24 24" focusable="false">{!! $glyphs[$app['glyph']] !!}</svg>
                                         </span>
+                                        <span class="totp-app__name">{{ $app['name'] }}</span>
+                                        <span class="totp-app__meta">{{ $app['platforms'] }}</span>
                                     </li>
                                 @endforeach
                             </ul>
-                            <p class="app-note mt-2">@lang('totp.apps_note')</p>
+                            {{-- Runs right after the list so no image can fail before the listener exists. --}}
+                            <script>
+                                document.querySelectorAll('img[data-totp-logo]').forEach(function (img) {
+                                    img.addEventListener('error', function () {
+                                        img.parentNode.classList.add('is-fallback');
+                                    });
+                                });
+                            </script>
+                            <p class="totp-apps-note">@lang('totp.apps_note')</p>
                         </li>
 
                         {{-- 2. Scan --}}
-                        <li>
-                            <p class="app-note--strong">@lang('totp.step_scan')</p>
-                            <p class="app-note">@lang('totp.step_scan_lede', ['issuer' => $issuer])</p>
+                        <li class="totp-step">
+                            <div class="totp-step__head">
+                                <h2 class="totp-step__title">@lang('totp.step_scan')</h2>
+                            </div>
+                            <p class="totp-step__lede">@lang('totp.step_scan_lede', ['issuer' => $issuer])</p>
 
                             @if ($qrCode !== '')
                                 <div class="totp-qr">
@@ -340,16 +435,18 @@
                                          where a shared machine could read it back. --}}
                                     <img src="{{ $qrCode }}"
                                          alt="{{ __('totp.qr_alt', ['issuer' => $issuer]) }}"
-                                         width="240"
-                                         height="240">
+                                         width="200"
+                                         height="200">
                                 </div>
                             @endif
                         </li>
 
                         {{-- 3. Manual key --}}
-                        <li>
-                            <p class="app-note--strong">@lang('totp.step_manual')</p>
-                            <p class="app-note">@lang('totp.step_manual_lede')</p>
+                        <li class="totp-step">
+                            <div class="totp-step__head">
+                                <h2 class="totp-step__title">@lang('totp.step_manual')</h2>
+                            </div>
+                            <p class="totp-step__lede">@lang('totp.step_manual_lede')</p>
 
                             <div class="totp-keybox">
                                 {{-- Forced LTR: the secret is base32, and bidi would
@@ -375,10 +472,12 @@
                         </li>
 
                         {{-- 4. Confirm --}}
-                        <li>
-                            <p class="app-note--strong">@lang('totp.step_confirm')</p>
+                        <li class="totp-step">
+                            <div class="totp-step__head">
+                                <h2 class="totp-step__title">@lang('totp.step_confirm')</h2>
+                            </div>
 
-                            <form method="POST" action="{{ route('totp.confirm') }}" class="totp-confirm mt-2">
+                            <form method="POST" action="{{ route('totp.confirm') }}" class="totp-confirm">
                                 @csrf
 
                                 <x-form.field name="code" :label="__('totp.code_label')" :help="__('totp.code_hint', ['digits' => $codeLength])" required>
@@ -402,6 +501,25 @@
 
                                 <button type="submit" class="btn btn-primary w-100">@lang('totp.submit')</button>
                             </form>
+
+                            {{-- A picture of what the visitor is about to read off their
+                                 phone. Decorative: the caption says it in words. --}}
+                            <figure class="totp-help">
+                                @if ($helpImage)
+                                    <img src="{{ $helpImage }}" alt="" width="84" height="120" loading="lazy" referrerpolicy="no-referrer">
+                                @else
+                                    <svg viewBox="0 0 84 120" aria-hidden="true" focusable="false">
+                                        <rect x="6" y="2" width="72" height="116" rx="12" fill="#1b1464"/>
+                                        <rect x="12" y="14" width="60" height="92" rx="6" fill="#fff"/>
+                                        <rect x="32" y="6" width="20" height="4" rx="2" fill="#4f3cc9"/>
+                                        <rect x="18" y="22" width="30" height="5" rx="2.5" fill="#cfc9f0"/>
+                                        <text x="42" y="64" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" font-weight="700" fill="#2f1f9c" letter-spacing="1">482 916</text>
+                                        <circle cx="42" cy="88" r="9" fill="none" stroke="#e4e1f4" stroke-width="3"/>
+                                        <path d="M42 79a9 9 0 0 1 8.5 6" fill="none" stroke="#6d3bd6" stroke-width="3" stroke-linecap="round"/>
+                                    </svg>
+                                @endif
+                                <figcaption>@lang('totp.help_caption')</figcaption>
+                            </figure>
                         </li>
                     </ol>
                 </div>
@@ -409,7 +527,7 @@
                 {{-- Stated up front because it is the trade this method makes:
                      free and unlimited, but a delegate without a spare handset
                      and without the recovery codes is locked out. --}}
-                <p class="app-note mt-4 text-center">@lang('totp.tradeoff')</p>
+                <p class="app-note totp-tradeoff">@lang('totp.tradeoff')</p>
             </div>
         </div>
     </div>

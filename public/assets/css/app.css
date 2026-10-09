@@ -276,6 +276,35 @@ label {
     margin: 6px 0 0;
 }
 
+/* Password reveal. The control is wrapped so the eye sits inside the field;
+   `inset-inline-end` mirrors it on an RTL page without a second rule. */
+.pw-field {
+    position: relative;
+}
+
+.pw-field .input {
+    padding-inline-end: 46px;
+}
+
+.pw-toggle {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--arab-primary, #2c308b);
+    cursor: pointer;
+    display: flex;
+    inset-block: 0;
+    inset-inline-end: 6px;
+    padding: 0 12px;
+    position: absolute;
+}
+
+.pw-toggle:focus-visible {
+    border-radius: 50%;
+    outline: 2px solid var(--arab-primary, #2c308b);
+    outline-offset: 2px;
+}
+
 /* ========================================================================== */
 /* Application components                                                      */
 /* -------------------------------------------------------------------------- */

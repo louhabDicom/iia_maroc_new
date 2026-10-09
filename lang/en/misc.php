@@ -11,5 +11,7 @@ return [
     'no' => 'No',
     'optional' => 'optional',
     'required_field' => 'Required field',
+    'show_password' => 'Show password',
+    'hide_password' => 'Hide password',
     'yes' => 'Yes',
 ];

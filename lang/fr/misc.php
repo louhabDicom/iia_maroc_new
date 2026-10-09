@@ -11,5 +11,7 @@ return [
     'no' => 'Non',
     'optional' => 'facultatif',
     'required_field' => 'Champ obligatoire',
+    'show_password' => 'Afficher le mot de passe',
+    'hide_password' => 'Masquer le mot de passe',
     'yes' => 'Oui',
 ];

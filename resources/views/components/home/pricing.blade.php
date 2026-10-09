@@ -168,6 +168,11 @@
                                             <span>{{ __(auth()->user()->hasConfirmedTotp() ? 'register.terms_required' : 'totp.title') }}</span>
                                         </a>
 
+                                    @elseif ($memberCard && ! $isMember)
+                                        <a href="{{ route('contact') }}" class="reg-btn reg-btn--outline">
+                                            <span>{{ __('pricing.tariffs.member_only') }}</span><i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                        </a>
+
                                     @else
                                         <form method="POST" action="{{ route('cart.store') }}">
                                             @csrf

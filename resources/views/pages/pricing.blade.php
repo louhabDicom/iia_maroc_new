@@ -94,23 +94,6 @@ $madPerUsd = (float) config('brand.mad_per_usd', 10); // 7 500 MAD -> 750 USD, 8
                 </h2>
             </header>
 
-            @unless ($registrationOpen)
-            <p class="reg-notice" role="status"><i class="fas fa-lock" aria-hidden="true"></i> {{ __('pricing.closed') }}</p>
-            @endunless
-
-            @auth
-            @unless ($canOrder)
-            <p class="reg-notice" role="status">
-                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
-                @if (auth()->user()->hasConfirmedTotp())
-                {{ __('register.terms_required') }}
-                @else
-                <a href="{{ route('totp.setup') }}">{{ __('totp.title') }}</a>
-                @endif
-            </p>
-            @endunless
-            @endauth
-
             @if ($errors->hasAny(['quantity', 'member_quantity', 'ticket_type_id']))
             <p class="reg-notice reg-notice--danger" role="alert">
                 <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
@@ -187,6 +170,11 @@ $madPerUsd = (float) config('brand.mad_per_usd', 10); // 7 500 MAD -> 750 USD, 8
                         <a href="{{ auth()->user()->hasConfirmedTotp() ? route('account') : route('totp.setup') }}"
                             class="reg-btn {{ $memberCard ? 'reg-btn--solid' : 'reg-btn--outline' }}">
                             <span>{{ __(auth()->user()->hasConfirmedTotp() ? 'register.terms_required' : 'totp.title') }}</span>
+                        </a>
+
+                        @elseif ($memberCard && ! $isMember)
+                        <a href="{{ route('contact') }}" class="reg-btn reg-btn--outline">
+                            <span>{{ __('pricing.tariffs.member_only') }}</span><i class="fas fa-chevron-right" aria-hidden="true"></i>
                         </a>
 
                         @else

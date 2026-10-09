@@ -922,6 +922,41 @@
             sync();
         });
     });
+
+    /* Password reveal. Delegated to each toggle in the markup so login,
+       register and any future password field share one behaviour. The field
+       itself carries the state, so a password manager or a failed submit
+       never loses it. */
+    safely('password reveal', function () {
+        each('[data-pw-toggle]', function (button) {
+            button.addEventListener('click', function () {
+                var input = document.getElementById(button.getAttribute('data-pw-toggle'));
+
+                if (!input) {
+                    return;
+                }
+
+                var show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+
+                var icon = button.querySelector('i');
+
+                if (icon) {
+                    icon.className = show ? 'far fa-eye-slash' : 'far fa-eye';
+                }
+
+                var label = show
+                    ? button.getAttribute('data-label-hide')
+                    : button.getAttribute('data-label-show');
+
+                if (label) {
+                    button.setAttribute('aria-label', label);
+                }
+
+                button.setAttribute('aria-pressed', show ? 'true' : 'false');
+            });
+        });
+    });
 }());
 
 /* =====================================================================

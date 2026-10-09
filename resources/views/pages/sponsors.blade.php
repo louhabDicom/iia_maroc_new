@@ -110,10 +110,12 @@ $allies = [
                 </ul>
 
                 <div class="sp-intro__actions">
-                    <a href="{{ $dossierUrl }}" class="sp-btn sp-btn--solid">
-                        <i class="fas fa-download" aria-hidden="true"></i>
-                        <span>@lang('sponsoring.hero_actions.download')</span>
-                    </a>
+                 <a href="{{ asset('ARABCIA_2026_Sponsorship.pdf') }}"
+   class="sp-btn sp-btn--solid"
+   download="ARABCIA_2026_Sponsorship.pdf">
+    <i class="fas fa-download" aria-hidden="true"></i>
+    <span>@lang('sponsoring.hero_actions.download')</span>
+</a>
                     <a href="{{ route('contact') }}" class="sp-btn sp-btn--outline">
                         <span>@lang('sponsoring.hero_actions.partner')</span>
                         <i class="fas fa-chevron-right" aria-hidden="true"></i>

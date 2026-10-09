@@ -2806,31 +2806,24 @@ body.drawer-open {
    washes are the light, and they are what stop a two-stop mauve from looking
    like a flat rectangle of colour. */
 .h-hero {
-    margin-top: 2%;
-    background-color: var(--h-deep);
     background-image: url('../brand/ban_hero_home.png');
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: 100% 100%;
 
     color: #fff;
-    /* One band at one height across the site. The home hero is the tallest at
-       every width, so its height is the target and every shorter inner-page
-       hero grows to meet it rather than the home hero shrinking to match a
-       page with a one-line heading. The values below are the home hero's
-       measured height per breakpoint. */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 675px;
+    min-height: 460px;
     overflow: hidden;
     padding-block: calc(var(--header-h) + var(--sp-8)) var(--sp-9);
     position: relative;
+    box-sizing: border-box;
 }
-
 /* Home hero's measured height per breakpoint, so an inner page matches it. */
 @media (max-width: 1199.98px) {
-    .h-hero { min-height: 661px; }
+    .h-hero { min-height: 450px; }
 }
 
 /* Arabic */
@@ -3063,7 +3056,7 @@ html[dir="rtl"] .h-hero {
     }
 
     .h-hero {
-        min-height: 627px;
+        min-height: 430px;
         padding-block: calc(var(--header-h) + var(--sp-7)) var(--sp-8);
     }
 
@@ -3074,13 +3067,13 @@ html[dir="rtl"] .h-hero {
 
 @media (max-width: 767.98px) {
     .h-hero {
-        min-height: 628px;
+        min-height: 430px;
     }
 }
 
 @media (max-width: 575.98px) {
     .h-hero {
-        min-height: 862px;
+        min-height: 560px;
     }
 
     .h-hero__actions .h-btn {

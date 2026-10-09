@@ -30,11 +30,19 @@
                         </x-form.field>
 
                         <x-form.field name="password" :label="__('register.password')" required>
-                            <input type="password" name="password" id="password" required
-                                   autocomplete="current-password"
-                                   dir="ltr"
-                                   @class(['input', 'input-error' => $errors->has('password')])
-                                   @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
+                            <div class="pw-field">
+                                <input type="password" name="password" id="password" required
+                                       autocomplete="current-password"
+                                       dir="ltr"
+                                       @class(['input', 'input-error' => $errors->has('password')])
+                                       @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
+                                <button type="button" class="pw-toggle" data-pw-toggle="password"
+                                        data-label-show="{{ __('misc.show_password') }}"
+                                        data-label-hide="{{ __('misc.hide_password') }}"
+                                        aria-label="{{ __('misc.show_password') }}" aria-pressed="false">
+                                    <i class="far fa-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
                         </x-form.field>
 
                         <div class="app-check mb-4">

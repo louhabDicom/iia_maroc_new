@@ -25,16 +25,6 @@
 
 <section class="h-hero" data-hero>
 
-    {{-- Three panels of the brand pattern at falling opacity over a radial
-         bloom, so they read as lit objects rather than as flat rectangles. --}}
-    <!-- <div class="h-hero__art" aria-hidden="true">
-        <span class="h-cube h-cube--back"></span>
-        <span class="h-cube h-cube--mid"></span>
-        <span class="h-cube h-cube--front"></span>
-
-    
-    </div> -->
-
     <span class="h-hero__bloom" aria-hidden="true"></span>
     <span class="h-hero__sparks" aria-hidden="true"></span>
 

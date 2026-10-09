@@ -11,5 +11,7 @@ return [
     'no' => 'لا',
     'optional' => 'اختياري',
     'required_field' => 'حقل إلزامي',
+    'show_password' => 'إظهار كلمة المرور',
+    'hide_password' => 'إخفاء كلمة المرور',
     'yes' => 'نعم',
 ];

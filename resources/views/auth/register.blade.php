@@ -136,20 +136,36 @@
             <div class="row g-4">
                 <div class="col-md-6">
                 <x-form.field name="password" :label="__('register.password')" :help="__('register.password_help')" required>
-                    <input type="password" name="password" id="password" required
-                           autocomplete="new-password"
-                           dir="ltr"
-                           @class(['input', 'input-error' => $errors->has('password')])
-                           @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
+                    <div class="pw-field">
+                        <input type="password" name="password" id="password" required
+                               autocomplete="new-password"
+                               dir="ltr"
+                               @class(['input', 'input-error' => $errors->has('password')])
+                               @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif>
+                        <button type="button" class="pw-toggle" data-pw-toggle="password"
+                                data-label-show="{{ __('misc.show_password') }}"
+                                data-label-hide="{{ __('misc.hide_password') }}"
+                                aria-label="{{ __('misc.show_password') }}" aria-pressed="false">
+                            <i class="far fa-eye" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </x-form.field>
                 </div>
 
                 <div class="col-md-6">
                 <x-form.field name="password_confirmation" :label="__('register.password_confirmation')" required>
-                    <input type="password" name="password_confirmation" id="password_confirmation" required
-                           autocomplete="new-password"
-                           dir="ltr"
-                           class="input">
+                    <div class="pw-field">
+                        <input type="password" name="password_confirmation" id="password_confirmation" required
+                               autocomplete="new-password"
+                               dir="ltr"
+                               class="input">
+                        <button type="button" class="pw-toggle" data-pw-toggle="password_confirmation"
+                                data-label-show="{{ __('misc.show_password') }}"
+                                data-label-hide="{{ __('misc.hide_password') }}"
+                                aria-label="{{ __('misc.show_password') }}" aria-pressed="false">
+                            <i class="far fa-eye" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </x-form.field>
                 </div>
             </div>
