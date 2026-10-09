@@ -46,7 +46,7 @@ $orgWebsites = [ 'ARABCIA' => 'https://arabciia.org/ar/', 'IIA_MAROC' => 'https:
 @endphp
 
 {{-- Shared front-office hero (unchanged). --}}
-<div class="presentation-hero" style="transform: translateY(-4.5%);">
+<div class="presentation-hero" >
     <x-front.hero
         :title="__('presentation.title')"
         :eyebrow="$edition->identityLabel()"
