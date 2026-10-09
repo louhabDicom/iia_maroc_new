@@ -16,14 +16,16 @@
     already renders in the active locale — an Arabic month name with Latin
     digits for an Arabic reader — and forcing an LTR run over that reorders a
     correct date into a wrong one.
+
+    Pass `compact` to get a shorter hero (used on the home page only).
 --}}
-@props(['edition', 'locale'])
+@props(['edition', 'locale', 'compact' => false])
 
 @php
     $lockup = \App\Support\Brand::logo();
 @endphp
 
-<section class="h-hero" data-hero>
+<section class="h-hero {{ $compact ? 'h-hero--compact' : '' }}" data-hero>
 
     <span class="h-hero__bloom" aria-hidden="true"></span>
     <span class="h-hero__sparks" aria-hidden="true"></span>
@@ -36,21 +38,19 @@
                  `brightness(0) invert(1)` maps every pixel of it to white
                  without touching the file on disk. --}}
             <div class="h-hero__logos">
-             
-             
-                       <img src="{{ \App\Support\Brand::logoUrl() }}"
+                <img src="{{ \App\Support\Brand::logoUrl() }}"
                      width="{{ $lockup['width'] }}"
                      height="{{ $lockup['height'] }}"
                      alt="{{ __('site.site_name') }}"
                      fetchpriority="high"
                      decoding="async">
-                        <img src="{{asset('assets/brand/arabic_itihad_logo.png')}}"
+                <img src="{{ asset('assets/brand/arabic_itihad_logo.png') }}"
                      width="{{ $lockup['width'] }}"
                      height="{{ $lockup['height'] }}"
                      alt="{{ __('site.site_name') }}"
                      fetchpriority="high"
                      decoding="async">
-                       <img src="{{asset('assets/brand/arabcia_logo.png')}}"
+                <img src="{{ asset('assets/brand/arabcia_logo.png') }}"
                      width="{{ $lockup['width'] }}"
                      height="{{ $lockup['height'] }}"
                      alt="{{ __('site.site_name') }}"
@@ -113,3 +113,65 @@
         </div>
     </div>
 </section>
+<style>
+    /* ---------- Compact hero (home page only) ---------- */
+.h-hero--compact {
+    min-height: 0;                 /* drop any 100vh / 80vh height */
+    padding-block: .5rem;
+}
+
+.h-hero--compact .h-hero__inner {
+    padding-block: 0;
+    min-height: 0;
+}
+
+.h-hero--compact .h-hero__logos {
+    margin-block-end: 1rem;
+}
+
+.h-hero--compact .h-hero__logos img {
+    max-height: 48px;              /* smaller logos; adjust to taste */
+    width: auto;
+}
+
+.h-hero--compact .h-hero__title {
+    margin-block: 0.5rem;
+    font-size: clamp(2rem, 4.5vw, 3.25rem);
+}
+
+.h-hero--compact .h-hero__kicker {
+    margin-block: 0.25rem;
+}
+
+.h-hero--compact .h-hero__theme {
+    margin-block: 0.5rem 1rem;
+}
+
+.h-hero--compact .h-hero__meta {
+    margin-block: 1rem;
+    gap: 0.5rem 1.5rem;
+}
+
+.h-hero--compact .h-hero__actions {
+    margin-block-start: 1.25rem;
+}
+
+/* Scale down the decorative artwork so it matches the shorter section */
+.h-hero--compact .h-hero__bloom,
+.h-hero--compact .h-hero__sparks {
+    transform: scale(0.8);
+    transform-origin: top;
+}
+
+@media (min-width: 992px) {
+    .h-hero--compact {
+        padding-block: 3.5rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .h-hero--compact {
+        padding-block: 2rem;
+    }
+}
+</style>

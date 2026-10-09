@@ -2806,10 +2806,11 @@ body.drawer-open {
    washes are the light, and they are what stop a two-stop mauve from looking
    like a flat rectangle of colour. */
 .h-hero {
+    background-color: var(--h-deep);
     background-image: url('../brand/ban_hero_home.png');
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 100% 100%;
+    background-size: cover;            /* mobile: fill without distorting */
 
     color: #fff;
     display: flex;
@@ -2819,8 +2820,17 @@ body.drawer-open {
     overflow: hidden;
     padding-block: calc(var(--header-h) + var(--sp-8)) var(--sp-9);
     position: relative;
-    box-sizing: border-box;
 }
+
+/* Tablet and desktop: stretch the image to the full width and height */
+@media (min-width: 768px) {
+    .h-hero {
+        background-size: 100% 100%;
+    }
+}
+
+
+
 /* Home hero's measured height per breakpoint, so an inner page matches it. */
 @media (max-width: 1199.98px) {
     .h-hero { min-height: 450px; }

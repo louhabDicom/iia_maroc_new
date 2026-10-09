@@ -203,7 +203,11 @@ $allies = [
             </div>
 
             <div class="sp-offer__foot">
-                <a href="{{ route('contact') }}" class="sp-compare">
+                <a href="{{ asset('assets/images/conference/sponsorship-packages-overview.png') }}"
+                    class="sp-compare"
+                    data-lightbox="sponsoring-packages"
+                    data-title="@lang('sponsoring.plate_packages')"
+                    target="_blank" rel="noopener">
                     <i class="fas fa-scale-balanced" aria-hidden="true"></i>
                     <span>@lang('sponsoring.packages.compare')</span>
                     <i class="fas fa-chevron-right" aria-hidden="true"></i>
